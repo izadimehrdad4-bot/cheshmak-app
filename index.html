@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#15161F">
+  <title>چشمک - مدیریت هوشمند</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+
+  <!-- 🌊 Splash Screen — لوگوی چشمک -->
+  <div id="splash-screen" style="
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.4s ease-out;
+  ">
+    <img src="assets/icon-192.png" style="
+      width: 130px; height: 130px;
+      border-radius: 32px;
+      box-shadow: 0 10px 40px rgba(59,130,246,0.35);
+      animation: pulse 1.5s ease-in-out infinite;
+    ">
+    <h1 style="
+      font-family: 'Vazirmatn', Tahoma, sans-serif;
+      font-size: 32px; font-weight: 800;
+      color: #3B82F6;
+      margin: 22px 0 6px 0;
+    ">چشمک</h1>
+    <p style="
+      font-family: 'Vazirmatn', Tahoma, sans-serif;
+      font-size: 13px; color: #888; margin: 0;
+    ">مدیریت هوشمند کسب‌وکار</p>
+  </div>
+
+  <style>
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+  </style>
+
+
+  
+  
+
+
+
+  <div id="app">
+    <!-- صفحه راه‌اندازی -->
+    <div id="setup-screen" class="screen active">
+      <div class="container">
+        <div class="logo-wrapper">
+          <label for="logo-input" class="logo-circle">
+            <img id="logo-preview" src="" alt="" style="display:none">
+            <img id="logo-icon" src="assets/icon-192.png" style="width:100%;height:100%;border-radius:50%;object-fit:cover">
+          </label>
+          <input type="file" id="logo-input" accept="image/*" hidden>
+          <label for="logo-input" class="logo-camera">📷</label>
+        </div>
+
+        <h1 class="welcome-title">به نرم‌افزار چشمک خوش آمدید</h1>
+        <p class="welcome-sub">برای افزودن لوگو روی آیکون دوربین بزنید</p>
+
+        <div class="form-group">
+          <label>شغل شما</label>
+          <input type="text" id="setup-job" placeholder="مثلاً: آرایشگاه، پزشک، فروشگاه">
+        </div>
+
+        <div class="form-group">
+          <label>نام کسب‌وکار / محل کار</label>
+          <input type="text" id="setup-name" placeholder="نام کسب‌وکار">
+        </div>
+
+        <div class="form-group">
+          <label>نام و نام خانوادگی مدیر</label>
+          <input type="text" id="setup-manager" placeholder="نام مدیر">
+        </div>
+
+        <div class="form-group">
+          <label>شماره تماس شما (برای امضای پیام‌ها)</label>
+          <input type="tel" id="setup-phone" placeholder="09123456789">
+        </div>
+
+        <div class="form-group">
+          <label>تاریخ تولد شما</label>
+          <input type="text" id="setup-birth" placeholder="1370/05/15" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>رمز ورود عددی</label>
+          <input type="password" id="setup-pass" inputmode="numeric" placeholder="رمز عددی">
+        </div>
+
+        <div class="form-group">
+          <label>شهر محل تولد (برای بازیابی رمز)</label>
+          <input type="text" id="setup-security" placeholder="شهر تولد">
+        </div>
+
+        <button class="btn-primary" id="btn-register">راه‌اندازی و ورود</button>
+
+        <div class="divider-or">یا</div>
+
+        <button class="btn-outline" id="btn-restore-setup">📥 بازیابی از فایل پشتیبان</button>
+      </div>
+    </div>
+
+    <!-- صفحه قفل -->
+    <div id="lock-screen" class="screen">
+      <div class="container container-center">
+        <div class="logo-wrapper">
+          <div class="logo-circle">
+            <img id="lock-logo" src="" alt="" style="display:none">
+            <img id="lock-icon" src="assets/icon-192.png" style="width:100%;height:100%;border-radius:50%;object-fit:cover">
+          </div>
+        </div>
+
+        <h1 id="lock-business-name" class="business-name">نام کسب‌وکار</h1>
+        <p id="lock-business-job" class="business-job">شغل</p>
+
+        <div class="form-group">
+          <input type="password" id="lock-pass" inputmode="numeric" placeholder="رمز ورود را وارد کنید" class="input-center">
+        </div>
+
+        <button class="btn-primary" id="btn-login">ورود به برنامه</button>
+        <button class="btn-text" id="btn-forgot">رمز را فراموش کرده‌اید؟</button>
+
+        <div class="divider-or">یا</div>
+
+        <button class="btn-outline" id="btn-restore-lock">📥 بازیابی از فایل پشتیبان</button>
+      </div>
+    </div>
+
+    <!-- داشبورد اصلی -->
+    <div id="dashboard-screen" class="screen">
+      <header class="app-header">
+        <div class="app-header-right">
+          <div class="app-logo">
+            <img id="header-logo" src="" alt="" style="display:none">
+<img id="header-icon" src="assets/icon-192.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover">          </div>
+          <div class="app-header-info">
+            <h2 id="header-business-name">کسب‌وکار</h2>
+            <p id="header-business-job">شغل</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-icon" id="btn-pending" title="فاکتورهای ارسال‌نشده" style="position:relative">
+            📥
+            <span id="pending-badge" style="display:none;position:absolute;top:-4px;left:-4px;background:#EF4444;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(239,68,68,0.5)">0</span>
+          </button>
+          <button class="btn-icon" id="btn-settings" title="تنظیمات">⚙️</button>
+        </div>      </header>
+
+      <main class="app-body">
+        <!-- نوار ساعت و تاریخ -->
+        <div class="clock-bar">
+          <div class="clock-item">
+            <span class="clock-icon">⏰</span>
+            <span id="clock-time">00:00</span>
+          </div>
+          <div class="clock-item">
+            <span class="clock-icon">📅</span>
+            <span id="clock-date">شنبه 1403/01/01</span>
+          </div>
+        </div>
+
+        <!-- دکمه‌های اصلی -->
+        <div class="quick-actions" style="grid-template-columns: repeat(5, 1fr); gap: 6px">          <button class="action-btn" data-action="add-customer">
+            <span class="action-icon" id="action-icon-customer">👤</span>
+            <span class="action-label" id="label-add-customer">ثبت مشتری</span>
+          </button>
+          <button class="action-btn" data-action="report">
+            <span class="action-icon">📊</span>
+            <span class="action-label">گزارش مالی</span>
+          </button>
+          <button class="action-btn" data-action="birthdays" style="position:relative">
+            <span class="action-icon">🎂</span>
+            <span class="action-label">تولدها</span>
+            <span id="birthday-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#EF4444;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:11px;font-weight:700;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(239,68,68,0.5);z-index:10">0</span>
+          </button>
+          <button class="action-btn" data-action="attendance" id="btn-attendance-dashboard" style="display:none">
+            <span class="action-icon">📅</span>
+            <span class="action-label">حضور و غیاب</span>
+          </button>
+
+          <button class="action-btn" data-action="attendance-history" id="btn-attendance-history" style="display:none">
+            <span class="action-icon">📊</span>
+            <span class="action-label">تاریخچه‌ی حضور</span>
+          </button>
+
+
+        </div>
+        <!-- 💤 باکس یادآوری مشتریان غایب -->
+        <div id="retention-box" style="display:none;margin-bottom:18px">
+          <!-- اینجا با JS پر میشه -->
+        </div>
+
+
+        <!-- جستجو -->
+                <div class="search-bar" style="display:flex;gap:8px;align-items:center">
+          <div style="flex:1;position:relative;display:flex;align-items:center">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="جستجوی نام مشتری..." style="width:100%">
+          </div>
+          <button id="btn-advanced-filter" style="display:none;padding:12px 14px;background:linear-gradient(135deg,#8B5CF6,#7C3AED);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;font-family:inherit;flex-shrink:0" title="فیلتر پیشرفته">⚙️</button>
+        </div>
+        <!-- لیست مشتری‌ها -->
+        <div id="customers-list" class="customers-list"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+    <script src="js/coach.js"></script>
+  <script>
+    // ثبت Service Worker برای کار آفلاین
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+          .catch(err => console.log('❌ Service Worker failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
