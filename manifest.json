@@ -1,0 +1,26 @@
+{
+  "name": "چشمک - مدیریت هوشمند",
+  "short_name": "چشمک",
+  "description": "اپلیکیشن مدیریت کسب‌وکارهای کوچک",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#15161F",
+  "theme_color": "#15161F",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
