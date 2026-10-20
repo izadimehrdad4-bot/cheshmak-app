@@ -1967,6 +1967,45 @@ function renderReportContent(overlay) {
       ov.querySelector('#detail-close').onclick = () => closeModal(ov);
     };
   }
+    // 💰 ریز فروش‌های حالت عادی
+  const salesDetailBtn = overlay.querySelector('#report-sales-detail');
+  if (salesDetailBtn) {
+    salesDetailBtn.onclick = () => {
+      const detailSales = filteredLogs.slice().sort((a, b) => 
+        (b.dateShamsi || '').localeCompare(a.dateShamsi || '')
+      );
+
+      const detailHtml = detailSales.map(h => {
+        const customer = state.customers.find(c => (c.history || []).includes(h));
+        const customerName = customer ? customer.fullName : 'نامشخص';
+        
+        return `
+          <div style="padding:10px 12px;background:rgba(16,185,129,0.08);border-radius:10px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div style="font-size:13px;font-weight:700">${escapeHtml(customerName)}</div>
+              <div style="font-size:13px;font-weight:700;color:#10B981">${Number(h.cost).toLocaleString('en-US')} تومان</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.6">
+              📅 ${h.dateShamsi}
+              <br>📋 ${escapeHtml(h.serviceName)}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const ov = showModal(`
+        <h3 class="modal-title">💰 ریز فروش‌ها (${rangeLabels[reportRange]})</h3>
+        <p style="text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:14px">
+          تعداد: <strong>${filteredLogs.length}</strong> — مجموع: <strong style="color:#10B981">${Number(salesIncome).toLocaleString('en-US')} تومان</strong>
+        </p>
+        <div style="max-height:400px;overflow-y:auto;margin-bottom:14px">
+          ${detailHtml || '<p style="text-align:center;color:var(--text-muted);padding:20px">فروشی توی این بازه نیست</p>'}
+        </div>
+        <button class="btn-cancel" id="detail-sales-close" style="width:100%">بستن</button>
+      `);
+      ov.querySelector('#detail-sales-close').onclick = () => closeModal(ov);
+    };
+  }
 }
 // ==============================
 // تولدها
@@ -5472,17 +5511,7 @@ function openBirthdaySponsorForm(editIdx = null) {
       <input type="tel" id="sponsor-phone" value="${editing ? escapeHtml(editing.phone || '') : ''}" placeholder="09121234567">
     </div>
 
-    <div class="form-group">
-      <label>عکس اسپانسر (اختیاری)</label>
-      <input type="file" id="sponsor-image-input" accept="image/*" hidden>
-      <button type="button" class="btn-cancel" id="sponsor-image-btn" style="width:100%;padding:10px;font-size:12px">
-        📷 ${editing && editing.image ? 'تغییر عکس' : 'انتخاب عکس'}
-      </button>
-      <div id="sponsor-image-preview" style="text-align:center;margin-top:10px;${editing && editing.image ? '' : 'display:none'}">
-        <img id="sponsor-image-img" src="${editing && editing.image ? editing.image : ''}" style="max-width:120px;max-height:120px;border-radius:10px;border:1px solid var(--border-color)">
-        <button type="button" id="sponsor-image-remove" style="display:block;margin:8px auto 0;background:transparent;border:1px solid #EF4444;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">🗑️ حذف عکس</button>
-      </div>
-    </div>
+    
 
     <div class="form-group">
       <label>جایگاه نمایش</label>
