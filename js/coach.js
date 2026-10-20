@@ -2781,15 +2781,27 @@ function generateActivationCode(deviceId, years = 1) {
 
 // چک کن کد معتبره یا نه
 function validateActivationCode(code) {
-  // فرمت: CHK-XXXX-XXXX-Y
+  // فرمت: CHK-XXXX-XXXX-D2 یا CHK-XXXX-XXXX-Y1
   const parts = code.trim().toUpperCase().split('-');
   if (parts.length !== 4 || parts[0] !== 'CHK') return false;
   
-  const years = parseInt(parts[3]);
-  if (isNaN(years) || years <= 0) return false;
+  const suffix = parts[3]; // مثلا D2 یا Y1
+  if (!suffix.startsWith('D') && !suffix.startsWith('Y')) return false;
   
   const deviceId = getOrCreateDeviceId();
-  const expected = generateActivationCode(deviceId, years);
+  
+  // محاسبه‌ی مجدد هش با پسوند جدید
+  const raw = deviceId + LICENSE_SECRET + suffix;
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  const expectedCode = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0');
+  const part1 = expectedCode.substring(0, 4);
+  const part2 = expectedCode.substring(4, 8);
+  const expected = `CHK-${part1}-${part2}-${suffix}`;
   
   return code.trim().toUpperCase() === expected;
 }
@@ -2801,18 +2813,24 @@ function activateLicense(code) {
   }
   
   const parts = code.trim().toUpperCase().split('-');
-  const years = parseInt(parts[3]);
-  
-  // تمدید: licenseEnd = max(today, licenseEnd) + years
+  const suffix = parts[3]; // D2 یا Y1
+  const amount = parseInt(suffix.substring(1));
+  const isYears = suffix.startsWith('Y');
+
   const todayNum = shamsiToNumber(getTodayShamsi());
   const currentEndNum = shamsiToNumber(getLicenseEnd());
-  const baseNum = Math.max(todayNum, currentEndNum);
   const baseDate = currentEndNum > todayNum ? getLicenseEnd() : getTodayShamsi();
   
-  const newEnd = addYearsToShamsi(baseDate, years);
+  let newEnd = '';
+  if (isYears) {
+    newEnd = addYearsToShamsi(baseDate, amount);
+  } else {
+    newEnd = addDaysToShamsi(baseDate, amount);
+  }
+  
   DB.set('licenseEnd', newEnd);
   
-  return { success: true, newEnd: newEnd, years: years };
+  return { success: true, newEnd: newEnd, isYears: isYears, amount: amount };
 }
 
 // 🔥 استایل انیمیشن
