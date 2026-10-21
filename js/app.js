@@ -5484,6 +5484,7 @@ function swapSponsorPriority(idx, direction) {
   toast('اولویت تغییر کرد', 'success');
 }
 
+
 // ==============================
 // 🎂 فرم تعریف اسپانسر
 // ==============================
@@ -5548,7 +5549,7 @@ function openBirthdaySponsorForm(editIdx = null) {
     </div>
   `, { center: true });
 
-  // 📷 آپلود عکس اسپانسر تولد (فقط یک بار تعریف شده و تمیز)
+  // 📷 آپلود عکس اسپانسر تولد
   let sponsorImageData = editing ? (editing.image || null) : null;
   const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
   const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
@@ -5597,6 +5598,82 @@ function openBirthdaySponsorForm(editIdx = null) {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
+
+  overlay.querySelector('#sponsor-save').onclick = () => {
+    const name = overlay.querySelector('#sponsor-name').value.trim();
+    const text = overlay.querySelector('#sponsor-text').value.trim();
+    const phone = overlay.querySelector('#sponsor-phone').value.trim();
+    const slot = normalizeSlot(overlay.querySelector('#sponsor-slot').value);
+    const totalShows = parseInt(overlay.querySelector('#sponsor-shows').value) || 0;
+    const totalCost = parseInt(overlay.querySelector('#sponsor-cost').value.replace(/\D/g, '')) || 0;
+
+    if (!name) { toast('نام اسپانسر را وارد کنید', 'error'); return; }
+    if (totalShows <= 0) { toast('تعداد تولد را وارد کنید', 'error'); return; }
+
+    if (editing) {
+      const currentSponsors = getBirthdaySponsors();
+      currentSponsors[editIdx] = { ...currentSponsors[editIdx], name, text, phone, slot, totalShows, totalCost, image: sponsorImageData };
+      saveBirthdaySponsors(currentSponsors);
+      toast('اسپانسر ویرایش شد ✅', 'success');
+      closeModal(overlay);
+      setTimeout(openSettings, 150);
+      return;
+    }
+
+    const sponsorsNow = getBirthdaySponsors();
+    const activeInSlot = sponsorsNow.find(s => normalizeSlot(s.slot) === slot && s.status === 'active' && (s.shownCount || 0) < (s.totalShows || 0));
+
+    if (activeInSlot) {
+      const slotLabel = slot === 'top' ? 'بالا' : 'پایین';
+      const remaining = (activeInSlot.totalShows || 0) - (activeInSlot.shownCount || 0);
+      closeModal(overlay);
+      setTimeout(() => {
+        const warnOverlay = showModal(`
+          <h3 class="modal-title" style="color:#F59E0B">⚠️ جایگاه ${slotLabel} اشغال است</h3>
+          <div style="background:rgba(245,158,11,0.1);border:1px solid #F59E0B;border-radius:12px;padding:14px;margin-bottom:16px">
+            <p style="font-size:13px;line-height:1.9;margin:0;text-align:center">
+              الان اسپانسر <strong>${escapeHtml(activeInSlot.name)}</strong> توی جایگاه ${slotLabel} فعاله.<br>
+              <span style="font-size:11px;color:var(--text-muted)">${remaining} تولد دیگه مونده تا تموم بشه.</span>
+            </p>
+          </div>
+          <p style="font-size:13px;line-height:1.9;text-align:center;margin-bottom:14px">می‌خوای چیکار کنی؟</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn-primary" id="warn-reserve" style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ رزرو کن</button>
+            <button class="btn-primary" id="warn-replace" style="background:linear-gradient(135deg,#EF4444,#B91C1C);color:#fff">🗑️ قبلی رو پاک کن</button>
+            <button class="btn-cancel" id="warn-cancel">انصراف</button>
+          </div>
+        `, { center: true });
+
+        warnOverlay.querySelector('#warn-reserve').onclick = () => {
+          closeModal(warnOverlay);
+          const result = addSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: sponsorImageData });
+          if (result.error) { toast(result.error, 'error'); return; }
+          toast(`رزرو شد (اولویت ${result.priority})`, 'success');
+          setTimeout(openSettings, 200);
+        };
+
+        warnOverlay.querySelector('#warn-replace').onclick = () => {
+          closeModal(warnOverlay);
+          const sponsorsNow2 = getBirthdaySponsors();
+          const activeIdx = sponsorsNow2.indexOf(activeInSlot);
+          if (activeIdx >= 0) sponsorsNow2.splice(activeIdx, 1);
+          sponsorsNow2.push({ name, text, phone, slot, totalShows, totalCost, image: sponsorImageData, id: 'sp_' + Date.now(), status: 'active', priority: null, shownCount: 0, createdAt: new Date().toISOString() });
+          saveBirthdaySponsors(sponsorsNow2);
+          toast('اسپانسر جدید فعال شد ✅', 'success');
+          setTimeout(openSettings, 200);
+        };
+        warnOverlay.querySelector('#warn-cancel').onclick = () => { closeModal(warnOverlay); setTimeout(openSettings, 150); };
+      }, 150);
+      return;
+    }
+
+    const result = addSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: sponsorImageData });
+    if (result.error) { toast(result.error, 'error'); return; }
+    toast('اسپانسر ثبت و فعال شد ✅', 'success');
+    closeModal(overlay);
+    setTimeout(openSettings, 150);
+  };
+
 
   overlay.querySelector('#sponsor-save').onclick = () => {
     const name = overlay.querySelector('#sponsor-name').value.trim();
@@ -5702,6 +5779,8 @@ function openBirthdaySponsorForm(editIdx = null) {
     setTimeout(openSettings, 150);
   };
 }
+
+
 // ==============================
 // 🎂 اضافه کردن اسپانسر با منطق رزرو
 // ==============================
