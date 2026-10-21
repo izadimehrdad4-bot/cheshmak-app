@@ -5487,6 +5487,9 @@ function swapSponsorPriority(idx, direction) {
 // ==============================
 // 🎂 فرم تعریف اسپانسر
 // ==============================
+// ==============================
+// 🎂 فرم تعریف اسپانسر
+// ==============================
 function openBirthdaySponsorForm(editIdx = null) {
   const sponsors = getBirthdaySponsors();
   const editing = editIdx !== null ? sponsors[editIdx] : null;
@@ -5545,17 +5548,8 @@ function openBirthdaySponsorForm(editIdx = null) {
     </div>
   `, { center: true });
 
-  // 📷 آپلود عکس اسپانسر تولد (فقط یک بار تعریف شده)
+  // 📷 آپلود عکس اسپانسر تولد (فقط یک بار تعریف شده و تمیز)
   let sponsorImageData = editing ? (editing.image || null) : null;
-  const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
-  const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
-  const sponsorImagePreview = overlay.querySelector('#sponsor-image-preview');
-  const sponsorImageImg = overlay.querySelector('#sponsor-image-img');
-  const sponsorImageRemove = overlay.querySelector('#sponsor-image-remove');
-
-  if (sponsorImageBtn && sponsorImageInput) {
-    sponsorImageBtn.onclick = () => sponsorImageInput.click();
-      let sponsorImageData = editing ? (editing.image || null) : null;
   const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
   const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
   const sponsorImagePreview = overlay.querySelector('#sponsor-image-preview');
@@ -5603,7 +5597,7 @@ function openBirthdaySponsorForm(editIdx = null) {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
-}
+
   overlay.querySelector('#sponsor-save').onclick = () => {
     const name = overlay.querySelector('#sponsor-name').value.trim();
     const text = overlay.querySelector('#sponsor-text').value.trim();
