@@ -2320,7 +2320,6 @@ function openTrainingSponsorForm(editIdx = null) {
       <button class="btn-primary" id="tsponsor-save">${editing ? 'ذخیره' : 'ثبت اسپانسر'}</button>
     </div>
       
-  `, { center: true });
 // 📷 آپلود عکس اسپانسر تمرینی
   let tsponsorImageData = editing ? (editing.image || null) : null;
   const tsponsorImageInput = overlay.querySelector('#tsponsor-image-input');
@@ -2364,6 +2363,10 @@ function openTrainingSponsorForm(editIdx = null) {
       tsponsorImageBtn.textContent = '📷 انتخاب عکس';
     };
   }
+
+
+  `, { center: true });
+
   
   overlay.querySelector('#tsponsor-cancel').onclick = () => {
     closeModal(overlay);

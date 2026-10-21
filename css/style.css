@@ -328,13 +328,13 @@ body {
 }
 
 .action-btn {
-  flex: 1 1 calc(33.333% - 10px); /* توی حالت ۳ دکمه، هر کدوم یک‌سوم عرض رو می‌گیره */
+  flex: 1 1 0px; 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 12px 6px;
+  padding: 12px 4px;
   background: linear-gradient(135deg, var(--button-color), color-mix(in srgb, var(--button-color) 85%, black));
   border: none;
   border-radius: 16px;
@@ -345,11 +345,9 @@ body {
   cursor: pointer;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--button-color) 40%, transparent), inset 0 -1px 0 rgba(255, 255, 255, 0.2);
   transition: transform 0.15s;
-  min-height: 85px;
   box-sizing: border-box;
   word-break: break-word;
 }
-
 /* این بخش رو اضافه کن تا توی حالت مربی (۵ دکمه)، دکمه‌ها کوچیک‌تر بشن و جا بشن */
 .quick-actions .action-btn:nth-child(n+4) {
   flex: 1 1 calc(25% - 10px); /* اگر بیشتر از ۳ تا بود، ۴ تایی بشن */
