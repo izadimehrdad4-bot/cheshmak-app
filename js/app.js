@@ -5640,7 +5640,7 @@ function openBirthdaySponsorForm(editIdx = null) {
     };
   }
 
-  // 📷 آپلود عکس اسپانسر
+    // 📷 آپلود عکس اسپانسر تولد
   let sponsorImageData = editing ? (editing.image || null) : null;
   const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
   const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
@@ -5648,11 +5648,9 @@ function openBirthdaySponsorForm(editIdx = null) {
   const sponsorImageImg = overlay.querySelector('#sponsor-image-img');
   const sponsorImageRemove = overlay.querySelector('#sponsor-image-remove');
 
-  if (sponsorImageBtn) {
+  if (sponsorImageBtn && sponsorImageInput) {
     sponsorImageBtn.onclick = () => sponsorImageInput.click();
-  }
 
-  if (sponsorImageInput) {
     sponsorImageInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -5669,9 +5667,9 @@ function openBirthdaySponsorForm(editIdx = null) {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
           sponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
-          sponsorImageImg.src = sponsorImageData;
-          sponsorImagePreview.style.display = 'block';
-          sponsorImageBtn.textContent = '📷 تغییر عکس';
+          if (sponsorImageImg) sponsorImageImg.src = sponsorImageData;
+          if (sponsorImagePreview) sponsorImagePreview.style.display = 'block';
+          if (sponsorImageBtn) sponsorImageBtn.textContent = '📷 تغییر عکس';
         };
         img.src = ev.target.result;
       };
@@ -5682,9 +5680,9 @@ function openBirthdaySponsorForm(editIdx = null) {
   if (sponsorImageRemove) {
     sponsorImageRemove.onclick = () => {
       sponsorImageData = null;
-      sponsorImagePreview.style.display = 'none';
-      sponsorImageInput.value = '';
-      sponsorImageBtn.textContent = '📷 انتخاب عکس';
+      if (sponsorImagePreview) sponsorImagePreview.style.display = 'none';
+      if (sponsorImageInput) sponsorImageInput.value = '';
+      if (sponsorImageBtn) sponsorImageBtn.textContent = '📷 انتخاب عکس';
     };
   }
 
