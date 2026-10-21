@@ -2280,10 +2280,11 @@ function openTrainingSponsorForm(editIdx = null) {
       <textarea id="tsponsor-text" rows="3" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border-color);border-radius:12px;color:var(--text-color);font-family:inherit;font-size:13px;line-height:1.8;resize:vertical" placeholder="مثلاً: ۲۰٪ تخفیف مکمل ورزشی">${editing ? escapeHtml(editing.text || '') : ''}</textarea>
     </div>
 
-    <div class="form-group">
+        <div class="form-group">
       <label>شماره تماس</label>
       <input type="tel" id="tsponsor-phone" value="${editing ? escapeHtml(editing.phone || '') : ''}" placeholder="09121234567">
     </div>
+
     <div class="form-group">
       <label>عکس اسپانسر (اختیاری)</label>
       <input type="file" id="tsponsor-image-input" accept="image/*" hidden>
@@ -2295,6 +2296,7 @@ function openTrainingSponsorForm(editIdx = null) {
         <button type="button" id="tsponsor-image-remove" style="display:block;margin:8px auto 0;background:transparent;border:1px solid #EF4444;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">🗑️ حذف عکس</button>
       </div>
     </div>
+    
     <div class="form-group">
       <label>جایگاه نمایش</label>
       <select id="tsponsor-slot" style="width:100%">
