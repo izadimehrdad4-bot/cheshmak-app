@@ -2284,7 +2284,17 @@ function openTrainingSponsorForm(editIdx = null) {
       <label>شماره تماس</label>
       <input type="tel" id="tsponsor-phone" value="${editing ? escapeHtml(editing.phone || '') : ''}" placeholder="09121234567">
     </div>
-
+    <div class="form-group">
+      <label>عکس اسپانسر (اختیاری)</label>
+      <input type="file" id="tsponsor-image-input" accept="image/*" hidden>
+      <button type="button" class="btn-cancel" id="tsponsor-image-btn" style="width:100%;padding:10px;font-size:12px">
+        📷 ${editing && editing.image ? 'تغییر عکس' : 'انتخاب عکس'}
+      </button>
+      <div id="tsponsor-image-preview" style="text-align:center;margin-top:10px;${editing && editing.image ? '' : 'display:none'}">
+        <img id="tsponsor-image-img" src="${editing && editing.image ? editing.image : ''}" style="max-width:120px;max-height:120px;border-radius:10px;border:1px solid var(--border-color)">
+        <button type="button" id="tsponsor-image-remove" style="display:block;margin:8px auto 0;background:transparent;border:1px solid #EF4444;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">🗑️ حذف عکس</button>
+      </div>
+    </div>
     <div class="form-group">
       <label>جایگاه نمایش</label>
       <select id="tsponsor-slot" style="width:100%">
@@ -2383,6 +2393,7 @@ function openTrainingSponsorForm(editIdx = null) {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
+  
 
   overlay.querySelector('#tsponsor-save').onclick = () => {
     const name = overlay.querySelector('#tsponsor-name').value.trim();
@@ -2391,6 +2402,20 @@ function openTrainingSponsorForm(editIdx = null) {
     const slot = normalizeSlot(overlay.querySelector('#tsponsor-slot').value);
     const totalShows = parseInt(overlay.querySelector('#tsponsor-shows').value) || 0;
     const totalCost = parseInt(overlay.querySelector('#tsponsor-cost').value.replace(/\D/g, '')) || 0;
+        // 🔥 حالت ویرایش
+    if (editing) {
+      const currentSponsors = getTrainingSponsors();
+      currentSponsors[editIdx] = {
+        ...currentSponsors[editIdx],
+        name, text, phone, slot, totalShows, totalCost,
+        image: tsponsorImageData,
+      };
+      saveTrainingSponsors(currentSponsors);
+      toast('اسپانسر ویرایش شد ✅', 'success');
+      closeModal(overlay);
+      setTimeout(openSettings, 150);
+      return;
+    }
 
     if (!name) {
       toast('نام اسپانسر را وارد کنید', 'error');
@@ -2559,6 +2584,7 @@ function addTrainingSponsorWithReservation(sponsorData) {
     sponsors.push({
       ...sponsorData,
       slot,
+             image: tsponsorImageData,
       id: 'tsp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
       status: 'reserved',
       priority: maxPriority + 1,

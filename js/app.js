@@ -5509,7 +5509,17 @@ function openBirthdaySponsorForm(editIdx = null) {
       <input type="tel" id="sponsor-phone" value="${editing ? escapeHtml(editing.phone || '') : ''}" placeholder="09121234567">
     </div>
 
-    
+        <div class="form-group">
+      <label>عکس اسپانسر (اختیاری)</label>
+      <input type="file" id="sponsor-image-input" accept="image/*" hidden>
+      <button type="button" class="btn-cancel" id="sponsor-image-btn" style="width:100%;padding:10px;font-size:12px">
+        📷 ${editing && editing.image ? 'تغییر عکس' : 'انتخاب عکس'}
+      </button>
+      <div id="sponsor-image-preview" style="text-align:center;margin-top:10px;${editing && editing.image ? '' : 'display:none'}">
+        <img id="sponsor-image-img" src="${editing && editing.image ? editing.image : ''}" style="max-width:120px;max-height:120px;border-radius:10px;border:1px solid var(--border-color)">
+        <button type="button" id="sponsor-image-remove" style="display:block;margin:8px auto 0;background:transparent;border:1px solid #EF4444;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">🗑️ حذف عکس</button>
+      </div>
+    </div>
 
     <div class="form-group">
       <label>جایگاه نمایش</label>
@@ -5535,16 +5545,7 @@ function openBirthdaySponsorForm(editIdx = null) {
     </div>
   `, { center: true });
 
-  // آپلود عکس
-  let sponsorImageData = editing ? (editing.image || null) : null;
-  const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
-  const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
-  const sponsorImagePreview = overlay.querySelector('#sponsor-image-preview');
-  const sponsorImageImg = overlay.querySelector('#sponsor-image-img');
-  const sponsorImageRemove = overlay.querySelector('#sponsor-image-remove');
-
-  sponsorImageBtn.onclick = () => sponsorImageInput.click();
-
+  
   sponsorImageInput.onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -5593,6 +5594,99 @@ function openBirthdaySponsorForm(editIdx = null) {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
+  // 📷 آپلود عکس اسپانسر
+  
+
+  if (sponsorImageBtn) {
+    sponsorImageBtn.onclick = () => sponsorImageInput.click();
+  }
+
+  if (sponsorImageInput) {
+    sponsorImageInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 400;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+          else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          sponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
+          sponsorImageImg.src = sponsorImageData;
+          sponsorImagePreview.style.display = 'block';
+          sponsorImageBtn.textContent = '📷 تغییر عکس';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  if (sponsorImageRemove) {
+    sponsorImageRemove.onclick = () => {
+      sponsorImageData = null;
+      sponsorImagePreview.style.display = 'none';
+      sponsorImageInput.value = '';
+      sponsorImageBtn.textContent = '📷 انتخاب عکس';
+    };
+  }
+
+  // 📷 آپلود عکس اسپانسر
+  let sponsorImageData = editing ? (editing.image || null) : null;
+  const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
+  const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
+  const sponsorImagePreview = overlay.querySelector('#sponsor-image-preview');
+  const sponsorImageImg = overlay.querySelector('#sponsor-image-img');
+  const sponsorImageRemove = overlay.querySelector('#sponsor-image-remove');
+
+  if (sponsorImageBtn) {
+    sponsorImageBtn.onclick = () => sponsorImageInput.click();
+  }
+
+  if (sponsorImageInput) {
+    sponsorImageInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 400;
+          let w = img.width, h = img.height;
+          if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+          else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          sponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
+          sponsorImageImg.src = sponsorImageData;
+          sponsorImagePreview.style.display = 'block';
+          sponsorImageBtn.textContent = '📷 تغییر عکس';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  if (sponsorImageRemove) {
+    sponsorImageRemove.onclick = () => {
+      sponsorImageData = null;
+      sponsorImagePreview.style.display = 'none';
+      sponsorImageInput.value = '';
+      sponsorImageBtn.textContent = '📷 انتخاب عکس';
+    };
+  }
 
   overlay.querySelector('#sponsor-save').onclick = () => {
     const name = overlay.querySelector('#sponsor-name').value.trim();
