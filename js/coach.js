@@ -2551,7 +2551,7 @@ function openTrainingSponsorForm(editIdx = null) {
     }
 
     // جایگاه خالی → مستقیم فعال
-    const result = addTrainingSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost });
+    const result = addTrainingSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: tsponsorImageData })
     if (result.error) { toast(result.error, 'error'); return; }
     toast('اسپانسر ثبت و فعال شد ✅', 'success');
     closeModal(overlay);

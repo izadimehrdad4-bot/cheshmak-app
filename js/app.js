@@ -5044,7 +5044,7 @@ function openAdForm(editIdx = null) {
       currentAds[editIdx] = {
         ...currentAds[editIdx],
         name, text, phone, slot, totalShows, totalCost,
-        
+                image: adImageData,
       };
       saveAds(currentAds);
       toast('تبلیغ ویرایش شد ✅', 'success');
@@ -5092,7 +5092,7 @@ function openAdForm(editIdx = null) {
 
         warnOverlay.querySelector('#warn-reserve').onclick = () => {
           closeModal(warnOverlay);
-          const result = addAdWithReservation({ name, text, phone, slot, totalShows, totalCost });
+          const result = addAdWithReservation({ name, text, phone, slot, totalShows, totalCost, image: adImageData })
           if (result.error) {
             toast(result.error, 'error');
             return;
@@ -5132,7 +5132,7 @@ function openAdForm(editIdx = null) {
     }
 
     // جایگاه خالی → مستقیم فعال
-    const result = addAdWithReservation({ name, text, phone, slot, totalShows, totalCost });
+    const result = addAdWithReservation({ name, text, phone, slot, totalShows, totalCost, image: adImageData })
     if (result.error) {
       toast(result.error, 'error');
       return;
