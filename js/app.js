@@ -981,11 +981,9 @@ function initDashboard() {
   if (state.business && state.business.bizType === 'coach') {
     if (attendanceBtn) attendanceBtn.style.display = 'flex';
     if (attendanceHistoryBtn) attendanceHistoryBtn.style.display = 'flex';
-        if (quickActions) quickActions.style.gridTemplateColumns = 'repeat(5, 1fr)';
     } else {
     if (attendanceBtn) attendanceBtn.style.display = 'none';
     if (attendanceHistoryBtn) attendanceHistoryBtn.style.display = 'none';
-    if (quickActions) quickActions.style.gridTemplateColumns = 'repeat(3, 1fr)';
   
   }
   // 🏋️ تغییر placeholder جستجو
