@@ -2324,7 +2324,7 @@ function openTrainingSponsorForm(editIdx = null) {
     </div>
   `, { center: true });
 
-  // 📷 آپلود عکس اسپانسر تمرینی (تمیز و بدون تکرار)
+    // 📷 آپلود عکس اسپانسر تمرینی
   let tsponsorImageData = editing ? (editing.image || null) : null;
   const tsponsorImageInput = overlay.querySelector('#tsponsor-image-input');
   const tsponsorImageBtn = overlay.querySelector('#tsponsor-image-btn');
@@ -2334,7 +2334,6 @@ function openTrainingSponsorForm(editIdx = null) {
 
   if (tsponsorImageBtn && tsponsorImageInput) {
     tsponsorImageBtn.onclick = () => tsponsorImageInput.click();
-    
     tsponsorImageInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2351,7 +2350,6 @@ function openTrainingSponsorForm(editIdx = null) {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
           tsponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
-          
           if (tsponsorImageImg) tsponsorImageImg.src = tsponsorImageData;
           if (tsponsorImagePreview) tsponsorImagePreview.style.display = 'block';
           if (tsponsorImageBtn) tsponsorImageBtn.textContent = '📷 تغییر عکس';
@@ -2371,6 +2369,10 @@ function openTrainingSponsorForm(editIdx = null) {
     };
   }
 
+  overlay.querySelector('#tsponsor-cancel').onclick = () => {
+    closeModal(overlay);
+    setTimeout(openSettings, 150);
+  };
   overlay.querySelector('#tsponsor-cancel').onclick = () => {
     closeModal(overlay);
     setTimeout(openSettings, 150);
