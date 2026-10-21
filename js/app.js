@@ -5603,7 +5603,7 @@ function openBirthdaySponsorForm(editIdx = null) {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
-
+}
   overlay.querySelector('#sponsor-save').onclick = () => {
     const name = overlay.querySelector('#sponsor-name').value.trim();
     const text = overlay.querySelector('#sponsor-text').value.trim();
