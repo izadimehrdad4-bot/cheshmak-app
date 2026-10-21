@@ -2263,6 +2263,9 @@ function swapTrainingSponsorPriority(idx, direction) {
 // ==============================
 // 📋 فرم تعریف اسپانسر برنامه تمرینی
 // ==============================
+// ==============================
+// 📋 فرم تعریف اسپانسر برنامه تمرینی
+// ==============================
 function openTrainingSponsorForm(editIdx = null) {
   const sponsors = getTrainingSponsors();
   const editing = editIdx !== null ? sponsors[editIdx] : null;
@@ -2280,7 +2283,7 @@ function openTrainingSponsorForm(editIdx = null) {
       <textarea id="tsponsor-text" rows="3" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border-color);border-radius:12px;color:var(--text-color);font-family:inherit;font-size:13px;line-height:1.8;resize:vertical" placeholder="مثلاً: ۲۰٪ تخفیف مکمل ورزشی">${editing ? escapeHtml(editing.text || '') : ''}</textarea>
     </div>
 
-        <div class="form-group">
+    <div class="form-group">
       <label>شماره تماس</label>
       <input type="tel" id="tsponsor-phone" value="${editing ? escapeHtml(editing.phone || '') : ''}" placeholder="09121234567">
     </div>
@@ -2319,8 +2322,9 @@ function openTrainingSponsorForm(editIdx = null) {
       <button class="btn-cancel" id="tsponsor-cancel">انصراف</button>
       <button class="btn-primary" id="tsponsor-save">${editing ? 'ذخیره' : 'ثبت اسپانسر'}</button>
     </div>
-      
-// 📷 آپلود عکس اسپانسر تمرینی
+  `, { center: true });
+
+  // 📷 آپلود عکس اسپانسر تمرینی (تمیز و بدون تکرار)
   let tsponsorImageData = editing ? (editing.image || null) : null;
   const tsponsorImageInput = overlay.querySelector('#tsponsor-image-input');
   const tsponsorImageBtn = overlay.querySelector('#tsponsor-image-btn');
@@ -2330,6 +2334,7 @@ function openTrainingSponsorForm(editIdx = null) {
 
   if (tsponsorImageBtn && tsponsorImageInput) {
     tsponsorImageBtn.onclick = () => tsponsorImageInput.click();
+    
     tsponsorImageInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2346,34 +2351,31 @@ function openTrainingSponsorForm(editIdx = null) {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
           tsponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
-          tsponsorImageImg.src = tsponsorImageData;
-          tsponsorImagePreview.style.display = 'block';
-          tsponsorImageBtn.textContent = '📷 تغییر عکس';
+          
+          if (tsponsorImageImg) tsponsorImageImg.src = tsponsorImageData;
+          if (tsponsorImagePreview) tsponsorImagePreview.style.display = 'block';
+          if (tsponsorImageBtn) tsponsorImageBtn.textContent = '📷 تغییر عکس';
         };
         img.src = ev.target.result;
       };
       reader.readAsDataURL(file);
     };
   }
+
   if (tsponsorImageRemove) {
     tsponsorImageRemove.onclick = () => {
       tsponsorImageData = null;
-      tsponsorImagePreview.style.display = 'none';
-      tsponsorImageInput.value = '';
-      tsponsorImageBtn.textContent = '📷 انتخاب عکس';
+      if (tsponsorImagePreview) tsponsorImagePreview.style.display = 'none';
+      if (tsponsorImageInput) tsponsorImageInput.value = '';
+      if (tsponsorImageBtn) tsponsorImageBtn.textContent = '📷 انتخاب عکس';
     };
   }
 
-
-  `, { center: true });
-
-  
   overlay.querySelector('#tsponsor-cancel').onclick = () => {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
   
-
   overlay.querySelector('#tsponsor-save').onclick = () => {
     const name = overlay.querySelector('#tsponsor-name').value.trim();
     const text = overlay.querySelector('#tsponsor-text').value.trim();
@@ -2381,20 +2383,6 @@ function openTrainingSponsorForm(editIdx = null) {
     const slot = normalizeSlot(overlay.querySelector('#tsponsor-slot').value);
     const totalShows = parseInt(overlay.querySelector('#tsponsor-shows').value) || 0;
     const totalCost = parseInt(overlay.querySelector('#tsponsor-cost').value.replace(/\D/g, '')) || 0;
-        // 🔥 حالت ویرایش
-    if (editing) {
-      const currentSponsors = getTrainingSponsors();
-      currentSponsors[editIdx] = {
-        ...currentSponsors[editIdx],
-        name, text, phone, slot, totalShows, totalCost,
-        image: tsponsorImageData,
-      };
-      saveTrainingSponsors(currentSponsors);
-      toast('اسپانسر ویرایش شد ✅', 'success');
-      closeModal(overlay);
-      setTimeout(openSettings, 150);
-      return;
-    }
 
     if (!name) {
       toast('نام اسپانسر را وارد کنید', 'error');
@@ -2411,7 +2399,7 @@ function openTrainingSponsorForm(editIdx = null) {
       currentSponsors[editIdx] = {
         ...currentSponsors[editIdx],
         name, text, phone, slot, totalShows, totalCost,
-                image: tsponsorImageData,
+        image: tsponsorImageData,
       };
       saveTrainingSponsors(currentSponsors);
       toast('اسپانسر ویرایش شد ✅', 'success');
@@ -2428,12 +2416,11 @@ function openTrainingSponsorForm(editIdx = null) {
       (s.shownCount || 0) < (s.totalShows || 0)
     );
 
-        if (activeInSlot) {
+    if (activeInSlot) {
       const slotLabel = slot === 'top' ? 'بالا' : 'پایین';
       const otherSlot = slot === 'top' ? 'bottom' : 'top';
       const otherSlotLabel = otherSlot === 'top' ? 'بالا' : 'پایین';
       
-      // چک کن جایگاه دیگه خالیه یا نه
       const otherActiveSponsor = sponsorsNow.find(s =>
         normalizeSlot(s.slot) === otherSlot &&
         s.status === 'active' &&
@@ -2469,7 +2456,7 @@ function openTrainingSponsorForm(editIdx = null) {
           </div>
         `, { center: true });
 
-        // 🔥 انتقال به جایگاه دیگه
+        // انتقال به جایگاه دیگه
         const switchBtn = warnOverlay.querySelector('#twarn-switch');
         if (switchBtn) {
           switchBtn.onclick = () => {
@@ -2490,7 +2477,7 @@ function openTrainingSponsorForm(editIdx = null) {
           };
         }
 
-        // ⏳ رزرو
+        // رزرو
         warnOverlay.querySelector('#twarn-reserve').onclick = () => {
           closeModal(warnOverlay);
           const result = addTrainingSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: tsponsorImageData });
@@ -2499,15 +2486,11 @@ function openTrainingSponsorForm(editIdx = null) {
           setTimeout(openSettings, 200);
         };
 
-        // 🔴 حذف قبلی و جایگزینی
+        // حذف قبلی و جایگزینی
         warnOverlay.querySelector('#twarn-replace').onclick = () => {
           closeModal(warnOverlay);
-          
-          // حذف اسپانسر قبلی
           let sponsorsNow2 = getTrainingSponsors();
           sponsorsNow2 = sponsorsNow2.filter(s => s.id !== activeInSlot.id);
-          
-          // اضافه کردن اسپانسر جدید
           sponsorsNow2.push({
             name, text, phone, image: tsponsorImageData,
             slot, totalShows, totalCost,
@@ -2515,7 +2498,6 @@ function openTrainingSponsorForm(editIdx = null) {
             status: 'active', priority: null, shownCount: 0,
             createdAt: new Date().toISOString()
           });
-          
           saveTrainingSponsors(sponsorsNow2);
           toast('✅ اسپانسر قبلی پاک شد و اسپانسر جدید جایگزین شد', 'success');
           setTimeout(openSettings, 200);
@@ -2530,7 +2512,7 @@ function openTrainingSponsorForm(editIdx = null) {
     }
 
     // جایگاه خالی → مستقیم فعال
-    const result = addTrainingSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: tsponsorImageData })
+    const result = addTrainingSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: tsponsorImageData });
     if (result.error) { toast(result.error, 'error'); return; }
     toast('اسپانسر ثبت و فعال شد ✅', 'success');
     closeModal(overlay);
