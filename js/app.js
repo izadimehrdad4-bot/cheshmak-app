@@ -5555,6 +5555,15 @@ function openBirthdaySponsorForm(editIdx = null) {
 
   if (sponsorImageBtn && sponsorImageInput) {
     sponsorImageBtn.onclick = () => sponsorImageInput.click();
+      let sponsorImageData = editing ? (editing.image || null) : null;
+  const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
+  const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
+  const sponsorImagePreview = overlay.querySelector('#sponsor-image-preview');
+  const sponsorImageImg = overlay.querySelector('#sponsor-image-img');
+  const sponsorImageRemove = overlay.querySelector('#sponsor-image-remove');
+
+  if (sponsorImageBtn && sponsorImageInput) {
+    sponsorImageBtn.onclick = () => sponsorImageInput.click();
     sponsorImageInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
