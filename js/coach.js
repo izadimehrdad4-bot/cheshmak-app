@@ -2315,39 +2315,23 @@ function openTrainingSponsorForm(editIdx = null) {
       <input type="number" id="tsponsor-cost" value="${editing ? editing.totalCost || 0 : 0}" inputmode="numeric" placeholder="مثلاً: 1000000">
     </div>
 
-  
-    <div class="form-group">
-      <label>عکس اسپانسر (اختیاری)</label>
-      <input type="file" id="tsponsor-image-input" accept="image/*" hidden>
-      <button type="button" class="btn-cancel" id="tsponsor-image-btn" style="width:100%;padding:10px;font-size:12px">
-        📷 ${editing && editing.image ? 'تغییر عکس' : 'انتخاب عکس'}
-      </button>
-      <div id="tsponsor-image-preview" style="text-align:center;margin-top:10px;${editing && editing.image ? '' : 'display:none'}">
-        <img id="tsponsor-image-img" src="${editing && editing.image ? editing.image : ''}" style="max-width:120px;max-height:120px;border-radius:10px;border:1px solid var(--border-color)">
-        <button type="button" id="tsponsor-image-remove" style="display:block;margin:8px auto 0;background:transparent;border:1px solid #EF4444;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">🗑️ حذف عکس</button>
-      </div>
-    </div>
-
-
     <div class="modal-actions">
       <button class="btn-cancel" id="tsponsor-cancel">انصراف</button>
       <button class="btn-primary" id="tsponsor-save">${editing ? 'ذخیره' : 'ثبت اسپانسر'}</button>
     </div>
+      
   `, { center: true });
+// 📷 آپلود عکس اسپانسر تمرینی
+  let tsponsorImageData = editing ? (editing.image || null) : null;
+  const tsponsorImageInput = overlay.querySelector('#tsponsor-image-input');
+  const tsponsorImageBtn = overlay.querySelector('#tsponsor-image-btn');
+  const tsponsorImagePreview = overlay.querySelector('#tsponsor-image-preview');
+  const tsponsorImageImg = overlay.querySelector('#tsponsor-image-img');
+  const tsponsorImageRemove = overlay.querySelector('#tsponsor-image-remove');
 
-  // آپلود عکس
-   // 📷 آپلود عکس اسپانسر تولد
-  let sponsorImageData = editing ? (editing.image || null) : null;
-  const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
-  const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
-  const sponsorImagePreview = overlay.querySelector('#sponsor-image-preview');
-  const sponsorImageImg = overlay.querySelector('#sponsor-image-img');
-  const sponsorImageRemove = overlay.querySelector('#sponsor-image-remove');
-
-  if (sponsorImageBtn && sponsorImageInput) {
-    sponsorImageBtn.onclick = () => sponsorImageInput.click();
-
-    sponsorImageInput.onchange = (e) => {
+  if (tsponsorImageBtn && tsponsorImageInput) {
+    tsponsorImageBtn.onclick = () => tsponsorImageInput.click();
+    tsponsorImageInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -2362,25 +2346,25 @@ function openTrainingSponsorForm(editIdx = null) {
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
-          sponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
-          if (sponsorImageImg) sponsorImageImg.src = sponsorImageData;
-          if (sponsorImagePreview) sponsorImagePreview.style.display = 'block';
-          if (sponsorImageBtn) sponsorImageBtn.textContent = '📷 تغییر عکس';
+          tsponsorImageData = canvas.toDataURL('image/jpeg', 0.7);
+          tsponsorImageImg.src = tsponsorImageData;
+          tsponsorImagePreview.style.display = 'block';
+          tsponsorImageBtn.textContent = '📷 تغییر عکس';
         };
         img.src = ev.target.result;
       };
       reader.readAsDataURL(file);
     };
   }
-
-  if (sponsorImageRemove) {
-    sponsorImageRemove.onclick = () => {
-      sponsorImageData = null;
-      if (sponsorImagePreview) sponsorImagePreview.style.display = 'none';
-      if (sponsorImageInput) sponsorImageInput.value = '';
-      if (sponsorImageBtn) sponsorImageBtn.textContent = '📷 انتخاب عکس';
+  if (tsponsorImageRemove) {
+    tsponsorImageRemove.onclick = () => {
+      tsponsorImageData = null;
+      tsponsorImagePreview.style.display = 'none';
+      tsponsorImageInput.value = '';
+      tsponsorImageBtn.textContent = '📷 انتخاب عکس';
     };
   }
+  
   overlay.querySelector('#tsponsor-cancel').onclick = () => {
     closeModal(overlay);
     setTimeout(openSettings, 150);
@@ -2576,7 +2560,6 @@ function addTrainingSponsorWithReservation(sponsorData) {
     sponsors.push({
       ...sponsorData,
       slot,
-             image: tsponsorImageData,
       id: 'tsp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
       status: 'reserved',
       priority: maxPriority + 1,
