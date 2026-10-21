@@ -319,36 +319,41 @@ body {
    دکمه‌های سریع (اصلاح‌شده)
    ============================== */
 .quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+  display: flex;
+  flex-wrap: wrap; /* اجازه میده دکمه‌ها برن خط بعد اگه جا نشدن */
+  justify-content: center; /* دکمه‌ها رو وسط‌چین می‌کنه */
   gap: 10px;
   margin-bottom: 20px;
   width: 100%;
 }
 
 .action-btn {
+  flex: 1 1 calc(33.333% - 10px); /* توی حالت ۳ دکمه، هر کدوم یک‌سوم عرض رو می‌گیره */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 4px;
+  padding: 12px 6px;
   background: linear-gradient(135deg, var(--button-color), color-mix(in srgb, var(--button-color) 85%, black));
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   color: var(--text-on-button, #000);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--button-color) 40%, transparent), inset 0 -1px 0 rgba(255, 255, 255, 0.2);
   transition: transform 0.15s;
-  aspect-ratio: auto !important;
   min-height: 85px;
   box-sizing: border-box;
   word-break: break-word;
 }
 
+/* این بخش رو اضافه کن تا توی حالت مربی (۵ دکمه)، دکمه‌ها کوچیک‌تر بشن و جا بشن */
+.quick-actions .action-btn:nth-child(n+4) {
+  flex: 1 1 calc(25% - 10px); /* اگر بیشتر از ۳ تا بود، ۴ تایی بشن */
+}
 .action-btn:active {
   transform: scale(0.95);
 }
