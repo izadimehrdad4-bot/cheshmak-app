@@ -2769,23 +2769,22 @@ function generateActivationCode(deviceId, years = 1) {
 
 // چک کن کد معتبره یا نه
 function validateActivationCode(code) {
-  // فرمت: CHK-XXXX-XXXX-D2 یا CHK-XXXX-XXXX-Y1
   const parts = code.trim().toUpperCase().split('-');
   if (parts.length !== 4 || parts[0] !== 'CHK') return false;
   
-  const suffix = parts[3]; // مثلا D2 یا Y1
+  const suffix = parts[3]; 
   if (!suffix.startsWith('D') && !suffix.startsWith('Y')) return false;
   
   const deviceId = getOrCreateDeviceId();
-  
-  // محاسبه‌ی مجدد هش با پسوند جدید
   const raw = deviceId + LICENSE_SECRET + suffix;
+  
   let hash = 0;
   for (let i = 0; i < raw.length; i++) {
     const char = raw.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
+  
   const expectedCode = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0');
   const part1 = expectedCode.substring(0, 4);
   const part2 = expectedCode.substring(4, 8);
@@ -2793,7 +2792,6 @@ function validateActivationCode(code) {
   
   return code.trim().toUpperCase() === expected;
 }
-
 // فعال‌سازی لایسنس با کد
 function activateLicense(code) {
   if (!validateActivationCode(code)) {
@@ -2904,8 +2902,7 @@ function showLicenseLockModal() {
 </div>          </div>
 
           <h3 style="font-size:20px;color:#14B8A6;margin-bottom:8px;font-weight:800">✅ لایسنس فعال شد</h3>
-          <p style="font-size:13px;color:#999;margin-bottom:6px">لایسنس شما ${result.years} سال تمدید شد</p>
-          <p style="font-size:12px;color:#666">تا تاریخ <strong>${result.newEnd}</strong></p>
+<p style="font-size:13px;color:#999;margin-bottom:6px">لایسنس شما ${result.amount} ${result.isYears ? 'سال' : 'روز'} تمدید شد</p>          <p style="font-size:12px;color:#666">تا تاریخ <strong>${result.newEnd}</strong></p>
         </div>
       `, { center: true, noCloseOnOverlay: true });
 
@@ -2913,7 +2910,7 @@ function showLicenseLockModal() {
         closeModal(successOverlay);
         toast(`🎉 لایسنس تا ${result.newEnd} فعال شد`, 'success');
         setTimeout(() => location.reload(), 800);
-      }, 100000);
+      }, 10000);
     } else {
       toast(result.error, 'error');
     }
