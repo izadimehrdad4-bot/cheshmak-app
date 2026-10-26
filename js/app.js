@@ -1799,8 +1799,8 @@ function renderReportContent(overlay) {
   });
 
     const customerStatsLabel = (state.business && state.business.bizType === 'coach')
-    ? getCoachCustomerTitle().replace(' گرامی', '')
-    : getCustomerTitle().replace(' گرامی', '');
+? getCoachCustomerTitle().replace(' گرامی', '')
+: getCustomerTitle().replace(' گرامی', '');
 
 
   content.innerHTML = `
@@ -4162,6 +4162,14 @@ async function generateIssuedInvoice(type, itemId) {
     itemDesc = item.text || 'اسپانسر تولد';
     itemCount = `${item.totalShows} تولد`;
     itemCost = item.totalCost || 0;
+} else if (type === 'trainingSponsor') {
+    const sponsors = getTrainingSponsors();
+    item = sponsors.find(s => s.id === itemId);
+       itemName = item.name;
+    itemPhone = item.phone;
+    itemDesc = item.text || 'اسپانسر برنامه تمرینی';
+    itemCount = `${item.totalShows} برنامه`;
+    itemCost = item.totalCost || 0;
   } else {
     toast('نوع نامعتبر', 'error');
     return;
@@ -4170,8 +4178,7 @@ async function generateIssuedInvoice(type, itemId) {
   toast('در حال ساخت فاکتور...', 'info');
 
   const today = getTodayShamsi();
-  const typeLabel = type === 'ad' ? '📢 تبلیغ در فاکتور' : '🎂 اسپانسر تولد';
-
+  const typeLabel = type === 'ad' ? '📢 تبلیغ در فاکتور' : (type === 'birthdaySponsor' ? '🎂 اسپانسر تولد' : '📋 اسپانسر برنامه تمرینی');
   // لوگوی کسب‌وکار
   const logoHtml = b.logo
     ? `<img src="${b.logo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px">`
@@ -6243,14 +6250,3 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(hideSplashScreen, 1500);  // 🌊 بعد از ۱.۵ ثانیه Splash رو مخفی کن
 });
 
-// 🧪 شورتکات داده‌ی تست: Ctrl + Shift + D
-document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-    e.preventDefault();
-    if (typeof seedTestData === 'function') {
-      seedTestData();
-    } else {
-      console.error('seedTestData پیدا نشد. coach.js لود شده؟');
-    }
-  }
-});

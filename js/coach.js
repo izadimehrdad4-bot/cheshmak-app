@@ -910,46 +910,6 @@ function openAttendancePage() {
 
   renderPage();
 }
-// ==============================
-// 🧪 داده‌ی تست (فقط برای توسعه)
-// ==============================
-function seedTestData() {
-  const testBiz = {
-    job: 'مربی بدنسازی',
-    name: 'باشگاه ورزشی علی',
-    manager: 'علی احمدی',
-    phone: '09121234567',
-    birth: '1370/05/15',
-    password: '1234',
-    security: 'تهران',
-    logo: null,
-    buttonColor: '#14B8A6',
-    backgroundColor: '#15161F',
-    bizType: 'coach',
-    coachType: 'بدنسازی',
-    customerTitle: 'شاگرد',
-    retentionEnabled: true,
-    retentionDays: 60,
-    birthdayReminderDays: 7,
-  };
-
-  const testCustomers = [
-    { id: '1', fullName: 'علی رضایی', phone1: '09121111111', birthDate: '1375/03/10', height: 178, weight: 75, tuition: 500000, tuitionPaid: true, lastPaymentDate: '1405/07/01', trainingStart: '1405/01/15', medals: 'مدال طلای استانی ۱۴۰۴', history: [], lastVisit: '' },
-    { id: '2', fullName: 'مهران محمدی', phone1: '09122222222', birthDate: '1380/08/22', height: 182, weight: 80, tuition: 600000, tuitionPaid: false, lastPaymentDate: '1405/06/10', trainingStart: '1405/02/01', medals: '', history: [], lastVisit: '' },
-    { id: '3', fullName: 'حسین کریمی', phone1: '09123333333', birthDate: '1372/12/05', height: 175, weight: 70, tuition: 500000, tuitionPaid: true, lastPaymentDate: '1405/07/05', trainingStart: '1404/11/20', medals: 'مدال نقره کشوری', history: [], lastVisit: '' },
-    { id: '4', fullName: 'رضا نوری', phone1: '09124444444', birthDate: '1385/01/18', height: 170, weight: 65, tuition: 400000, tuitionPaid: false, lastPaymentDate: '1405/05/20', trainingStart: '1405/03/10', medals: '', history: [], lastVisit: '' },
-    { id: '5', fullName: 'سعید اکبری', phone1: '09125555555', birthDate: '1378/09/30', height: 185, weight: 90, tuition: 700000, tuitionPaid: true, lastPaymentDate: '1405/07/10', trainingStart: '1404/08/01', medals: 'مدال برنز آسیایی', history: [], lastVisit: '' },
-    { id: '6', fullName: 'امیر حسینی', phone1: '09126666666', birthDate: '1382/04/12', height: 180, weight: 78, tuition: 500000, tuitionPaid: false, lastPaymentDate: '1405/04/15', trainingStart: '1405/01/01', medals: '', history: [], lastVisit: '' },
-    { id: '7', fullName: 'محمد صادقی', phone1: '09127777777', birthDate: '1376/07/25', height: 176, weight: 72, tuition: 550000, tuitionPaid: true, lastPaymentDate: '1405/07/12', trainingStart: '1404/10/05', medals: 'مدال طلای کشوری ۱۴۰۳', history: [], lastVisit: '' },
-    { id: '8', fullName: 'یاسر موسوی', phone1: '09128888888', birthDate: '1384/11/08', height: 168, weight: 62, tuition: 400000, tuitionPaid: false, lastPaymentDate: '1405/03/25', trainingStart: '1405/02/15', medals: '', history: [], lastVisit: '' },
-  ];
-
-  DB.set('business', testBiz);
-  DB.set('customers', testCustomers);
-
-  toast('داده‌ی تست ساخته شد ✅ صفحه داره رفرش می‌شه...', 'success');
-  setTimeout(() => location.reload(), 1000);
-}
 
 // ==============================
 // 📅 محاسبه‌ی تاریخ انقضای شهریه
