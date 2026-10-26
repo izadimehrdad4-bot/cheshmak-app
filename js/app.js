@@ -1172,8 +1172,15 @@ function openCustomerForm(id = null) {
     }
   };
 
-  nameInput.addEventListener('input', checkDuplicatesLive);
-  phoneInput.addEventListener('input', checkDuplicatesLive);
+    // 🔥 اضافه کردن debounce برای جلوگیری از لگ شدن
+  let dupTimeout = null;
+  const debouncedCheck = () => {
+    clearTimeout(dupTimeout);
+    dupTimeout = setTimeout(checkDuplicatesLive, 500); // نیم ثانیه صبر می‌کنه
+  };
+  
+  nameInput.addEventListener('input', debouncedCheck);
+  phoneInput.addEventListener('input', debouncedCheck);
   if (editing) checkDuplicatesLive();
 
   overlay.querySelector('#cust-cancel').onclick = () => closeModal(overlay);
