@@ -3234,8 +3234,17 @@ function openRestorePreview(data) {
   `, { center: true });
   overlay.querySelector('#rp-cancel').onclick = () => closeModal(overlay);
   overlay.querySelector('#rp-confirm').onclick = () => {
-    DB.clearAll();
-    DB.set('business', data.business);
+// 🔥 حفظ اطلاعات لایسنس موقع بازیابی
+const savedDeviceId = DB.get('deviceId');
+const savedLicenseStart = DB.get('licenseStart');
+const savedLicenseEnd = DB.get('licenseEnd');
+
+DB.clearAll();
+
+// 🔥 برگرداندن اطلاعات لایسنس
+if (savedDeviceId) DB.set('deviceId', savedDeviceId);
+if (savedLicenseStart) DB.set('licenseStart', savedLicenseStart);
+if (savedLicenseEnd) DB.set('licenseEnd', savedLicenseEnd);    DB.set('business', data.business);
     DB.set('customers', data.customers || []);
     DB.set('birthdayMessages', data.birthdayMessages || {});
     if (data.ads) DB.set('ads', data.ads);
