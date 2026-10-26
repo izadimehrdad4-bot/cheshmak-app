@@ -1033,7 +1033,6 @@ function initDashboard() {
   checkAndShowOwnerBirthday();
   renderCustomers();
   renderClock();
-  setInterval(renderClock, 30000);
 }
 
 
@@ -5312,6 +5311,17 @@ function addAdWithReservation(adData) {
 // ==============================
 function checkAndActivateReserved() {
   const ads = getAds();
+    // 🔥 اطمینان از اینکه در هر اسلات فقط یک تبلیغ active وجود دارد
+  ['top', 'bottom'].forEach(slot => {
+    const activeInSlot = ads.filter(ad => normalizeSlot(ad.slot) === slot && ad.status === 'active' && (ad.shownCount || 0) < (ad.totalShows || 0));
+    if (activeInSlot.length > 1) {
+      for (let i = 1; i < activeInSlot.length; i++) {
+        activeInSlot[i].status = 'reserved';
+        activeInSlot[i].priority = (activeInSlot[i].priority || 0) + 10;
+      }
+    }
+  });
+
   let changed = false;
 
   ['top', 'bottom'].forEach(slot => {
