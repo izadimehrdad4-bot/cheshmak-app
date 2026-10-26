@@ -6235,6 +6235,9 @@ function hideSplashScreen() {
 // ==============================
 // شروع
 // ==============================
+// ==============================
+// شروع
+// ==============================
 document.addEventListener('DOMContentLoaded', () => {
   init();                        // 🚀 اول init
   setTimeout(hideSplashScreen, 1500);  // 🌊 بعد از ۱.۵ ثانیه Splash رو مخفی کن
