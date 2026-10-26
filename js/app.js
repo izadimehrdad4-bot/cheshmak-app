@@ -15,11 +15,23 @@ const DB = {
       return fallback;
     }
   },
-  set(key, value) {
+    set(key, value) {
     try {
       localStorage.setItem('cheshmak_' + key, JSON.stringify(value));
     } catch (e) {
       console.error('Storage error:', e);
+      // 🔥 اگر حافظه پر شده بود (QuotaExceededError)
+      if (e.name === 'QuotaExceededError' || e.code === 22) {
+        if (typeof toast === 'function') {
+          toast('⚠️ حافظه دستگاه پر شده است! لطفاً عکس‌های اضافی را حذف کنید تا اطلاعات جدید ذخیره شود.', 'error');
+        } else {
+          alert('⚠️ حافظه دستگاه پر شده است! اطلاعات ذخیره نشد.');
+        }
+      } else {
+        if (typeof toast === 'function') {
+          toast('⚠️ خطا در ذخیره‌سازی اطلاعات!', 'error');
+        }
+      }
     }
   },
   remove(key) {
