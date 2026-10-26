@@ -2807,8 +2807,7 @@ function showLicenseLockModal() {
       
       <div style="width:100px;height:2px;background:linear-gradient(90deg,transparent,#EF4444,transparent);margin:12px auto"></div>
       
-      <p style="font-size:13px;color:var(--text-muted);line-height:2;margin-bottom:16px">
-        لایسنس شما در تاریخ <strong>${end}</strong> منقضی شده.<br>
+              <div style="font-size:13px;color:#999;margin-bottom:6px">لایسنس شما در تاریخ <strong>${escapeHtml(end)}</strong> منقضی شده.<br>
         برای ادامه‌ی استفاده، با پشتیبانی تماس بگیرید:
       </p>
       
@@ -2819,8 +2818,7 @@ function showLicenseLockModal() {
       
       <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:14px;margin-bottom:16px">
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">📱 شناسه‌ی دستگاه شما:</div>
-        <div style="font-size:14px;font-weight:700;color:#8B5CF6;direction:ltr;letter-spacing:2px">${deviceId}</div>
-        <button id="copy-device-id" style="margin-top:8px;background:transparent;border:1px solid #8B5CF6;color:#8B5CF6;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">📋 کپی</button>
+        <div style="font-size:14px;font-weight:700;color:#8B5CF6;direction:ltr;letter-spacing:2px">${escapeHtml(deviceId)}</div>        <button id="copy-device-id" style="margin-top:8px;background:transparent;border:1px solid #8B5CF6;color:#8B5CF6;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">📋 کپی</button>
       </div>
       
       <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">این شناسه را برای پشتیبانی بفرستید</p>
