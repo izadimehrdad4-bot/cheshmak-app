@@ -3198,14 +3198,28 @@ function openRestoreDialog(fromLockScreen = false) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
+        reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (!data.business || !data.customers) { toast('فایل نامعتبر است!', 'error'); return; }
+        
+        // 🔥 اعتبارسنجی فایل بکاپ
+        if (!data.business || typeof data.business !== 'object') {
+          toast('فایل نامعتبر است: اطلاعات کسب‌وکار یافت نشد', 'error');
+          return;
+        }
+        if (!Array.isArray(data.customers)) {
+          toast('فایل نامعتبر است: لیست مشتریان باید آرایه باشد', 'error');
+          return;
+        }
+        if (data.customers.length > 0 && !data.customers[0].fullName) {
+          toast('فایل نامعتبر است: ساختار مشتریان اشتباه است', 'error');
+          return;
+        }
+
         closeModal(overlay);
         setTimeout(() => openRestorePreview(data), 150);
       } catch (err) {
-        toast('خطا در خواندن فایل!', 'error');
+        toast('خطا در خواندن فایل! فایل JSON معتبر نیست.', 'error');
       }
     };
     reader.readAsText(file);
@@ -3238,8 +3252,6 @@ function openRestorePreview(data) {
 const savedDeviceId = DB.get('deviceId');
 const savedLicenseStart = DB.get('licenseStart');
 const savedLicenseEnd = DB.get('licenseEnd');
-
-DB.clearAll();
 
 // 🔥 برگرداندن اطلاعات لایسنس
 if (savedDeviceId) DB.set('deviceId', savedDeviceId);
