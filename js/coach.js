@@ -2680,8 +2680,17 @@ function addDaysToShamsi(shamsiDate, days) {
   let m = parseInt(parts[1]);
   let d = parseInt(parts[2]) + days;
   
+  // 🔥 محافظت در برابر مقادیر نامعتبر (NaN) برای جلوگیری از حلقه بی‌نهایت
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return shamsiDate;
+  
+  let iterations = 0; // محافظ دوم
   while (true) {
+    iterations++;
+    if (iterations > 1000) break; // جلوگیری از هنگ کردن در صورت وجود باگ
+    
     const maxDay = shamsiMonthDays(y, m);
+    if (isNaN(maxDay) || maxDay <= 0) break;
+    
     if (d <= maxDay) break;
     d -= maxDay;
     m++;
@@ -2690,6 +2699,9 @@ function addDaysToShamsi(shamsiDate, days) {
       y++;
     }
   }
+  
+  return `${y}/${m.toString().padStart(2, '0')}/${d.toString().padStart(2, '0')}`;
+}
   
   return `${y}/${m.toString().padStart(2, '0')}/${d.toString().padStart(2, '0')}`;
 }
