@@ -3247,9 +3247,17 @@ function openRestoreDialog(fromLockScreen = false) {
           toast('فایل نامعتبر است: لیست مشتریان باید آرایه باشد', 'error');
           return;
         }
-        if (data.customers.length > 0 && !data.customers[0].fullName) {
-          toast('فایل نامعتبر است: ساختار مشتریان اشتباه است', 'error');
-          return;
+                if (data.customers.length > 0) {
+          const firstCustomer = data.customers[0];
+          if (typeof firstCustomer !== 'object' || typeof firstCustomer.fullName !== 'string') {
+            toast('فایل نامعتبر است: ساختار مشتریان اشتباه است', 'error');
+            return;
+          }
+          // 🔥 چک کردن تمام فیلدهای حساس
+          if (firstCustomer.image && typeof firstCustomer.image === 'string' && firstCustomer.image.includes('<script')) {
+            toast('فایل نامعتبر است: حاوی کد مخرب است', 'error');
+            return;
+          }
         }
 
         closeModal(overlay);
