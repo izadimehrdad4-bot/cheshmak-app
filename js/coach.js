@@ -2917,15 +2917,13 @@ const result = await activateLicense(code);
 
 // چک لایسنس و قفل اگه لازم بود
 function checkLicense() {
-  function checkLicense() {
-  // 🔥 ذخیره آخرین زمان معتبر (جلوگیری از عقب بردن ساعت)
+  // 🔥 محافظت از تغییر ساعت (Anti-time-tampering)
   const lastKnownDate = DB.get('lastKnownDate');
   const today = getTodayShamsi();
   const todayNum = shamsiToNumber(today);
 
   if (lastKnownDate) {
     const lastNum = shamsiToNumber(lastKnownDate);
-    // اگر ساعت عقب رفته باشه (تاریخ امروز از آخرین تاریخ کمتر باشه)
     if (todayNum < lastNum) {
       document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
       showModal(`
@@ -2940,13 +2938,9 @@ function checkLicense() {
     }
   }
   
-  // ذخیره تاریخ امروز به عنوان آخرین تاریخ معتبر
   DB.set('lastKnownDate', today);
 
   if (!isLicenseValid()) {
-    // ... بقیه کد
-  if (!isLicenseValid()) {
-    // قفل
     document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
     showLicenseLockModal();
     return false;
