@@ -837,6 +837,7 @@ function initSetupScreen() {
     const phone = document.getElementById('setup-phone').value.trim();
     const birth = document.getElementById('setup-birth').value.trim();
     const pass = document.getElementById('setup-pass').value.trim();
+    const hashedPass = await hashPassword(pass);
     const security = document.getElementById('setup-security').value.trim();
 
     if (!job || !name || !manager || !phone || !pass) {
@@ -855,7 +856,7 @@ function initSetupScreen() {
     }
 
     state.business = {
-      job, name, manager, phone, birth, password: pass, security,
+      job, name, manager, phone, birth, password: hashedPass, security,
       logo: logoPreview.src || null,
       buttonColor: '#14B8A6',
       backgroundColor: '#15161F',
