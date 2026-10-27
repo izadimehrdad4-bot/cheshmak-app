@@ -2879,14 +2879,14 @@ function showLicenseLockModal() {
   };
   
   // تأیید کد
-  overlay.querySelector('#activation-submit').onclick = () => {
-    const code = overlay.querySelector('#activation-code-input').value.trim();
+overlay.querySelector('#activation-submit').onclick = async () => {
+      const code = overlay.querySelector('#activation-code-input').value.trim();
     if (!code) {
       toast('کد را وارد کنید', 'error');
       return;
     }
     
-    const result = activateLicense(code);
+const result = await activateLicense(code);
         if (result.success) {
       closeModal(overlay);
 
