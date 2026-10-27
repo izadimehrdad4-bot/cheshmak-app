@@ -915,8 +915,9 @@ function initLockScreen() {
   applyColors(b.buttonColor, b.backgroundColor);
   const passInput = document.getElementById('lock-pass');
   passInput.value = '';
-  const tryLogin = () => {
-    if (passInput.value.trim() === b.password) {
+    const tryLogin = async () => {
+    const hashedInput = await hashPassword(passInput.value.trim());
+    if (hashedInput === b.password) {
       showScreen('dashboard-screen');
       initDashboard();
     } else {
