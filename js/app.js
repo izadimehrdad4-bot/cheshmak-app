@@ -53,7 +53,15 @@ const state = {
   birthdayMessages: {},
   searchQuery: '',
 };
-
+// 🔐 تابع هش کردن رمز عبور
+async function hashPassword(password) {
+  if (!password) return '';
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + '_CHESHMAK_SALT_2025');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 // ==============================
 // عنوان خطاب مشتری
 // ==============================
