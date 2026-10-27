@@ -2917,6 +2917,34 @@ const result = await activateLicense(code);
 
 // چک لایسنس و قفل اگه لازم بود
 function checkLicense() {
+  function checkLicense() {
+  // 🔥 ذخیره آخرین زمان معتبر (جلوگیری از عقب بردن ساعت)
+  const lastKnownDate = DB.get('lastKnownDate');
+  const today = getTodayShamsi();
+  const todayNum = shamsiToNumber(today);
+
+  if (lastKnownDate) {
+    const lastNum = shamsiToNumber(lastKnownDate);
+    // اگر ساعت عقب رفته باشه (تاریخ امروز از آخرین تاریخ کمتر باشه)
+    if (todayNum < lastNum) {
+      document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
+      showModal(`
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:60px;margin-bottom:12px">⚠️</div>
+          <h3 style="color:#EF4444;margin-bottom:12px">خطای امنیتی</h3>
+          <p style="font-size:14px;line-height:1.8;color:var(--text-muted)">تاریخ دستگاه شما به عقب برگشته است.<br>لطفاً تاریخ گوشی/کامپیوتر خود را اصلاح کنید.</p>
+          <button class="btn-primary" onclick="location.reload()" style="margin-top:16px">تلاش مجدد</button>
+        </div>
+      `, { center: true, noCloseOnOverlay: true });
+      return false;
+    }
+  }
+  
+  // ذخیره تاریخ امروز به عنوان آخرین تاریخ معتبر
+  DB.set('lastKnownDate', today);
+
+  if (!isLicenseValid()) {
+    // ... بقیه کد
   if (!isLicenseValid()) {
     // قفل
     document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
