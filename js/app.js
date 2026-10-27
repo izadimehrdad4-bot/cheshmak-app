@@ -748,7 +748,7 @@ function renderCustomers() {
 
     const hasRealImage = c.image && (c.image.startsWith('data:image') || c.image.startsWith('http'));
     const avatar = hasRealImage
-      ? `<img src="${c.image}" alt="">`
+? `<img src="${escapeHtml(c.image)}" alt="">`
       : getRoseAvatarSvg(40);
 
     return `
