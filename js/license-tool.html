@@ -2,88 +2,114 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ابزار تولید لایسنس چشمک</title>
+    <title>ابزار ساخت کد فعال‌سازی</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #15161F; color: #fff; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: #1F2130; padding: 30px; border-radius: 15px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #2a2c3a; color: #fff; box-sizing: border-box; font-family: inherit; font-size: 14px; }
-        button { background: #14B8A6; border: none; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        button:hover { background: #0D9488; }
-        .result { background: #14B8A6; color: #fff; text-align: center; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 18px; font-weight: bold; letter-spacing: 1px; display: none; }
+        body { font-family: Tahoma, sans-serif; background: #15161F; color: #fff; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .box { background: #1F2130; padding: 30px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { text-align: center; color: #14B8A6; margin-bottom: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #333; background: #2a2c3f; color: #fff; font-family: inherit; box-sizing: border-box; }
+        button { background: linear-gradient(135deg, #14B8A6, #0D9488); color: #fff; font-weight: bold; cursor: pointer; border: none; margin-top: 20px; }
+        button:hover { opacity: 0.9; }
+        .result { margin-top: 20px; padding: 15px; background: #0f172a; border-radius: 8px; word-break: break-all; font-size: 14px; border: 1px solid #14B8A6; direction: ltr; text-align: center; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2 style="text-align:center; margin-top:0;">🔑 تولید کد فعال‌سازی</h2>
+        <h1>🔑 ابزار ساخت کد</h1>
         
         <label>شناسه دستگاه (Device ID):</label>
-        <input type="text" id="deviceId" placeholder="DEV-XXXX-XXXX">
-        
-        <label>نوع تمدید:</label>
-        <select id="type" onchange="toggleType()">
-            <option value="days">بر اساس روز</option>
-            <option value="years">بر اساس سال</option>
+        <input type="text" id="deviceId" placeholder="مثلاً: DEV-ABCD-1234" style="direction: ltr; text-align: center;">
+
+        <label>مدت زمان اعتبار:</label>
+        <select id="duration">
+            <option value="Y1">۱ سال</option>
+            <option value="Y2">۲ سال</option>
+            <option value="M6">۶ ماه</option>
+            <option value="D30">۳۰ روز</option>
         </select>
 
-        <div id="daysDiv">
-            <label>تعداد روز:</label>
-            <input type="number" id="days" value="2" min="1">
-        </div>
-
-        <div id="yearsDiv" style="display:none;">
-            <label>تعداد سال:</label>
-            <input type="number" id="years" value="1" min="1">
-        </div>
-
-        <button onclick="generate()">تولید کد</button>
+        <button onclick="generateCode()">ساخت کد فعال‌سازی</button>
         
-        <div id="result" class="result"></div>
+        <div id="result" class="result" style="display: none;"></div>
     </div>
 
     <script>
-        const LICENSE_SECRET = 'CHESHMAK_SECRET_2025';
+        // ⚠️ کلید خصوصی خودت رو اینجا پیست کن (از فایل private_key.pem)
+        const PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCw7Tt/a2GEDx2L
+xB4iIyoD7mZWZLzd1ESc14tR7pqpEY8mezZJKvn+NY5H74Tq3ORhrHQN/kegOn6D
+y5thdXX1agE6bl8YZc/jGwGYLrr6YiwNvBRC7v1XiWxTgiINC8a3SgFtqXFF/B7K
+7Kriu+YRghLarCI/YaGhYQJ2FVWJ0yvWbmxl/uVyTHf8oOQZVIF0oa1b4q26jovL
+26bBEp1u6RB4xy7j+Jj/Nz+6AlAm3m7gOULl1A9yNXp/dNnUFAX3W9tlRoYkCtMI
+PBei454Plxul7xXI1C4hyakNjVs9gPjl3Q9SvWRwDEkU9/R9AbCm6X3jiRPxSMD0
+dbgfpDzZAgMBAAECggEAGvd9uxUd3ugC49u3kBJ2A/VhSce+9by13IYJ6SoKDrzr
+ab0b8BkJ05JMJnC+fKHAeZa0dbGNL0HbKLFu9HLX0NkgaMyL2AckoYPrQUvWGfW+
+qzVAjVcp7B65ER1jnUNvPV6dSx6pcjZUZy+deEOVdJOz1fqomaqC3TsRCfiEeiYh
+sgRUEghsWDHVNpVlJUJIwR+rf+6lvvVdRE6nML5mZQUm/9MaVs9dr96omlmT51qq
+lww3pCxJMwOJPHxx6ZKpZbcscCdUHpJBN7fR40cqoR77xs34Li0jSBloox2kIjfR
+5kYANWY+j3qIrJe8TeQIkbOhQBTOS861ZhkVJxJfEQKBgQDfx+VxPyGYg6ib7V+5
+bA2okRNTL6r1N4VZ9RK/nUp0SuMKov1DprA6bheTGGu1RjIhQ05yMTIdmqcr/WVE
+64+BjG3hRAbfe4GuzE5Bf4ZbwJjbykzbAcl/Eqk1V8zFpWIyqYYNE7vDb93q1n7H
+Icz9O5vMQ+T24XRylnINwnalzQKBgQDKZmNOLYpvVcNsT1xW64RAhNLKBjuf3h2d
+VQFzmQQGTR38EkTGuLCjRSCVuCl/0OWpFlk6vrtiSnQvZRVjmWOCR+gn0QnTJsVF
+S4+wSGVIc7PhCgBp4N3mTrFPLSWasqWGPV4YbgxRH+6Z7ckJiaKvbY29a4MLIcto
+aRLHmg6nPQKBgQCeEwBabLP4nhf+fUE/I7rKNiCmhGeI7H1APEPQIvWzDCsxGk04
++ohF3fq9J2T+GeXTZU4GkAXMr7Ai/M4KTzOB2YbMt1b7iqziouMslT59laDksRR1
+J+AD6VSpn6nAe8DP9LwChMv/lAf4mSfY1mGNCAxX0CXu1veA8hEC8zkIiQKBgGCZ
+k4XpiGvw4++axPibOajNfAl+BhEcIshHnQS+IESdo9T+JyMtXOjgAlhS6EOfwSz9
+hKLcC3UzEdbZCOdbeznf9fai92x20apsEO1S8DwvNMgQTPg7oczc/BVM9+iooQW7
+3mAMjgZeFjQTYGMT9LiDsiWY3Zd/jqSLmbH4XkwFAoGAI+4145mP52VgBoIic0V4
+v50uFV/ap1a0iBdHdMX6deSkD592VgCsejIrzztmjf3MM5TIfpVxErG9N52vPXl9
+cwGCNO6O/A3xaLQ47l73PO+GBkEjPdAwxtcageR7hqcFRpjZ9y9iLzJIpwzmuPZl
+w99vbHdzWk0AsH+3Bs3ICzY=
+-----END PRIVATE KEY-----`
+;
 
-        function toggleType() {
-            const type = document.getElementById('type').value;
-            document.getElementById('daysDiv').style.display = type === 'days' ? 'block' : 'none';
-            document.getElementById('yearsDiv').style.display = type === 'years' ? 'block' : 'none';
-        }
-
-        function generate() {
+        async function generateCode() {
             const deviceId = document.getElementById('deviceId').value.trim();
-            const type = document.getElementById('type').value;
-            let amount = type === 'days' ? document.getElementById('days').value : document.getElementById('years').value;
-            
-            if (!deviceId || !amount) {
-                alert('لطفاً همه فیلدها را پر کنید');
+            const suffix = document.getElementById('duration').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!deviceId) {
+                alert('لطفاً شناسه دستگاه را وارد کنید');
                 return;
             }
-
-            // 🔥 ساخت کد بر اساس روز یا سال (D برای روز، Y برای سال)
-            const suffix = type === 'days' ? 'D' + amount : 'Y' + amount;
-            const raw = deviceId + LICENSE_SECRET + suffix;
             
-            let hash = 0;
-            for (let i = 0; i < raw.length; i++) {
-                const char = raw.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
+            // تبدیل فرمت کلید برای Web Crypto
+            const pemHeader = "-----BEGIN PRIVATE KEY-----";
+            const pemFooter = "-----END PRIVATE KEY-----";
+            const pemContents = PRIVATE_KEY_PEM.replace(pemHeader, '').replace(pemFooter, '').replace(/\s/g, '');
+            const binaryDerString = window.atob(pemContents);
+            const binaryDer = new Uint8Array(binaryDerString.length);
+            for (let i = 0; i < binaryDerString.length; i++) {
+                binaryDer[i] = binaryDerString.charCodeAt(i);
             }
-            
-            const code = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0');
-            const part1 = code.substring(0, 4);
-            const part2 = code.substring(4, 8);
-            
-            // خروجی: CHK-XXXX-XXXX-D2 (برای ۲ روز) یا CHK-XXXX-XXXX-Y1 (برای ۱ سال)
-            const finalCode = `CHK-${part1}-${part2}-${suffix}`;
-            
-            const resultBox = document.getElementById('result');
-            resultBox.style.display = 'block';
-            resultBox.innerText = finalCode;
-            resultBox.onclick = () => {
-                navigator.clipboard.writeText(finalCode);
-                alert('کد کپی شد!');
-            };
+
+            try {
+                const privateKey = await crypto.subtle.importKey(
+                    "pkcs8",
+                    binaryDer,
+                    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+                    false,
+                    ["sign"]
+                );
+
+                const dataToSign = new TextEncoder().encode(deviceId + suffix);
+                const signature = await crypto.subtle.sign(
+                    "RSASSA-PKCS1-v1_5",
+                    privateKey,
+                    dataToSign
+                );
+
+                const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+                const finalCode = `CHK-${suffix}-${signatureBase64}`;
+                
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = finalCode;
+            } catch (e) {
+                console.error(e);
+                alert('خطا در ساخت کد! آیا کلید خصوصی را درست وارد کرده‌اید؟');
+            }
         }
     </script>
 </body>

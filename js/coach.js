@@ -2747,7 +2747,7 @@ function generateActivationCode(deviceId, years = 1) {
   return `CHK-${part1}-${part2}-${years}`;
 }
 
-function validateActivationCode(code) {
+ async function validateActivationCode(code) {
   try {
     const parts = code.trim().split('-');
     if (parts.length !== 3 || parts[0] !== 'CHK') return false;
@@ -2768,7 +2768,22 @@ function validateActivationCode(code) {
     }
 
     // 🔥 فعلاً برای تست، بدون بررسی امضا، فقط به شرطی که فرمت درست باشه قبولش می‌کنیم
-    return true; 
+        const key = await crypto.subtle.importKey(
+      "spki",
+      binaryDer,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+
+    const isValid = await crypto.subtle.verify(
+      "RSASSA-PKCS1-v1_5",
+      key,
+      signature,
+      data
+    );
+    
+    return isValid;
     
   } catch (e) {
     console.error("License validation error:", e);
@@ -2776,8 +2791,8 @@ function validateActivationCode(code) {
   }
 }
 
-function activateLicense(code) {
-  if (!validateActivationCode(code)) {
+ async function activateLicense(code) {
+  if (!await validateActivationCode(code)) {
     return { success: false, error: 'کد فعال‌سازی نامعتبر است' };
   }
   
