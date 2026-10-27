@@ -2917,7 +2917,6 @@ const result = await activateLicense(code);
 
 // چک لایسنس و قفل اگه لازم بود
 function checkLicense() {
-  // 🔥 محافظت از تغییر ساعت (Anti-time-tampering)
   const lastKnownDate = DB.get('lastKnownDate');
   const today = getTodayShamsi();
   const todayNum = shamsiToNumber(today);
