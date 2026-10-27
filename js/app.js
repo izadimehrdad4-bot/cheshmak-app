@@ -571,8 +571,7 @@ function openEditProfile() {
     <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>    <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>    <div class="form-group"><label>نام و نام خانوادگی مدیر</label><input type="text" id="edit-manager" value="${escapeHtml(b.manager)}"></div>
     <div class="form-group"><label>شماره تماس</label><input type="tel" id="edit-phone" value="${escapeHtml(b.phone)}"></div>
     <div class="form-group"><label>تاریخ تولد</label><input type="text" id="edit-birth" value="${escapeHtml(b.birth || '')}" placeholder="برای انتخاب کلیک کنید" readonly style="cursor:pointer"></div>
-    <div class="form-group"><label>رمز ورود عددی</label><input type="text" id="edit-pass" value="${escapeHtml(b.password)}" inputmode="numeric"></div>
-    <div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" value="${escapeHtml(b.security)}"></div>
+<div class="form-group"><label>رمز ورود عددی</label><input type="text" id="edit-pass" placeholder="برای عدم تغییر رمز، خالی بگذارید" style="width:100%"></div>    <div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" value="${escapeHtml(b.security)}"></div>
 
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color)">
       <label style="font-size:13px;font-weight:700;display:block;margin-bottom:12px">📱 شبکه‌های اجتماعی (اختیاری)</label>
@@ -611,13 +610,18 @@ function openEditProfile() {
 
   overlay.querySelector('#edit-cancel').onclick = () => closeModal(overlay);
 
-  overlay.querySelector('#edit-save').onclick = () => {
+   overlay.querySelector('#edit-save').onclick = async () => {
     const job = overlay.querySelector('#edit-job').value.trim();
     const name = overlay.querySelector('#edit-name').value.trim();
     const manager = overlay.querySelector('#edit-manager').value.trim();
     const phone = overlay.querySelector('#edit-phone').value.trim();
     const birth = overlay.querySelector('#edit-birth').value.trim();
     const pass = overlay.querySelector('#edit-pass').value.trim();
+        // 🔥 اگر کاربر رمز جدید وارد کرده بود، هش می‌کنیم. وگرنه رمز قبلی می‌مونه.
+    let finalPass = b.password;
+    if (pass) {
+      finalPass = await hashPassword(pass);
+    }
     const security = overlay.querySelector('#edit-security').value.trim();
     const instagram = overlay.querySelector('#edit-instagram').value.trim();
     const telegram = overlay.querySelector('#edit-telegram').value.trim();
@@ -638,7 +642,6 @@ function openEditProfile() {
     b.manager = manager;
     b.phone = phone;
     b.birth = birth;
-    b.password = pass;
     b.security = security;
     b.logo = newLogo;
     b.social = {
@@ -647,7 +650,7 @@ function openEditProfile() {
       whatsapp: whatsapp,
       website: website.replace(/^https?:\/\//, '').replace(/^www\./, '')
     };
-
+    b.password = finalPass;
     DB.set('business', b);
     toast('تغییرات ذخیره شد ✅', 'success');
     closeModal(overlay);
