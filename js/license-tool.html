@@ -10,7 +10,9 @@
         input, select, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #333; background: #2a2c3f; color: #fff; font-family: inherit; box-sizing: border-box; }
         button { background: linear-gradient(135deg, #14B8A6, #0D9488); color: #fff; font-weight: bold; cursor: pointer; border: none; margin-top: 20px; }
         button:hover { opacity: 0.9; }
-        .result { margin-top: 20px; padding: 15px; background: #0f172a; border-radius: 8px; word-break: break-all; font-size: 14px; border: 1px solid #14B8A6; direction: ltr; text-align: center; }
+        .result-box { margin-top: 20px; display: none; }
+        .result { padding: 15px; background: #0f172a; border-radius: 8px; word-break: break-all; font-size: 14px; border: 1px solid #14B8A6; direction: ltr; text-align: center; margin-bottom: 10px; }
+        .copy-btn { background: #3B82F6; margin-top: 0; }
     </style>
 </head>
 <body>
@@ -25,16 +27,20 @@
             <option value="Y1">۱ سال</option>
             <option value="Y2">۲ سال</option>
             <option value="M6">۶ ماه</option>
+            <option value="M3">۳ ماه</option>
             <option value="D30">۳۰ روز</option>
+            <option value="D10">۱۰ روز (تست)</option>
         </select>
 
         <button onclick="generateCode()">ساخت کد فعال‌سازی</button>
         
-        <div id="result" class="result" style="display: none;"></div>
+        <div id="resultBox" class="result-box">
+            <div id="result" class="result"></div>
+            <button class="copy-btn" onclick="copyCode()">📋 کپی کد</button>
+        </div>
     </div>
 
     <script>
-        // ⚠️ کلید خصوصی خودت رو اینجا پیست کن (از فایل private_key.pem)
         const PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCw7Tt/a2GEDx2L
 xB4iIyoD7mZWZLzd1ESc14tR7pqpEY8mezZJKvn+NY5H74Tq3ORhrHQN/kegOn6D
@@ -62,12 +68,13 @@ hKLcC3UzEdbZCOdbeznf9fai92x20apsEO1S8DwvNMgQTPg7oczc/BVM9+iooQW7
 v50uFV/ap1a0iBdHdMX6deSkD592VgCsejIrzztmjf3MM5TIfpVxErG9N52vPXl9
 cwGCNO6O/A3xaLQ47l73PO+GBkEjPdAwxtcageR7hqcFRpjZ9y9iLzJIpwzmuPZl
 w99vbHdzWk0AsH+3Bs3ICzY=
------END PRIVATE KEY-----`
-;
+-----END PRIVATE KEY-----
+`;
 
         async function generateCode() {
             const deviceId = document.getElementById('deviceId').value.trim();
             const suffix = document.getElementById('duration').value;
+            const resultBox = document.getElementById('resultBox');
             const resultDiv = document.getElementById('result');
 
             if (!deviceId) {
@@ -75,7 +82,6 @@ w99vbHdzWk0AsH+3Bs3ICzY=
                 return;
             }
             
-            // تبدیل فرمت کلید برای Web Crypto
             const pemHeader = "-----BEGIN PRIVATE KEY-----";
             const pemFooter = "-----END PRIVATE KEY-----";
             const pemContents = PRIVATE_KEY_PEM.replace(pemHeader, '').replace(pemFooter, '').replace(/\s/g, '');
@@ -104,12 +110,21 @@ w99vbHdzWk0AsH+3Bs3ICzY=
                 const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
                 const finalCode = `CHK-${suffix}-${signatureBase64}`;
                 
-                resultDiv.style.display = 'block';
+                resultBox.style.display = 'block';
                 resultDiv.textContent = finalCode;
             } catch (e) {
                 console.error(e);
                 alert('خطا در ساخت کد! آیا کلید خصوصی را درست وارد کرده‌اید؟');
             }
+        }
+
+        function copyCode() {
+            const code = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ کد با موفقیت کپی شد!');
+            }).catch(err => {
+                alert('❌ خطا در کپی کردن!');
+            });
         }
     </script>
 </body>

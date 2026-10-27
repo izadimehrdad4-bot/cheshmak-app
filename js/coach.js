@@ -2767,14 +2767,16 @@ function generateActivationCode(deviceId, years = 1) {
         binaryDer[i] = binaryDerString.charCodeAt(i);
     }
 
-    // 🔥 فعلاً برای تست، بدون بررسی امضا، فقط به شرطی که فرمت درست باشه قبولش می‌کنیم
-        const key = await crypto.subtle.importKey(
+    const key = await crypto.subtle.importKey(
       "spki",
       binaryDer,
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       false,
       ["verify"]
     );
+
+    const signature = Uint8Array.from(atob(signatureBase64), c => c.charCodeAt(0));
+    const data = new TextEncoder().encode(dataToVerify);
 
     const isValid = await crypto.subtle.verify(
       "RSASSA-PKCS1-v1_5",
