@@ -845,8 +845,8 @@ function initSetupScreen() {
     const pass = document.getElementById('setup-pass').value.trim();
     const hashedPass = await hashPassword(pass);
     const security = document.getElementById('setup-security').value.trim();
-    const hashedSecurity = await hashPassword(security);
-    if (!job || !name || !manager || !phone || !pass) {
+    const hashedSecurity = await hashPassword(normalizeName(security));
+        if (!job || !name || !manager || !phone || !pass) {
       toast('لطفاً همه‌ی فیلدهای ضروری را پر کنید', 'error');
       return;
     }
@@ -966,8 +966,8 @@ function initLockScreen() {
       overlay.querySelector('#recover-cancel').onclick = () => closeModal(overlay);
       overlay.querySelector('#recover-submit').onclick = async () => {
         const ans = overlay.querySelector('#recover-input').value.trim();
-                const hashedAns = await hashPassword(ans);
-        if (hashedAns === b.security) {
+            const hashedAns = await hashPassword(normalizeName(ans));
+                    if (hashedAns === b.security) {
           closeModal(overlay);
           setTimeout(() => {
             const ov2 = showModal(`
