@@ -944,8 +944,8 @@ function initLockScreen() {
     } else {
       toast('رمز عبور اشتباه است!', 'error');
     }
-  };
-
+    };
+}
   document.getElementById('btn-login').onclick = tryLogin;
 
   passInput.addEventListener('keydown', (e) => {
