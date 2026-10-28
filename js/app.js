@@ -943,7 +943,8 @@ function initLockScreen() {
       toast('رمز عبور اشتباه است!', 'error');
     }
       }
-  };
+    }
+  
 
   document.getElementById('btn-login').onclick = tryLogin;
 
