@@ -966,9 +966,25 @@ function initLockScreen() {
       overlay.querySelector('#recover-cancel').onclick = () => closeModal(overlay);
       overlay.querySelector('#recover-submit').onclick = async () => {
         const ans = overlay.querySelector('#recover-input').value.trim();
+        let isMatch = false;
+        if (b.security.length === 64) {
+            // اگر قبلاً هش شده بود
             const hashedAns = await hashPassword(normalizeName(ans));
-                    if (hashedAns === b.security) {
-          closeModal(overlay);
+            isMatch = (hashedAns === b.security);
+        } else {
+            // اگر کاربر قدیمی است (متن ساده)
+            isMatch = (normalizeName(ans) === normalizeName(b.security));
+            if (isMatch) {
+                // همین الان هشش کن و ذخیره کن
+                b.security = await hashPassword(normalizeName(ans));
+                DB.set('business', b);
+            }
+        }            if (!b.security || !ans) {
+    toast('پاسخ امنیتی نامعتبر است!', 'error');
+    return;
+}
+        if (isMatch) {
+                    closeModal(overlay);
           setTimeout(() => {
             const ov2 = showModal(`
               <h3 class="modal-title">تعیین رمز جدید</h3>
