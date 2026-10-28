@@ -2652,12 +2652,25 @@ EwIDAQAB
 
 // تولید Device ID یکتا
 function getOrCreateDeviceId() {
-  let deviceId = DB.get('deviceId');
+  // 🔥 اول چک کردن کوکی (برای جلوگیری از پاک شدن با localStorage)
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  };
+
+  let deviceId = DB.get('deviceId') || getCookie('cheshmak_deviceId');
+  
   if (!deviceId) {
-    deviceId = 'DEV-' + 
-      Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
-      Math.random().toString(36).substring(2, 6).toUpperCase();
+    deviceId = 'DEV-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
     DB.set('deviceId', deviceId);
+    // ذخیره در کوکی برای ۱ سال
+    document.cookie = `cheshmak_deviceId=${deviceId}; max-age=31536000; path=/; SameSite=Strict`;
+  } else {
+    // اگر در دیتابیس نبود ولی در کوکی بود، دوباره توی دیتابیس ذخیره کن
+    if (!DB.get('deviceId')) {
+      DB.set('deviceId', deviceId);
+    }
   }
   return deviceId;
 }
