@@ -3265,16 +3265,28 @@ function openRestoreDialog(fromLockScreen = false) {
           toast('فایل نامعتبر است: لیست مشتریان باید آرایه باشد', 'error');
           return;
         }
-                if (data.customers.length > 0) {
-          const firstCustomer = data.customers[0];
-          if (typeof firstCustomer !== 'object' || typeof firstCustomer.fullName !== 'string') {
-            toast('فایل نامعتبر است: ساختار مشتریان اشتباه است', 'error');
-            return;
-          }
-          // 🔥 چک کردن تمام فیلدهای حساس
-          if (firstCustomer.image && typeof firstCustomer.image === 'string' && firstCustomer.image.includes('<script')) {
-            toast('فایل نامعتبر است: حاوی کد مخرب است', 'error');
-            return;
+                        if (data.customers.length > 0) {
+          for (const customer of data.customers) {
+            if (typeof customer !== 'object' || typeof customer.fullName !== 'string') {
+              toast('فایل نامعتبر است: ساختار مشتریان اشتباه است', 'error');
+              return;
+            }
+            // 🔥 چک کردن تمام فیلدهای متنی برای کدهای مخرب
+            const stringFields = ['fullName', 'phone1', 'phone2', 'note', 'birthDate', 'image', 'medals'];
+            for (const field of stringFields) {
+              if (customer[field] && typeof customer[field] === 'string') {
+                // بررسی تگ‌های خطرناک و جاوااسکریپت
+                if (/<script|<img|onerror|onload|javascript:/i.test(customer[field])) {
+                  toast('فایل نامعتبر است: حاوی کد مخرب است', 'error');
+                  return;
+                }
+                // بررسی اینکه عکس فقط از نوع data:image باشد
+                if (field === 'image' && customer[field] && !customer[field].startsWith('data:image/')) {
+                  toast('فایل نامعتبر است: آدرس عکس نامعتبر است', 'error');
+                  return;
+                }
+              }
+            }
           }
         }
 
