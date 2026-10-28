@@ -2784,7 +2784,11 @@ function isLicenseValid() {
   if (!await validateActivationCode(code)) {
     return { success: false, error: 'کد فعال‌سازی نامعتبر است' };
   }
-  
+    // 🔥 چک کردن اینکه این کد قبلاً استفاده شده یا نه
+  const usedCodes = DB.get('usedActivationCodes', []);
+  if (usedCodes.includes(code.trim())) {
+    return { success: false, error: 'این کد قبلاً استفاده شده است!' };
+  }
   const parts = code.trim().split('-');
   const suffix = parts[1];
   
@@ -2803,6 +2807,8 @@ function isLicenseValid() {
   }
   
   DB.set('licenseEnd', newEnd);
+    usedCodes.push(code.trim());
+  DB.set('usedActivationCodes', usedCodes);
   return { success: true, newEnd: newEnd, isYears: isYears, amount: amount };
 }
 // 🔥 استایل انیمیشن
