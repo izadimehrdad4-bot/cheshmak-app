@@ -921,18 +921,16 @@ function initLockScreen() {
   applyColors(b.buttonColor, b.backgroundColor);
   const passInput = document.getElementById('lock-pass');
   passInput.value = '';
-    const tryLogin = async () => {
+      const tryLogin = async () => {
     const hashedInput = await hashPassword(passInput.value.trim());
-        // 🔥 سازگاری با رمزهای قدیمی (اگر رمز ذخیره‌شده هش نبود، با متن ساده مقایسه کن)
+    
     let isMatch = false;
+    
     if (b.password.length === 64) {
-        // رمز هش شده است
         isMatch = (hashedInput === b.password);
     } else {
-        // رمز قدیمی (متن ساده) است
         isMatch = (passInput.value.trim() === b.password);
         if (isMatch) {
-            // اگر رمز قدیمی درست بود، همین الان هشش کن و ذخیره کن
             b.password = hashedInput;
             DB.set('business', b);
         }
@@ -944,8 +942,9 @@ function initLockScreen() {
     } else {
       toast('رمز عبور اشتباه است!', 'error');
     }
-    };
-}
+      }
+  };
+
   document.getElementById('btn-login').onclick = tryLogin;
 
   passInput.addEventListener('keydown', (e) => {
