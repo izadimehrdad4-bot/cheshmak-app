@@ -921,7 +921,8 @@ function initLockScreen() {
   applyColors(b.buttonColor, b.backgroundColor);
   const passInput = document.getElementById('lock-pass');
   passInput.value = '';
-      const tryLogin = async () => {
+  
+  const tryLogin = async () => {
     const hashedInput = await hashPassword(passInput.value.trim());
     
     let isMatch = false;
@@ -942,8 +943,22 @@ function initLockScreen() {
     } else {
       toast('رمز عبور اشتباه است!', 'error');
     }
-      }
+  }; // <--- بستن تابع tryLogin
+
+  document.getElementById('btn-login').onclick = tryLogin;
+  
+  passInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      tryLogin();
     }
+  });
+  
+  document.getElementById('btn-forgot').onclick = () => {
+      // ... بقیه کدهای مربوط به فراموشی رمز
+  }; 
+
+} // <--- این آکولاد رو به آخر اضافه کن (بستن تابع initLockScreen)
   
 
   document.getElementById('btn-login').onclick = tryLogin;
