@@ -1,6 +1,6 @@
 /* ==============================
    چشمک - اپلیکیشن مدیریت هوشمند
-   نسخه: 3.1 (اصلاح‌شده)
+   نسخه: 3.1 (نهایی و پایدار)
    ============================== */
 
 // ==============================
@@ -15,21 +15,14 @@ const DB = {
       return fallback;
     }
   },
-    set(key, value) {
+  set(key, value) {
     try {
       localStorage.setItem('cheshmak_' + key, JSON.stringify(value));
     } catch (e) {
       console.error('Storage error:', e);
-      // 🔥 اگر حافظه پر شده بود (QuotaExceededError)
       if (e.name === 'QuotaExceededError' || e.code === 22) {
         if (typeof toast === 'function') {
-          toast('⚠️ حافظه دستگاه پر شده است! لطفاً عکس‌های اضافی را حذف کنید تا اطلاعات جدید ذخیره شود.', 'error');
-        } else {
-          alert('⚠️ حافظه دستگاه پر شده است! اطلاعات ذخیره نشد.');
-        }
-      } else {
-        if (typeof toast === 'function') {
-          toast('⚠️ خطا در ذخیره‌سازی اطلاعات!', 'error');
+          toast('⚠️ حافظه دستگاه پر شده است! لطفاً عکس‌های اضافی را حذف کنید.', 'error');
         }
       }
     }
@@ -53,6 +46,7 @@ const state = {
   birthdayMessages: {},
   searchQuery: '',
 };
+
 // 🔐 تابع هش کردن رمز عبور
 async function hashPassword(password) {
   if (!password) return '';
@@ -62,6 +56,7 @@ async function hashPassword(password) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
 // ==============================
 // عنوان خطاب مشتری
 // ==============================
@@ -224,17 +219,15 @@ function getTodayWeekday() {
   return map[w];
 }
 
-// 🔥 تشخیص سال کبیسه شمسی (الگوریتم استاندارد 33 ساله)
 function isShamsiLeapYear(jy) {
   const r = jy % 33;
   return [1, 5, 9, 13, 17, 22, 26, 30].includes(r);
 }
 
-// 🔥 تعداد روزهای یه ماه شمسی با احتساب کبیسه
 function shamsiMonthDays(jy, jm) {
   if (jm <= 6) return 31;
   if (jm <= 11) return 30;
-  return isShamsiLeapYear(jy) ? 30 : 29; // اسفند
+  return isShamsiLeapYear(jy) ? 30 : 29;
 }
 
 function calculateAge(birthShamsi) {
@@ -268,7 +261,6 @@ function daysUntilBirthday(birthDate) {
   const tm = parseInt(today[1]);
   const td = parseInt(today[2]);
 
-  // 🔥 29 اسفند در سال غیرکبیسه → 30 اسفند
   const adjustDay = (year, month, day) => {
     const maxDay = shamsiMonthDays(year, month);
     return Math.min(day, maxDay);
@@ -276,12 +268,9 @@ function daysUntilBirthday(birthDate) {
 
   if (bm === tm && adjustDay(ty, bm, bd) === td) return 0;
 
-  // تبدیل تاریخ میلادی به شماره روز برای محاسبه دقیق
   const toDays = (y, m, d) => {
     let total = 0;
-    // سال‌های قبل
     for (let i = 1300; i < y; i++) total += isShamsiLeapYear(i) ? 366 : 365;
-    // ماه‌های قبل
     for (let i = 1; i < m; i++) total += shamsiMonthDays(y, i);
     total += d;
     return total;
@@ -291,7 +280,6 @@ function daysUntilBirthday(birthDate) {
   let targetYear = ty;
   let targetDay = adjustDay(ty, bm, bd);
 
-  // اگه امسال گذشته، برو سال بعد
   if (bm < tm || (bm === tm && targetDay < td)) {
     targetYear = ty + 1;
     targetDay = adjustDay(targetYear, bm, bd);
@@ -320,7 +308,7 @@ function getShamsiDaysAgo(daysAgo) {
   while (d < 1) {
     m -= 1;
     if (m < 1) { m = 12; y -= 1; }
-    d += shamsiMonthDays(y, m); // 🔥 با احتساب کبیسه
+    d += shamsiMonthDays(y, m);
   }
   return `${y}/${m.toString().padStart(2, '0')}/${d.toString().padStart(2, '0')}`;
 }
@@ -360,6 +348,7 @@ function escapeHtml(text) {
   div.textContent = text || '';
   return div.innerHTML;
 }
+
 // ==============================
 // 🖼️ فشرده‌سازی هوشمند عکس پس‌زمینه
 // ==============================
@@ -370,13 +359,12 @@ function compressBackgroundImage(file) {
       const img = new Image();
       img.onload = () => {
         const MAX_DIM = 1400;
-        const TARGET_SIZE = 300 * 1024; // 300 KB
+        const TARGET_SIZE = 300 * 1024;
         const MIN_QUALITY = 0.45;
 
         let w = img.width;
         let h = img.height;
 
-        // کوچک کردن ابعاد
         if (w > MAX_DIM || h > MAX_DIM) {
           if (w > h) {
             h = Math.round(h * MAX_DIM / w);
@@ -393,11 +381,9 @@ function compressBackgroundImage(file) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
 
-        // تلاش اول با کیفیت 78%
         let quality = 0.78;
         let dataUrl = canvas.toDataURL('image/jpeg', quality);
 
-        // اگه حجیم‌تر از 300KB بود، فشرده‌تر کن
         let attempts = 0;
         while (dataUrl.length > TARGET_SIZE && quality > MIN_QUALITY && attempts < 8) {
           quality -= 0.08;
@@ -405,7 +391,6 @@ function compressBackgroundImage(file) {
           attempts++;
         }
 
-        // اگه هنوز بزرگه، ابعاد رو دوباره کم کن
         if (dataUrl.length > TARGET_SIZE) {
           const scale = Math.sqrt(TARGET_SIZE / dataUrl.length) * 0.95;
           const newW = Math.round(w * scale);
@@ -433,14 +418,14 @@ function compressBackgroundImage(file) {
 }
 
 // ==============================
-// 🔆 محاسبه‌ی روشنایی عکس (0 تا 255)
+// 🔆 محاسبه‌ی روشنایی عکس
 // ==============================
 function getImageBrightness(dataUrl) {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const SAMPLE = 50; // نمونه‌ی کوچیک برای سرعت
+      const SAMPLE = 50;
       canvas.width = SAMPLE;
       canvas.height = SAMPLE;
       const ctx = canvas.getContext('2d');
@@ -465,8 +450,6 @@ function getImageBrightness(dataUrl) {
   });
 }
 
-
-
 // ==============================
 // انتخابگر تاریخ شمسی
 // ==============================
@@ -482,7 +465,7 @@ function showShamsiDatePicker(initialValue = '', title = 'انتخاب تاری�
       }
     }
     const months = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-        const todayParts = getTodayShamsi().split('/');
+    const todayParts = getTodayShamsi().split('/');
     const currentYear = parseInt(todayParts[0]) || 1404;
     const yearOptions = Array.from({ length: 100 }, (_, i) => (currentYear + 10) - i)
       .map(y => `<option value="${y}" ${y === selectedYear ? 'selected' : ''}>${y}</option>`).join('');
@@ -568,13 +551,17 @@ function openEditProfile() {
     </div>
 
     <div class="form-group"><label>شغل شما</label><input type="text" id="edit-job" value="${escapeHtml(b.job)}"></div>
-    <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>    <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>    <div class="form-group"><label>نام و نام خانوادگی مدیر</label><input type="text" id="edit-manager" value="${escapeHtml(b.manager)}"></div>
+    <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>
+    <div class="form-group"><label>نام و نام خانوادگی مدیر</label><input type="text" id="edit-manager" value="${escapeHtml(b.manager)}"></div>
     <div class="form-group"><label>شماره تماس</label><input type="tel" id="edit-phone" value="${escapeHtml(b.phone)}"></div>
     <div class="form-group"><label>تاریخ تولد</label><input type="text" id="edit-birth" value="${escapeHtml(b.birth || '')}" placeholder="برای انتخاب کلیک کنید" readonly style="cursor:pointer"></div>
-<div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" placeholder="برای عدم تغییر، خالی بگذارید"></div>
+    <div class="form-group"><label>رمز ورود عددی</label><input type="text" id="edit-pass" placeholder="برای عدم تغییر رمز، خالی بگذارید" style="width:100%"></div>
+    <div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" placeholder="برای عدم تغییر، خالی بگذارید"></div>
+
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color)">
       <label style="font-size:13px;font-weight:700;display:block;margin-bottom:12px">📱 شبکه‌های اجتماعی (اختیاری)</label>
-      <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">${(state.business && state.business.bizType === 'coach') ? 'این اطلاعات پایین برنامه‌های تمرینی و پیام‌های تبریک تولد نشون داده می‌شن.' : 'این اطلاعات پایین فاکتورها نشون داده می‌شن.'} هر کدوم رو خواستی پر کن.</p>      <div class="form-group"><label>📸 اینستاگرام</label><input type="text" id="edit-instagram" value="${escapeHtml((b.social && b.social.instagram) || '')}" placeholder="مثلاً: cheshmak"></div>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">${(state.business && state.business.bizType === 'coach') ? 'این اطلاعات پایین برنامه‌های تمرینی و پیام‌های تبریک تولد نشون داده می‌شن.' : 'این اطلاعات پایین فاکتورها نشون داده می‌شن.'} هر کدوم رو خواستی پر کن.</p>
+      <div class="form-group"><label>📸 اینستاگرام</label><input type="text" id="edit-instagram" value="${escapeHtml((b.social && b.social.instagram) || '')}" placeholder="مثلاً: cheshmak"></div>
       <div class="form-group"><label>📨 تلگرام</label><input type="text" id="edit-telegram" value="${escapeHtml((b.social && b.social.telegram) || '')}" placeholder="مثلاً: cheshmak"></div>
       <div class="form-group"><label>💬 واتساپ</label><input type="text" id="edit-whatsapp" value="${escapeHtml((b.social && b.social.whatsapp) || '')}" placeholder="مثلاً: 09121234567"></div>
       <div class="form-group"><label>🌐 وب‌سایت</label><input type="text" id="edit-website" value="${escapeHtml((b.social && b.social.website) || '')}" placeholder="مثلاً: cheshmak.ir"></div>
@@ -609,20 +596,19 @@ function openEditProfile() {
 
   overlay.querySelector('#edit-cancel').onclick = () => closeModal(overlay);
 
-   overlay.querySelector('#edit-save').onclick = async () => {
+  overlay.querySelector('#edit-save').onclick = async () => {
     const job = overlay.querySelector('#edit-job').value.trim();
     const name = overlay.querySelector('#edit-name').value.trim();
     const manager = overlay.querySelector('#edit-manager').value.trim();
     const phone = overlay.querySelector('#edit-phone').value.trim();
     const birth = overlay.querySelector('#edit-birth').value.trim();
     const pass = overlay.querySelector('#edit-pass').value.trim();
-        // 🔥 اگر کاربر رمز جدید وارد کرده بود، هش می‌کنیم. وگرنه رمز قبلی می‌مونه.
     let finalPass = b.password;
     if (pass) {
       finalPass = await hashPassword(pass);
     }
     const security = overlay.querySelector('#edit-security').value.trim();
-        let finalSecurity = b.security;
+    let finalSecurity = b.security;
     if (security) {
       finalSecurity = await hashPassword(normalizeName(security));
     }
@@ -646,7 +632,7 @@ function openEditProfile() {
     b.phone = phone;
     b.birth = birth;
     b.security = finalSecurity;
-        b.logo = newLogo;
+    b.logo = newLogo;
     b.social = {
       instagram: instagram.replace(/^@/, ''),
       telegram: telegram.replace(/^@/, ''),
@@ -712,7 +698,6 @@ function renderCustomers() {
     ? state.customers.filter(c => normalizeName(c.fullName).includes(q))
     : state.customers;
 
-  // 🔍 فیلتر پیشرفته
   if (state.advancedFilter) {
     const f = state.advancedFilter;
     filtered = filtered.filter(c => {
@@ -754,7 +739,7 @@ function renderCustomers() {
 
     const hasRealImage = c.image && (c.image.startsWith('data:image') || c.image.startsWith('http'));
     const avatar = hasRealImage
-? `<img src="${escapeHtml(c.image)}" alt="">`
+      ? `<img src="${escapeHtml(c.image)}" alt="">`
       : getRoseAvatarSvg(40);
 
     return `
@@ -787,8 +772,9 @@ function renderCustomers() {
     btn.addEventListener('click', () => confirmDeleteCustomer(btn.dataset.delete));
   });
 }
+
 // ==============================
-// مودال پایه (🔥 اصلاح‌شده: پارامتر overlay اختیاری)
+// مودال پایه
 // ==============================
 function showModal(contentHtml, options = {}) {
   const overlay = document.createElement('div');
@@ -801,7 +787,6 @@ function showModal(contentHtml, options = {}) {
   return overlay;
 }
 
-// 🔥 اگه overlay بدی، همون رو می‌بنده، وگرنه بالاترین مودال رو
 function closeModal(overlay = null) {
   if (overlay) {
     overlay.remove();
@@ -836,7 +821,7 @@ function initSetupScreen() {
     const result = await showShamsiDatePicker(birthInput.value, 'تاریخ تولد شما');
     if (result) birthInput.value = result;
   });
-   document.getElementById('btn-register').addEventListener('click', async () => {
+  document.getElementById('btn-register').addEventListener('click', async () => {
     const job = document.getElementById('setup-job').value.trim();
     const name = document.getElementById('setup-name').value.trim();
     const manager = document.getElementById('setup-manager').value.trim();
@@ -846,12 +831,11 @@ function initSetupScreen() {
     const hashedPass = await hashPassword(pass);
     const security = document.getElementById('setup-security').value.trim();
     const hashedSecurity = await hashPassword(normalizeName(security));
-        if (!job || !name || !manager || !phone || !pass) {
+    if (!job || !name || !manager || !phone || !pass) {
       toast('لطفاً همه‌ی فیلدهای ضروری را پر کنید', 'error');
       return;
     }
 
-    // 🏋️ تشخیص حالت مربی
     const isCoach = isCoachJob(job);
     let coachType = '';
 
@@ -1015,12 +999,10 @@ function initLockScreen() {
   if (btnRestoreLock) btnRestoreLock.addEventListener('click', () => openRestoreDialog(true));
 }
 
-
 // ==============================
 // داشبورد
 // ==============================
 function initDashboard() {
-    // 🔑 چک لایسنس
   if (typeof checkLicense === 'function') {
     if (!checkLicense()) return;
   }
@@ -1032,12 +1014,13 @@ function initDashboard() {
   const labelCustomer = document.getElementById('label-add-customer');
   if (labelCustomer) {
     const t = getCustomerTitle();
-        const titleFn = (state.business && state.business.bizType === 'coach') ? getCoachCustomerTitle : getCustomerTitle;
+    const titleFn = (state.business && state.business.bizType === 'coach') ? getCoachCustomerTitle : getCustomerTitle;
     const t2 = titleFn();
     const shortTitle = t.replace(' گرامی', '');
     const shortTitle2 = t2.replace(' گرامی', '');
-    labelCustomer.textContent = 'ثبت ' + shortTitle2;  }
-   document.querySelectorAll('.action-btn').forEach(btn => {
+    labelCustomer.textContent = 'ثبت ' + shortTitle2;
+  }
+  document.querySelectorAll('.action-btn').forEach(btn => {
     btn.onclick = () => {
       const action = btn.dataset.action;
       if (action === 'add-customer') openCustomerForm();
@@ -1048,21 +1031,18 @@ function initDashboard() {
     };
   });
 
-    // 🏋️ نمایش دکمه‌های حضور و غیاب توی حالت مربی
   const attendanceBtn = document.getElementById('btn-attendance-dashboard');
   const attendanceHistoryBtn = document.getElementById('btn-attendance-history');
   const quickActions = document.querySelector('.quick-actions');
   if (state.business && state.business.bizType === 'coach') {
     if (attendanceBtn) attendanceBtn.style.display = 'flex';
     if (attendanceHistoryBtn) attendanceHistoryBtn.style.display = 'flex';
-    } else {
+  } else {
     if (attendanceBtn) attendanceBtn.style.display = 'none';
     if (attendanceHistoryBtn) attendanceHistoryBtn.style.display = 'none';
-  
   }
-  // 🏋️ تغییر placeholder جستجو
+
   const searchInput = document.getElementById('search-input');
-  // 🔍 دکمه‌ی فیلتر پیشرفته (فقط مربی)
   const btnAdvancedFilter = document.getElementById('btn-advanced-filter');
   if (btnAdvancedFilter) {
     if (state.business && state.business.bizType === 'coach') {
@@ -1074,9 +1054,9 @@ function initDashboard() {
   }
 
   if (searchInput) {
-      const titleForSearch = (state.business && state.business.bizType === 'coach')
-    ? (state.business.customerTitle || 'شاگرد').replace(' گرامی', '')
-    : 'مشتری';
+    const titleForSearch = (state.business && state.business.bizType === 'coach')
+      ? (state.business.customerTitle || 'شاگرد').replace(' گرامی', '')
+      : 'مشتری';
   }
 
   document.getElementById('search-input').oninput = (e) => {
@@ -1096,8 +1076,6 @@ function initDashboard() {
   renderCustomers();
   renderClock();
 }
-
-
 
 // ==============================
 // 🎉 چک و نمایش تبریک تولد به خود کاربر
@@ -1159,17 +1137,13 @@ function showOwnerBirthdayBanner() {
   overlay.querySelector('#owner-bd-ok').onclick = () => closeModal(overlay);
 }
 
-
-
 // ==============================
 // ثبت/ویرایش مشتری
 // ==============================
 function openCustomerForm(id = null) {
-    // 🔥 ریست پرداخت‌های موقت
   window._pendingPayments = [];
   const editing = id ? state.customers.find(c => c.id === id) : null;
 
-  // 🏋️ اسم خطاب
   const customerLabel = (state.business && state.business.bizType === 'coach')
     ? getCoachCustomerTitle().replace(' گرامی', '')
     : getCustomerTitle().replace(' گرامی', '');
@@ -1195,7 +1169,6 @@ function openCustomerForm(id = null) {
     if (result) birthField.value = result;
   });
 
-  // 🏋️ اتصال انتخابگرهای تاریخ مربی
   if (state.business && state.business.bizType === 'coach') {
     bindCoachDatePickers(overlay);
   }
@@ -1233,11 +1206,10 @@ function openCustomerForm(id = null) {
     }
   };
 
-    // 🔥 اضافه کردن debounce برای جلوگیری از لگ شدن
   let dupTimeout = null;
   const debouncedCheck = () => {
     clearTimeout(dupTimeout);
-    dupTimeout = setTimeout(checkDuplicatesLive, 500); // نیم ثانیه صبر می‌کنه
+    dupTimeout = setTimeout(checkDuplicatesLive, 500);
   };
   
   nameInput.addEventListener('input', debouncedCheck);
@@ -1252,7 +1224,6 @@ function openCustomerForm(id = null) {
     const birth = overlay.querySelector('#cust-birth').value.trim();
     const note = overlay.querySelector('#cust-note').value.trim();
 
-    // 🏋️ اطلاعات ورزشی
     const coachData = readCoachExtraFields(overlay, editing);
     if (!name) { toast('نام ' + customerLabel + ' را وارد کنید', 'error'); return; }
     const similar = findSimilarCustomers(name, phone1, editing ? editing.id : null);
@@ -1276,10 +1247,8 @@ function saveCustomer(editing, data) {
     ? getCoachCustomerTitle().replace(' گرامی', '')
     : getCustomerTitle().replace(' گرامی', '');
 
-  // 🔥 مبلغ نهایی — از فرم خونده می‌شه (coachData.tuition)
   const finalTuition = coachData && coachData.tuition ? coachData.tuition : 0;
 
-  // 🏋️ اطلاعات ورزشی
   const coachFields = coachData ? {
     height: coachData.height || 0,
     weight: coachData.weight || 0,
@@ -1293,8 +1262,6 @@ function saveCustomer(editing, data) {
     image: coachData.image || null,
   } : {};
 
-
-      // 💰 پرداخت‌های جدید که با دکمه‌ی «ثبت پرداخت» اضافه شدن
   let newPayments = null;
   if (coachData && coachData._pendingPayments && coachData._pendingPayments.length > 0) {
     const existing = editing && editing.payments ? editing.payments : [];
@@ -1328,6 +1295,7 @@ function saveCustomer(editing, data) {
 
   document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
 }
+
 function showDuplicateConfirmModal(similarCustomers, onConfirm) {
   const listHtml = similarCustomers.slice(0, 5).map((s) => `
     <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px;margin-bottom:8px;text-align:right">
@@ -1422,7 +1390,7 @@ function openCustomerProfile(id) {
     <div style="text-align:center;margin-bottom:12px">
       <div style="width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.06);display:inline-flex;align-items:center;justify-content:center">
         ${(c.image && (c.image.startsWith('data:image') || c.image.startsWith('http')))
-          ? `<img src="${c.image}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
+          ? `<img src="${escapeHtml(c.image)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
           : getRoseAvatarSvg(60)}
       </div>
     </div>
@@ -1455,7 +1423,6 @@ function openCustomerProfile(id) {
     </div>
   `);
 
-  // 🏋️ دکمه‌های مخصوص مربی
   const trainingPlanBtn = overlay.querySelector('#prof-training-plan');
   if (trainingPlanBtn) {
     trainingPlanBtn.onclick = () => {
@@ -1484,7 +1451,6 @@ function openCustomerProfile(id) {
     };
   }
 
-  // ❄️ دکمه‌ی فریز
   const freezeBtn = overlay.querySelector('#prof-freeze');
   if (freezeBtn) {
     freezeBtn.onclick = () => {
@@ -1499,8 +1465,6 @@ function openCustomerProfile(id) {
     };
   }
 
-  
-  // 💰 دکمه‌ی تاریخچه‌ی پرداخت‌ها
   const paymentsBtn = overlay.querySelector('#prof-payments');
   if (paymentsBtn) {
     paymentsBtn.onclick = () => {
@@ -1514,7 +1478,6 @@ function openCustomerProfile(id) {
       }, 200);
     };
   }
-  // 💰 نمایش قیمت‌ها (فقط حالت عمومی)
   const profShowPrices = overlay.querySelector('#prof-show-prices');
   if (profShowPrices) {
     const currentValue = c.showPrices !== undefined
@@ -1529,7 +1492,6 @@ function openCustomerProfile(id) {
     });
   }
 
-  // ➕ دکمه‌های حالت عمومی
   const profAddService = overlay.querySelector('#prof-add-service');
   if (profAddService) {
     profAddService.onclick = () => {
@@ -1546,13 +1508,11 @@ function openCustomerProfile(id) {
     };
   }
 
-  // بستن
   overlay.querySelector('#prof-close').onclick = () => {
     closeModal(overlay);
     setTimeout(() => checkAndAskSendInvoice(id), 200);
   };
 
-  // ویرایش خدمت
   overlay.querySelectorAll('[data-edit-service]').forEach(btn => {
     btn.onclick = () => {
       const serviceIdx = parseInt(btn.dataset.editService);
@@ -1675,9 +1635,6 @@ function openReport() {
 function renderReportContent(overlay) {
   const content = overlay.querySelector('#report-content');
 
-  // ==============================
-  // 🔥 ۱. درآمد فروش خودم (خدمات مشتریان)
-  // ==============================
   const allLogs = [];
   state.customers.forEach(c => {
     (c.history || []).forEach(h => allLogs.push(h));
@@ -1712,7 +1669,6 @@ function renderReportContent(overlay) {
     } else filteredLogs = [];
   }
   const salesIncome = filteredLogs.reduce((sum, h) => sum + h.cost, 0);
-  // 🔥 اگه payments خالی بود ولی lastPaymentDate هست، یه رکورد موقت بساز
   state.customers.forEach(c => {
     if ((!c.payments || c.payments.length === 0) && c.lastPaymentDate && c.tuition) {
       c.payments = [{
@@ -1723,9 +1679,6 @@ function renderReportContent(overlay) {
     }
   });
 
-
-
-    // 🏋️ اگه مربی هست → درآمد از payments حساب کن
   let coachIncome = 0;
   let coachPaymentCount = 0;
   if (state.business && state.business.bizType === 'coach') {
@@ -1736,7 +1689,6 @@ function renderReportContent(overlay) {
       });
     });
 
-    // فیلتر بازه
     let filteredPayments = allPayments;
     if (reportRange === 'today') {
       const todayNorm = getTodayShamsi();
@@ -1762,12 +1714,8 @@ function renderReportContent(overlay) {
     coachPaymentCount = filteredPayments.length;
   }
 
-  // ==============================
-  // 🔥 ۲. درآمد از تبلیغات
-  // ==============================
   const allIssuedInvoices = DB.get('issuedInvoices', []);
 
-  // محاسبه‌ی بازه برای فاکتورها
   const isInRange = (shamsiDate) => {
     if (!shamsiDate) return false;
     const n = shamsiToNumber(shamsiDate);
@@ -1793,21 +1741,13 @@ function renderReportContent(overlay) {
   const adInvoices = allIssuedInvoices.filter(inv => inv.type === 'ad' && isInRange(inv.issuedAt));
   const adIncome = adInvoices.reduce((sum, inv) => sum + (inv.itemCost || 0), 0);
 
-  // ==============================
-  // 🔥 ۳. درآمد از اسپانسرهای تولد
-  // ==============================
   const sponsorInvoices = allIssuedInvoices.filter(inv => inv.type === 'birthdaySponsor' && isInRange(inv.issuedAt));
   const sponsorIncome = sponsorInvoices.reduce((sum, inv) => sum + (inv.itemCost || 0), 0);
 
-  // ==============================
-  // 🔥 ۴. مجموع کل
-  // ==============================
   const grandTotal = (state.business && state.business.bizType === 'coach')
     ? (coachIncome + sponsorIncome)
     : (salesIncome + adIncome + sponsorIncome);
-  // ==============================
-  // 📊 محاسبه‌ی آمار روزانه (فقط فروش)
-  // ==============================
+
   const dailyIncome = {};
   filteredLogs.forEach(h => { dailyIncome[h.dateShamsi] = (dailyIncome[h.dateShamsi] || 0) + h.cost; });
   let bestDay = null, bestIncome = -1;
@@ -1828,28 +1768,16 @@ function renderReportContent(overlay) {
 
   const rangeLabels = { today: 'امروز', week: 'این هفته', month: 'این ماه', custom: 'بازه‌ی دلخواه', all: 'همه' };
 
-  // ==============================
-  // 🎨 رندر نهایی
-  // ==============================
-
-    // 🔥 فیکس مبلغ‌های بزرگ (1e+24)
-    // ==============================
-  // 📊 آمار شاگردان / مشتریان
-  // ==============================
   const totalCustomers = state.customers.length;
 
-  // «امروز»
   let todayCount = 0;
   if (state.business && state.business.bizType === 'coach') {
-    // مربی: از حضور و غیاب
     const attendance = DB.get('attendance_' + getTodayShamsi().replace(/\//g, '-'), {});
     todayCount = state.customers.filter(c => attendance[c.id] === 'present').length;
   } else {
-    // عادی: از lastVisit
     todayCount = state.customers.filter(c => c.lastVisit === getTodayShamsi()).length;
   }
 
-  // «فعال / غیرفعال» بر اساس retentionDays
   const retentionDays = (state.business && state.business.retentionDays) || 60;
   const retentionFromNum = shamsiToNumber(getShamsiDaysAgo(retentionDays));
 
@@ -1865,7 +1793,6 @@ function renderReportContent(overlay) {
     }
 
     if (!lastDate) {
-      // اگه هیچ مراجعه‌ای نداشته → غیرفعال
       inactiveCount++;
       return;
     }
@@ -1878,13 +1805,11 @@ function renderReportContent(overlay) {
     }
   });
 
-    const customerStatsLabel = (state.business && state.business.bizType === 'coach')
-? getCoachCustomerTitle().replace(' گرامی', '')
-: getCustomerTitle().replace(' گرامی', '');
-
+  const customerStatsLabel = (state.business && state.business.bizType === 'coach')
+    ? getCoachCustomerTitle().replace(' گرامی', '')
+    : getCustomerTitle().replace(' گرامی', '');
 
   content.innerHTML = `
-    <!-- 📊 آمار شاگردان / مشتریان -->
     <div style="background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(59,130,246,0.04));border:1px solid rgba(59,130,246,0.3);border-radius:14px;padding:14px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:700;color:#3B82F6;margin-bottom:10px;text-align:center">📊 آمار ${customerStatsLabel}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -1906,13 +1831,11 @@ function renderReportContent(overlay) {
         </div>
       </div>
     </div>
-    <!-- 🔥 مجموع کل -->
     <div style="background:linear-gradient(135deg,rgba(20,184,166,0.15),rgba(20,184,166,0.05));border:2px solid var(--button-color);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">💵 مجموع کل درآمد (${rangeLabels[reportRange]})</div>
       <div style="font-size:30px;font-weight:800;color:var(--button-color)">${Number(grandTotal).toLocaleString('en-US')} تومان</div>
     </div>
 
-        <!-- 💰 درآمد خودم / فروش خودم -->
     <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="font-size:13px;font-weight:700;color:#10B981">💰 ${(state.business && state.business.bizType === 'coach') ? 'درآمد از شهریه‌ها' : 'فروش خودم'}</div>
@@ -1920,15 +1843,14 @@ function renderReportContent(overlay) {
       </div>
       <div style="font-size:20px;font-weight:800;color:#10B981">${(state.business && state.business.bizType === 'coach') ? Number(coachIncome).toLocaleString('en-US') : Number(salesIncome).toLocaleString('en-US')} تومان</div>
     </div>
-        ${(state.business && state.business.bizType !== 'coach' && filteredLogs.length > 0) ? `
+    ${(state.business && state.business.bizType !== 'coach' && filteredLogs.length > 0) ? `
       <button id="report-sales-detail" style="width:100%;padding:10px;background:rgba(16,185,129,0.08);border:1px dashed #10B981;border-radius:10px;color:#10B981;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:14px">👁️ مشاهده‌ی ریز فروش‌ها (${filteredLogs.length})</button>
     ` : ''}
     ${(state.business && state.business.bizType === 'coach' && coachPaymentCount > 0) ? `
       <button id="report-payments-detail" style="width:100%;padding:10px;background:rgba(16,185,129,0.08);border:1px dashed #10B981;border-radius:10px;color:#10B981;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:14px">👁️ مشاهده‌ی ریز پرداخت‌ها (${coachPaymentCount})</button>
     ` : ''}
 
-        ${(state.business && state.business.bizType !== 'coach') ? `
-    <!-- 📢 تبلیغات -->
+    ${(state.business && state.business.bizType !== 'coach') ? `
     <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="font-size:13px;font-weight:700;color:#8B5CF6">📢 درآمد از تبلیغات</div>
@@ -1938,7 +1860,6 @@ function renderReportContent(overlay) {
     </div>
     ` : ''}
 
-    <!-- 🎂 اسپانسرهای تولد -->
     <div style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:12px;padding:14px;margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="font-size:13px;font-weight:700;color:#EC4899">🎂 درآمد از اسپانسرها</div>
@@ -1947,7 +1868,6 @@ function renderReportContent(overlay) {
       <div style="font-size:20px;font-weight:800;color:#EC4899">${Number(sponsorIncome).toLocaleString('en-US')} تومان</div>
     </div>
 
-    <!-- 📈 بهترین و بدترین روز (فقط فروش) -->
     ${bestDay ? `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="background:rgba(16,185,129,0.15);border-radius:12px;padding:12px;text-align:center">
@@ -1966,7 +1886,6 @@ function renderReportContent(overlay) {
     <h4 style="margin-bottom:8px;font-size:14px">${(state.business && state.business.bizType === 'coach') ? 'درآمد روزانه' : 'فروش روزانه'}:</h4>        ${dailyHtml}
   `;
   
-  // 💰 ریز پرداخت‌های مربی
   const paymentsDetailBtn = overlay.querySelector('#report-payments-detail');
   if (paymentsDetailBtn) {
     paymentsDetailBtn.onclick = () => {
@@ -2016,7 +1935,6 @@ function renderReportContent(overlay) {
           return found ? found.fullName : (p.customerName || 'نامشخص');
         })();
         return `
-              
           <div style="padding:10px 12px;background:rgba(16,185,129,0.08);border-radius:10px;margin-bottom:8px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
               <div style="font-size:13px;font-weight:700">${escapeHtml(customerName)}</div>
@@ -2045,7 +1963,6 @@ function renderReportContent(overlay) {
       ov.querySelector('#detail-close').onclick = () => closeModal(ov);
     };
   }
-    // 💰 ریز فروش‌های حالت عادی
   const salesDetailBtn = overlay.querySelector('#report-sales-detail');
   if (salesDetailBtn) {
     salesDetailBtn.onclick = () => {
@@ -2085,6 +2002,7 @@ function renderReportContent(overlay) {
     };
   }
 }
+
 // ==============================
 // تولدها
 // ==============================
@@ -2122,7 +2040,8 @@ function openBirthdays() {
     : 'مشتری';
 
   const overlay = showModal(`
-    <h3 class="modal-title">    <h3 class="modal-title">🎂 تولدهای نزدیک ${bdTitle} (${(state.business && state.business.birthdayReminderDays) || 7} روز آینده)</h3></h3>    <p style="text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:14px">تعداد: ${upcoming.length} نفر</p>
+    <h3 class="modal-title">🎂 تولدهای نزدیک ${bdTitle} (${(state.business && state.business.birthdayReminderDays) || 7} روز آینده)</h3>
+    <p style="text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:14px">تعداد: ${upcoming.length} نفر</p>
     <div>${listHtml}</div>
     <button class="btn-cancel" id="bd-close" style="width:100%;margin-top:16px">بستن</button>
   `);
@@ -2139,17 +2058,14 @@ async function openBirthdayMessage(customerId) {
   const age = calculateAge(c.birthDate);
   const isYouth = age !== null && age < 16;
 
-  // 🔥 جمله‌ی رندوم تولد
   const birthdayQuote = await getRandomBirthdayQuote();
 
-  // 🔥 پیام پیش‌فرض
   const saved = state.birthdayMessages[customerId];
   const defaultText = saved || (isYouth
     ? `🎉 ${c.fullName} عزیز،\nتولدت مبارک! 🎂🎈\nامیدوارم یه سال پر از شادی و خنده داشته باشی!`
     : `🎂 ${c.fullName} گرامی،\nفرا رسیدن سالروز تولدتان را تبریک عرض می‌کنیم.\nامیدواریم سالی سرشار از سلامتی، شادی و موفقیت پیش رو داشته باشید.`
   );
 
-  // 🔥 عکس کیک پیش‌فرض (SVG)
   const cakeEmoji = `
     <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
       <ellipse cx="60" cy="95" rx="45" ry="6" fill="#E8D5B7"/>
@@ -2173,7 +2089,6 @@ async function openBirthdayMessage(customerId) {
     </svg>
   `;
 
-  // 🔥 عکس کیک سفارشی کاربر
   const cakeImage = state.business.birthdayImage
     ? `<img src="${state.business.birthdayImage}" style="width:150px;height:150px;object-fit:cover;border-radius:50%;box-shadow:0 4px 20px rgba(236,72,153,0.3)">`
     : cakeEmoji;
@@ -2211,7 +2126,6 @@ async function openBirthdayMessage(customerId) {
 
   overlay.querySelector('#bd-msg-close').onclick = () => closeModal(overlay);
 
-  // 🔥 دکمه‌ی جمله‌ی جدید
   overlay.querySelector('#bd-refresh-quote').onclick = async () => {
     const newQuote = await getRandomBirthdayQuote();
     const quoteBox = overlay.querySelector('#bd-quote-box');
@@ -2220,19 +2134,17 @@ async function openBirthdayMessage(customerId) {
     }
   };
 
-  // 🔥 ذخیره‌ی پیام
   overlay.querySelector('#bd-save').onclick = () => {
     state.birthdayMessages[customerId] = overlay.querySelector('#bd-msg').value;
     DB.set('birthdayMessages', state.birthdayMessages);
     toast('متن تبریک ذخیره شد ✅', 'success');
   };
 
-  // 🔥 کپی
   overlay.querySelector('#bd-copy').onclick = () => {
     navigator.clipboard.writeText(overlay.querySelector('#bd-msg').value);
     toast('متن کپی شد ✅', 'success');
   };
-  // 🔥 ساخت عکس تبریک
+
   overlay.querySelector('#bd-make-image').onclick = () => {
     const currentQuote = overlay.querySelector('#bd-quote-box')?.textContent?.replace(/[«»]/g, '').trim() || '';
     const currentMessage = overlay.querySelector('#bd-msg').value;
@@ -2241,15 +2153,12 @@ async function openBirthdayMessage(customerId) {
       generateBirthdayImage(customerId, currentQuote, currentMessage);
     }, 200);
   };
-
-
 }
+
 // ==============================
 // تنظیمات
 // ==============================
 function openSettings() {
-
-
   const retTitle = (state.business && state.business.bizType === 'coach')
     ? getCoachCustomerTitle().replace(' گرامی', '')
     : getCustomerTitle().replace(' گرامی', '');
@@ -2265,10 +2174,6 @@ function openSettings() {
         برای تمدید لایسنس، این شناسه رو برای پشتیبانی بفرستید.
       </p>
     </div>
-
-  
-
-
 
         ${(state.business && state.business.bizType !== 'coach') ? `
     <h4 style="font-size:14px;margin-bottom:8px">📢 تبلیغات:</h4>
@@ -2301,7 +2206,6 @@ function openSettings() {
     </div>
     ` : ''}
 
-
     <h4 style="font-size:14px;margin-bottom:8px">📄 فاکتورهای صادرشده:</h4>
     <div style="margin-bottom:16px">
       <div id="issued-invoices-list" style="margin-bottom:8px"></div>
@@ -2309,7 +2213,6 @@ function openSettings() {
         فاکتورهایی که برای تبلیغ‌دهنده‌ها و اسپانسرها صادر کردی.
       </p>
     </div>
-
 
     <h4 style="font-size:14px;margin-bottom:8px">🔔 یادآوری ${retTitle} غایب:</h4>    <div style="margin-bottom:16px;padding:14px;background:rgba(59,130,246,0.08);border-radius:12px;border:1px solid rgba(59,130,246,0.2)">
       
@@ -2331,7 +2234,6 @@ function openSettings() {
       <button class="btn-cancel" id="retention-refresh" style="width:100%;font-size:12px">🔄 نمایش یه جمله‌ی دیگه</button>
     </div>
 
-
     <h4 style="font-size:14px;margin-bottom:8px">🎂 تنظیمات تولد:</h4>
     <div style="margin-bottom:16px">
       <div class="form-group" style="margin-bottom:8px">
@@ -2351,8 +2253,6 @@ function openSettings() {
         تولدهایی که توی این بازه هستن، توی لیست «تولدها» و بج داشبورد نمایش داده می‌شن.
       </p>
     </div>
-
-
 
     <h4 style="font-size:14px;margin-bottom:8px">تنظیمات فاکتور:</h4>
     <div style="margin-bottom:16px">
@@ -2387,9 +2287,6 @@ function openSettings() {
       </p>
     </div>
   ` : ''}
-
-
-
 
     <h4 style="font-size:14px;margin-bottom:8px">عنوان خطاب مشتری:</h4>
     <div style="margin-bottom:16px">
@@ -2468,7 +2365,6 @@ function openSettings() {
   </label>
 </div>
 
-   
   </div>
 </div>
 
@@ -2519,7 +2415,6 @@ function openSettings() {
     setTimeout(openEditProfile, 150);
   };
 
-  // 🔑 نمایش Device ID
   const deviceIdDisplay = overlay.querySelector('#device-id-display');
   if (deviceIdDisplay && typeof getOrCreateDeviceId === 'function') {
     deviceIdDisplay.textContent = getOrCreateDeviceId();
@@ -2532,19 +2427,16 @@ function openSettings() {
     };
   }
 
-    // 🔔 منطق تنظیمات یادآوری مشتریان غایب
   const retentionEnabled = overlay.querySelector('#retention-enabled');
   const retentionDays = overlay.querySelector('#retention-days');
   const retentionMessage = overlay.querySelector('#retention-message');
   const retentionRefresh = overlay.querySelector('#retention-refresh');
 
   if (retentionEnabled) {
-    // مقدار اولیه
     retentionEnabled.checked = state.business.retentionEnabled === true;
     retentionDays.value = state.business.retentionDays || 60;
     retentionMessage.value = state.business.retentionMessage || '';
 
-    // اگه پیام خالیه، یه جمله‌ی پیش‌فرض از فایل بگیر
     if (!retentionMessage.value) {
       loadRetentionQuotes().then(quotes => {
         if (quotes.length > 0) {
@@ -2553,7 +2445,6 @@ function openSettings() {
       });
     }
 
-    // فعال/غیرفعال
     retentionEnabled.addEventListener('change', function() {
       state.business.retentionEnabled = this.checked;
       DB.set('business', state.business);
@@ -2561,7 +2452,6 @@ function openSettings() {
       if (typeof updateRetentionBox === 'function') updateRetentionBox();
     });
 
-    // بازه‌ی روز
     retentionDays.addEventListener('change', function() {
       const val = parseInt(this.value) || 60;
       state.business.retentionDays = val;
@@ -2570,14 +2460,12 @@ function openSettings() {
       if (typeof updateRetentionBox === 'function') updateRetentionBox();
     });
 
-    // متن پیام
     retentionMessage.addEventListener('change', function() {
       state.business.retentionMessage = this.value.trim();
       DB.set('business', state.business);
       toast('متن پیام ذخیره شد ✅', 'success');
     });
 
-    // جمله‌ی جدید
     retentionRefresh.addEventListener('click', async () => {
       const quotes = await loadRetentionQuotes();
       if (quotes.length === 0) return;
@@ -2589,7 +2477,6 @@ function openSettings() {
     });
   }
 
-  // 🎂 تنظیمات روزهای یادآوری تولد
   const birthdayReminderSelect = overlay.querySelector('#birthday-reminder-days');
   if (birthdayReminderSelect) {
     const currentDays = state.business.birthdayReminderDays || 7;
@@ -2623,118 +2510,103 @@ function openSettings() {
   }
 
   renderAdsList(overlay.querySelector('#ads-list'));
+  renderBirthdaySponsorsList(overlay.querySelector('#birthday-sponsors-list'));
+  if (state.business && state.business.bizType === 'coach' && typeof renderTrainingSponsorsList === 'function') {
+    renderTrainingSponsorsList(overlay.querySelector('#training-sponsors-list'));
+  }
+  renderIssuedInvoicesList(overlay.querySelector('#issued-invoices-list'));
 
-    renderBirthdaySponsorsList(overlay.querySelector('#birthday-sponsors-list'));
-    
-    if (state.business && state.business.bizType === 'coach' && typeof renderTrainingSponsorsList === 'function') {
-      renderTrainingSponsorsList(overlay.querySelector('#training-sponsors-list'));
-    }
-    renderIssuedInvoicesList(overlay.querySelector('#issued-invoices-list'));
-  // ==============================
-// 🖼️ مدیریت عکس پس‌زمینه
-// ==============================
-const bgImageInput = overlay.querySelector('#bg-image-input');
-const bgImagePick = overlay.querySelector('#bg-image-pick');
-const bgImageRemove = overlay.querySelector('#bg-image-remove');
-const bgImagePreview = overlay.querySelector('#bg-image-preview');
-const bgImageImg = overlay.querySelector('#bg-image-img');
-const bgImageInfo = overlay.querySelector('#bg-image-info');
-const bgImageOptions = overlay.querySelector('#bg-image-options');
+  const bgImageInput = overlay.querySelector('#bg-image-input');
+  const bgImagePick = overlay.querySelector('#bg-image-pick');
+  const bgImageRemove = overlay.querySelector('#bg-image-remove');
+  const bgImagePreview = overlay.querySelector('#bg-image-preview');
+  const bgImageImg = overlay.querySelector('#bg-image-img');
+  const bgImageInfo = overlay.querySelector('#bg-image-info');
+  const bgImageOptions = overlay.querySelector('#bg-image-options');
 
+  if (state.business.backgroundImage) {
+    bgImagePreview.style.display = 'block';
+    bgImageImg.src = state.business.backgroundImage;
+    bgImageOptions.style.display = 'block';
+    bgImageRemove.style.display = 'block';
 
-// مقداردهی اولیه
-if (state.business.backgroundImage) {
-  bgImagePreview.style.display = 'block';
-  bgImageImg.src = state.business.backgroundImage;
-  bgImageOptions.style.display = 'block';
-  bgImageRemove.style.display = 'block';
+    const sizeKB = Math.round(state.business.backgroundImage.length / 1024);
+    bgImageInfo.textContent = `✅ عکس فعال — حجم: ~${sizeKB} KB`;
+  }
 
-  const sizeKB = Math.round(state.business.backgroundImage.length / 1024);
-  bgImageInfo.textContent = `✅ عکس فعال — حجم: ~${sizeKB} KB`;
-}
+  const scopeCheckboxes = overlay.querySelectorAll('.bg-scope-cb');
+  let currentScopes = state.business.backgroundImageScopes || ['dashboard', 'lock'];
+  if (!Array.isArray(currentScopes)) {
+    currentScopes = ['dashboard', 'lock'];
+  }
 
-
-
-// انتخاب scope (محل اعمال) — چک‌باکس‌های مستقل
-const scopeCheckboxes = overlay.querySelectorAll('.bg-scope-cb');
-
-// مقدار اولیه
-let currentScopes = state.business.backgroundImageScopes || ['dashboard', 'lock'];
-if (!Array.isArray(currentScopes)) {
-  currentScopes = ['dashboard', 'lock'];
-}
-
-scopeCheckboxes.forEach(cb => {
-  cb.checked = currentScopes.includes(cb.value);
-  cb.addEventListener('change', function() {
-    const selected = [];
-    scopeCheckboxes.forEach(c => {
-      if (c.checked) selected.push(c.value);
-    });
-    state.business.backgroundImageScopes = selected;
-    DB.set('business', state.business);
-    applyBackgroundImage();
-    toast('محل اعمال عکس ذخیره شد ✅', 'success');
-  });
-});
-
-
-// انتخاب عکس
-if (bgImagePick) {
-  bgImagePick.onclick = () => bgImageInput.click();
-}
-
-if (bgImageInput) {
-  bgImageInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    toast('در حال پردازش عکس...', 'info');
-
-    try {
-      const result = await compressBackgroundImage(file);
-      
-      state.business.backgroundImage = result.dataUrl;
-      state.business.backgroundImageSizeKB = result.sizeKB;
-
+  scopeCheckboxes.forEach(cb => {
+    cb.checked = currentScopes.includes(cb.value);
+    cb.addEventListener('change', function() {
+      const selected = [];
+      scopeCheckboxes.forEach(c => {
+        if (c.checked) selected.push(c.value);
+      });
+      state.business.backgroundImageScopes = selected;
       DB.set('business', state.business);
-
-      // آپدیت پیش‌نمایش
-      bgImagePreview.style.display = 'block';
-      bgImageImg.src = result.dataUrl;
-      bgImageInfo.textContent = `✅ عکس جدید اعمال شد — حجم: ~${result.sizeKB} KB`;
-      bgImageOptions.style.display = 'block';
-      bgImageRemove.style.display = 'block';
-
       applyBackgroundImage();
-      toast(`عکس اعمال شد ✅ (${result.sizeKB} KB)`, 'success');
-    } catch (err) {
-      console.error(err);
-      toast('خطا در پردازش عکس', 'error');
-    }
-  };
-}
+      toast('محل اعمال عکس ذخیره شد ✅', 'success');
+    });
+  });
 
-// حذف عکس
-if (bgImageRemove) {
-  bgImageRemove.onclick = () => {
-    if (!confirm('عکس پس‌زمینه حذف بشه؟')) return;
-    
-    state.business.backgroundImage = null;
-    DB.set('business', state.business);
-    
-    // برگردوندن رنگ قبلی
-    applyColors(state.business.buttonColor, state.business.backgroundColor);
-    
-    bgImagePreview.style.display = 'none';
-    bgImageOptions.style.display = 'none';
-    bgImageRemove.style.display = 'none';
-    bgImageInput.value = '';
-    
-    toast('عکس پس‌زمینه حذف شد ✅', 'success');
-  };
-}
-    const addAdBtn = overlay.querySelector('#add-ad-btn');
+  if (bgImagePick) {
+    bgImagePick.onclick = () => bgImageInput.click();
+  }
+
+  if (bgImageInput) {
+    bgImageInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      toast('در حال پردازش عکس...', 'info');
+
+      try {
+        const result = await compressBackgroundImage(file);
+        
+        state.business.backgroundImage = result.dataUrl;
+        state.business.backgroundImageSizeKB = result.sizeKB;
+
+        DB.set('business', state.business);
+
+        bgImagePreview.style.display = 'block';
+        bgImageImg.src = result.dataUrl;
+        bgImageInfo.textContent = `✅ عکس جدید اعمال شد — حجم: ~${result.sizeKB} KB`;
+        bgImageOptions.style.display = 'block';
+        bgImageRemove.style.display = 'block';
+
+        applyBackgroundImage();
+        toast(`عکس اعمال شد ✅ (${result.sizeKB} KB)`, 'success');
+      } catch (err) {
+        console.error(err);
+        toast('خطا در پردازش عکس', 'error');
+      }
+    };
+  }
+
+  if (bgImageRemove) {
+    bgImageRemove.onclick = () => {
+      if (!confirm('عکس پس‌زمینه حذف بشه؟')) return;
+      
+      state.business.backgroundImage = null;
+      DB.set('business', state.business);
+      
+      applyColors(state.business.buttonColor, state.business.backgroundColor);
+      
+      bgImagePreview.style.display = 'none';
+      bgImageOptions.style.display = 'none';
+      bgImageRemove.style.display = 'none';
+      bgImageInput.value = '';
+      
+      toast('عکس پس‌زمینه حذف شد ✅', 'success');
+    };
+  }
+
+  const addAdBtn = overlay.querySelector('#add-ad-btn');
   if (addAdBtn) {
     addAdBtn.onclick = () => {
       closeModal(overlay);
@@ -2742,7 +2614,7 @@ if (bgImageRemove) {
     };
   }
 
-    const addBirthdaySponsorBtn = overlay.querySelector('#add-birthday-sponsor-btn');
+  const addBirthdaySponsorBtn = overlay.querySelector('#add-birthday-sponsor-btn');
   if (addBirthdaySponsorBtn) {
     addBirthdaySponsorBtn.onclick = () => {
       closeModal(overlay);
@@ -2750,8 +2622,6 @@ if (bgImageRemove) {
     };
   }
 
-
-  // 📋 اسپانسر برنامه تمرینی
   const addTrainingSponsorBtn = overlay.querySelector('#add-training-sponsor-btn');
   if (addTrainingSponsorBtn) {
     addTrainingSponsorBtn.onclick = () => {
@@ -2765,7 +2635,7 @@ if (bgImageRemove) {
       }, 200);
     };
   }
- 
+
   const titleSelect = overlay.querySelector('#customer-title-select');
   if (titleSelect) {
     const titles = getCustomerTitleOptions();
@@ -2790,7 +2660,6 @@ if (bgImageRemove) {
     });
   }
 
-  // 🏋️ دراپ‌دان اسم خطاب مربی
   const coachTitleSelect = overlay.querySelector('#coach-title-select');
   if (coachTitleSelect && state.business.bizType === 'coach') {
     const coachOptions = getCoachTitleOptions();
@@ -2809,7 +2678,6 @@ if (bgImageRemove) {
       }
     });
   }
-
 
   const quoteCatSelect = overlay.querySelector('#quote-category');
   const quotePreview = overlay.querySelector('#quote-preview');
@@ -2889,9 +2757,6 @@ function exportBackupFile() {
 // ==============================
 // اعمال رنگ‌ها
 // ==============================
-// ==============================
-// 🎨 اعمال رنگ‌ها و عکس پس‌زمینه
-// ==============================
 function applyColors(btnColor, bgColor) {
   document.documentElement.style.setProperty('--button-color', btnColor);
   document.documentElement.style.setProperty('--background-color', bgColor);
@@ -2912,7 +2777,6 @@ function applyColors(btnColor, bgColor) {
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) metaTheme.setAttribute('content', bgColor);
 
-  // 🔥 اعمال عکس پس‌زمینه (اگه وجود داشته باشه)
   applyBackgroundImage();
 }
 
@@ -2921,9 +2785,7 @@ function applyColors(btnColor, bgColor) {
 // ==============================
 function applyBackgroundImage() {
   const b = state.business;
- 
 
-  // حذف استایل‌های قبلی از همه‌ی صفحات
   document.querySelectorAll('.screen').forEach(s => {
     s.style.backgroundImage = '';
     s.style.backgroundSize = '';
@@ -2934,10 +2796,8 @@ function applyBackgroundImage() {
 
   if (!b || !b.backgroundImage) return;
 
-  // 🔥 پشتیبانی از هر دو فرمت (قدیمی: scope، جدید: scopes)
 let scopes = b.backgroundImageScopes;
 if (!Array.isArray(scopes)) {
-  // مهاجرت از فرمت قدیمی
   const oldScope = b.backgroundImageScope || 'all';
   if (oldScope === 'dashboard') scopes = ['dashboard'];
   else if (oldScope === 'lock') scopes = ['lock'];
@@ -2947,20 +2807,17 @@ if (!Array.isArray(scopes)) {
   b.backgroundImageScopes = scopes;
 }
 
-
-  // 🔥 نگاشت scope به screen id
 const scopeToScreenMap = {
   'dashboard': 'dashboard-screen',
   'lock': 'lock-screen',
   'setup': 'setup-screen',
-  // 'invoice' اینجا نیست چون فاکتور modal هست، جدا هندل می‌شه
 };
 
 const screensToStyle = scopes
-  .filter(s => s !== 'invoice') // فاکتور جدا هندل می‌شه
+  .filter(s => s !== 'invoice')
   .map(s => scopeToScreenMap[s])
   .filter(Boolean);
-  // 🔥 شفافیت متفاوت برای هر صفحه (حرفه‌ای‌تر)
+
   screensToStyle.forEach(screenId => {
   const screen = document.getElementById(screenId);
   if (!screen) return;
@@ -2972,7 +2829,6 @@ const screensToStyle = scopes
   screen.style.backgroundAttachment = 'fixed';
   screen.style.position = 'relative';
 });
- 
 }
 
 // ==============================
@@ -3006,14 +2862,12 @@ function init() {
     showScreen('setup-screen');
     initSetupScreen();
   }
-    // 🌊 مخفی کردن Splash بعد از init
   setTimeout(hideSplashScreen, 1500);
 }
 
 // ==============================
 // PDF: فونت وزیرمتن
 // ==============================
-// 🔥 تبدیل اعداد به فارسی
 function toFaDigits(input) {
   if (input === null || input === undefined) return '';
   const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
@@ -3026,7 +2880,7 @@ function faNum(n) {
 }
 
 let _vazirFontBase64 = null;
-let _vazirFontFailed = false; // 🔥 جلوگیری از تلاش مکرر
+let _vazirFontFailed = false;
 
 async function loadVazirFontForPdf() {
   if (_vazirFontBase64) return _vazirFontBase64;
@@ -3048,14 +2902,11 @@ async function loadVazirFontForPdf() {
     return _vazirFontBase64;
   } catch (e) {
     console.error('خطا در بارگذاری فونت:', e);
-    _vazirFontFailed = true; // 🔥 علامت‌گذاری شکست
+    _vazirFontFailed = true;
     return null;
   }
 }
 
-// ==============================
-// PDF مشتریان
-// ==============================
 async function generateCustomersPdf() {
   if (state.customers.length === 0) { toast('هنوز مشتری‌ای ثبت نشده است', 'error'); return; }
   toast('در حال آماده‌سازی فایل...', 'info');
@@ -3090,9 +2941,6 @@ async function generateCustomersPdf() {
   toast('فایل PDF مشتریان آماده شد ✅', 'success');
 }
 
-// ==============================
-// PDF گزارش مالی
-// ==============================
 async function generateFinancialPdf(fromDate = null, toDate = null, rangeLabel = 'همه') {
   const { jsPDF } = window.jspdf;
   toast('در حال آماده‌سازی فایل...', 'info');
@@ -3278,11 +3126,10 @@ function openRestoreDialog(fromLockScreen = false) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-        reader.onload = (ev) => {
+    reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
         
-        // 🔥 اعتبارسنجی فایل بکاپ
         if (!data.business || typeof data.business !== 'object') {
           toast('فایل نامعتبر است: اطلاعات کسب‌وکار یافت نشد', 'error');
           return;
@@ -3291,22 +3138,19 @@ function openRestoreDialog(fromLockScreen = false) {
           toast('فایل نامعتبر است: لیست مشتریان باید آرایه باشد', 'error');
           return;
         }
-                        if (data.customers.length > 0) {
+        if (data.customers.length > 0) {
           for (const customer of data.customers) {
             if (typeof customer !== 'object' || typeof customer.fullName !== 'string') {
               toast('فایل نامعتبر است: ساختار مشتریان اشتباه است', 'error');
               return;
             }
-            // 🔥 چک کردن تمام فیلدهای متنی برای کدهای مخرب
             const stringFields = ['fullName', 'phone1', 'phone2', 'note', 'birthDate', 'image', 'medals'];
             for (const field of stringFields) {
               if (customer[field] && typeof customer[field] === 'string') {
-                // بررسی تگ‌های خطرناک و جاوااسکریپت
                 if (/<script|<img|onerror|onload|javascript:/i.test(customer[field])) {
                   toast('فایل نامعتبر است: حاوی کد مخرب است', 'error');
                   return;
                 }
-                // بررسی اینکه عکس فقط از نوع data:image باشد
                 if (field === 'image' && customer[field] && !customer[field].startsWith('data:image/')) {
                   toast('فایل نامعتبر است: آدرس عکس نامعتبر است', 'error');
                   return;
@@ -3348,15 +3192,14 @@ function openRestorePreview(data) {
   `, { center: true });
   overlay.querySelector('#rp-cancel').onclick = () => closeModal(overlay);
   overlay.querySelector('#rp-confirm').onclick = () => {
-// 🔥 حفظ اطلاعات لایسنس موقع بازیابی
-const savedDeviceId = DB.get('deviceId');
-const savedLicenseStart = DB.get('licenseStart');
-const savedLicenseEnd = DB.get('licenseEnd');
+    const savedDeviceId = DB.get('deviceId');
+    const savedLicenseStart = DB.get('licenseStart');
+    const savedLicenseEnd = DB.get('licenseEnd');
 
-// 🔥 برگرداندن اطلاعات لایسنس
-if (savedDeviceId) DB.set('deviceId', savedDeviceId);
-if (savedLicenseStart) DB.set('licenseStart', savedLicenseStart);
-if (savedLicenseEnd) DB.set('licenseEnd', savedLicenseEnd);    DB.set('business', data.business);
+    if (savedDeviceId) DB.set('deviceId', savedDeviceId);
+    if (savedLicenseStart) DB.set('licenseStart', savedLicenseStart);
+    if (savedLicenseEnd) DB.set('licenseEnd', savedLicenseEnd);
+    DB.set('business', data.business);
     DB.set('customers', data.customers || []);
     DB.set('birthdayMessages', data.birthdayMessages || {});
     if (data.ads) DB.set('ads', data.ads);
@@ -3478,28 +3321,22 @@ function getAbsentCustomers() {
   const absentList = [];
 
   state.customers.forEach(c => {
-    // اگه مشتری هیچ سابقه‌ای نداره، نادیده بگیر
     if (!c.history || c.history.length === 0) return;
 
-    // آخرین تاریخ مراجعه
     const lastDate = c.lastVisit || c.history[c.history.length - 1].dateShamsi;
     if (!lastDate) return;
 
     const lastNum = shamsiToNumber(lastDate);
     if (lastNum === 0) return;
 
-    // تعداد روزهای غیبت
     const daysAbsent = daysBetweenShamsi(lastDate, todayFull);
     if (daysAbsent === null) return;
 
-    // اگه کمتر از بازه باشه، یعنی هنوز غایب نیست
     if (daysAbsent <= retentionDays) return;
 
-    // اضافه‌بار غیبت (چقدر بیشتر از بازه)
     const extraDays = daysAbsent - retentionDays;
 
-    // تعیین شدت
-    let severity = 'warning';  // 🟡
+    let severity = 'warning';
     let severityLabel = 'هشدار';
     let severityColor = '#F59E0B';
     if (extraDays > 60) {
@@ -3524,7 +3361,6 @@ function getAbsentCustomers() {
     });
   });
 
-  // مرتب‌سازی: بحرانی‌تر اول
   absentList.sort((a, b) => b.daysAbsent - a.daysAbsent);
 
   return absentList;
@@ -3548,12 +3384,9 @@ function daysBetweenShamsi(fromShamsi, toShamsi) {
 
   if (isNaN(fy) || isNaN(fm) || isNaN(fd) || isNaN(ty) || isNaN(tm) || isNaN(td)) return null;
 
-  // تابع تبدیل تاریخ شمسی به شماره‌ی روز مطلق
   const toAbsoluteDays = (y, m, d) => {
     let total = 0;
-    // تعداد روزهای سال‌های قبل
     for (let i = 1300; i < y; i++) total += isShamsiLeapYear(i) ? 366 : 365;
-    // تعداد روزهای ماه‌های قبل
     for (let i = 1; i < m; i++) total += shamsiMonthDays(y, i);
     total += d;
     return total;
@@ -3564,7 +3397,6 @@ function daysBetweenShamsi(fromShamsi, toShamsi) {
 
   return toNum - fromNum;
 }
-
 
 // ==============================
 // 🎨 ایموجی و رنگ شدت غیبت
@@ -3600,7 +3432,6 @@ function updateRetentionBox() {
   const customerTitle = getCustomerTitle();
   const shortTitle = customerTitle.replace(' گرامی', '');
 
-  // ۵ مشتری اول
   const topFive = absentList.slice(0, 5);
 
   const listHtml = topFive.map(item => {
@@ -3635,12 +3466,10 @@ function updateRetentionBox() {
 
   box.style.display = 'block';
 
-  // دکمه‌های پیام
   box.querySelectorAll('[data-retention-msg]').forEach(btn => {
     btn.onclick = () => openRetentionMessageForm(btn.dataset.retentionMsg);
   });
 
-  // دکمه‌ی مشاهده‌ی همه
   const viewAllBtn = box.querySelector('#retention-view-all');
   if (viewAllBtn) {
     viewAllBtn.onclick = () => openAllAbsentCustomersModal(absentList);
@@ -3715,7 +3544,6 @@ async function openRetentionMessageForm(customerId) {
     return;
   }
 
-  // متن پیش‌فرض: اول پیام ذخیره‌شده برای این مشتری، بعد پیام تنظیمات، بعد یه جمله‌ی رندوم
   const savedMessage = b.retentionMessages && b.retentionMessages[customerId];
   let defaultText = savedMessage || b.retentionMessage || '';
 
@@ -3723,7 +3551,6 @@ async function openRetentionMessageForm(customerId) {
     defaultText = await getRandomRetentionQuote();
   }
 
-  // اگه متن پیام شامل placeholder باشه، جایگزین کن
   const buildMessage = (text) => {
     return text
       .replace(/\{name\}/g, c.fullName)
@@ -3736,7 +3563,6 @@ async function openRetentionMessageForm(customerId) {
   const overlay = showModal(`
     <h3 class="modal-title">📱 ارسال پیام به ${escapeHtml(c.fullName)}</h3>
 
-    <!-- اطلاعات مشتری -->
     <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:14px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <span style="font-size:24px">${getSeverityIcon(absentItem.severity)}</span>
@@ -3751,20 +3577,17 @@ async function openRetentionMessageForm(customerId) {
       </div>
     </div>
 
-    <!-- متن پیام -->
     <div class="form-group">
       <label style="font-size:12px">متن پیام (قابل ویرایش):</label>
       <textarea id="retention-msg-text" rows="6" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border-color);border-radius:12px;color:var(--text-color);font-family:inherit;font-size:13px;line-height:1.8;resize:vertical">${escapeHtml(buildMessage(defaultText))}</textarea>
     </div>
 
-    <!-- دکمه‌های ابزار -->
     <div style="display:flex;justify-content:space-around;margin-top:14px">
       <button class="btn-icon" id="retention-refresh" title="جمله‌ی جدید">🔄</button>
       <button class="btn-icon" id="retention-save" title="ذخیره برای این مشتری">💾</button>
       <button class="btn-icon" id="retention-copy" title="کپی متن">📋</button>
     </div>
 
-    <!-- دکمه‌ی ساخت عکس -->
     <button class="btn-primary" id="retention-make-image" style="width:100%;margin-top:14px;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff">📷 ساخت عکس پیام</button>
 
     <div class="modal-actions" style="margin-top:10px">
@@ -3774,14 +3597,12 @@ async function openRetentionMessageForm(customerId) {
 
   const textarea = overlay.querySelector('#retention-msg-text');
 
-  // 🔄 جمله‌ی جدید
   overlay.querySelector('#retention-refresh').onclick = async () => {
     const newQuote = await getRandomRetentionQuote();
     textarea.value = buildMessage(newQuote);
     toast('جمله‌ی جدید اعمال شد ✅', 'success');
   };
 
-  // 💾 ذخیره برای این مشتری
   overlay.querySelector('#retention-save').onclick = () => {
     if (!b.retentionMessages) b.retentionMessages = {};
     b.retentionMessages[customerId] = textarea.value;
@@ -3789,20 +3610,17 @@ async function openRetentionMessageForm(customerId) {
     toast('متن پیام برای این مشتری ذخیره شد ✅', 'success');
   };
 
-  // 📋 کپی
   overlay.querySelector('#retention-copy').onclick = async () => {
     try {
       await navigator.clipboard.writeText(textarea.value);
       toast('متن کپی شد ✅', 'success');
     } catch (e) {
-      // fallback برای مرورگرهای قدیمی
       textarea.select();
       document.execCommand('copy');
       toast('متن کپی شد ✅', 'success');
     }
   };
 
-  // 📷 ساخت عکس
   overlay.querySelector('#retention-make-image').onclick = () => {
     const currentText = textarea.value;
     closeModal(overlay);
@@ -3811,7 +3629,6 @@ async function openRetentionMessageForm(customerId) {
     }, 200);
   };
 
-  // بستن
   overlay.querySelector('#retention-close').onclick = () => closeModal(overlay);
 }
 
@@ -3830,15 +3647,12 @@ async function generateRetentionImage(customerId, messageText) {
   const b = state.business;
   const today = getTodayShamsi();
 
-  // 🔥 لوگو کسب‌وکار
   const logoHtml = b.logo
     ? `<img src="${b.logo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px">`
        : `<img src="assets/icon-192.png" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px">`;
 
-  // 🔥 متن پیام
   const messageHtml = escapeHtml(messageText).replace(/\n/g, '<br>');
 
-  // 🔥 container مخفی
   const container = document.createElement('div');
   container.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1';
   container.innerHTML = `
@@ -3970,8 +3784,6 @@ function showRetentionImagePreview(blob, fileName, customer) {
     }
   };
 }
-
-
 
 // ==============================
 // 📄 فاکتور به‌صورت عکس
@@ -4180,7 +3992,6 @@ async function generateInvoiceImage(customerId, serviceIndex = null) {
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
 
-      // 🔥 افزایش shownCount تبلیغات
       incrementAdShownCount(adTop);
       incrementAdShownCount(adBottom);
 
@@ -4199,7 +4010,6 @@ async function generateInvoiceImage(customerId, serviceIndex = null) {
   }
 }
 
-// 🔥 افزایش شمارنده نمایش تبلیغ
 function incrementAdShownCount(ad) {
   if (!ad) return;
   const ads = getAds();
@@ -4207,15 +4017,11 @@ function incrementAdShownCount(ad) {
   if (!target) return;
   target.shownCount = (target.shownCount || 0) + 1;
   saveAds(ads);
-  // چک کن اگه به سقف رسید، رزرو بعدی رو فعال کن
   if (target.shownCount >= target.totalShows) {
     checkAndActivateReserved();
   }
 }
 
-// ==============================
-// پیش‌نمایش فاکتور
-// ==============================
 function showInvoicePreview(blob, fileName, customer) {
   const url = URL.createObjectURL(blob);
   const overlay = showModal(`
@@ -4254,14 +4060,7 @@ function showInvoicePreview(blob, fileName, customer) {
   };
 }
 
-
-// ==============================
-// 📄 صدور فاکتور برای تبلیغ‌دهنده / اسپانسر
-// ==============================
 async function generateIssuedInvoice(type, itemId) {
-  // type: 'ad' یا 'birthdaySponsor'
-  // itemId: آیدی آیتم توی آرایه
-
   let item, itemName, itemPhone, itemDesc, itemCount, itemCost;
   const b = state.business;
 
@@ -4286,7 +4085,8 @@ async function generateIssuedInvoice(type, itemId) {
 } else if (type === 'trainingSponsor') {
     const sponsors = getTrainingSponsors();
     item = sponsors.find(s => s.id === itemId);
-       itemName = item.name;
+    if (!item) { toast('اسپانسر پیدا نشد', 'error'); return; }
+    itemName = item.name;
     itemPhone = item.phone;
     itemDesc = item.text || 'اسپانسر برنامه تمرینی';
     itemCount = `${item.totalShows} برنامه`;
@@ -4300,11 +4100,9 @@ async function generateIssuedInvoice(type, itemId) {
 
   const today = getTodayShamsi();
   const typeLabel = type === 'ad' ? '📢 تبلیغ در فاکتور' : (type === 'birthdaySponsor' ? '🎂 اسپانسر تولد' : '📋 اسپانسر برنامه تمرینی');
-  // لوگوی کسب‌وکار
   const logoHtml = b.logo
     ? `<img src="${b.logo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px">`
      : `<img src="assets/icon-192.png" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px">`;
-  // شبکه‌های اجتماعی کسب‌وکار
   const social = b.social || {};
   const socialItems = [];
   if (social.instagram) socialItems.push({ icon: '📸', label: 'اینستاگرام', value: social.instagram });
@@ -4431,7 +4229,6 @@ async function generateIssuedInvoice(type, itemId) {
 
       const fileName = `فاکتور-${typeLabel.replace(/[^\u0600-\u06FF]/g, '').trim()}-${itemName}-${today.replace(/\//g, '-')}.png`;
 
-      // ذخیره‌ی متادیتا توی localStorage
       saveIssuedInvoice({
         type,
         itemId,
@@ -4453,9 +4250,6 @@ async function generateIssuedInvoice(type, itemId) {
   }
 }
 
-// ==============================
-// 💾 ذخیره‌ی متادیتای فاکتور صادرشده
-// ==============================
 function saveIssuedInvoice(meta) {
   const invoices = DB.get('issuedInvoices', []);
   invoices.push({
@@ -4466,9 +4260,6 @@ function saveIssuedInvoice(meta) {
   DB.set('issuedInvoices', invoices);
 }
 
-// ==============================
-// 📄 پیش‌نمایش فاکتور صادرشده
-// ==============================
 function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type) {
   const url = URL.createObjectURL(blob);
   const typeLabel = type === 'ad' ? '📢 تبلیغ' : '🎂 اسپانسر تولد';
@@ -4513,9 +4304,7 @@ function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type
     }
   };
 }
-// ==============================
-// 🌹 آیکون گل رز SVG (پیش‌فرض مشتری)
-// ==============================
+
 function getRoseAvatarSvg(size = 40) {
   return `
     <svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -4539,9 +4328,6 @@ function getRoseAvatarSvg(size = 40) {
   `;
 }
 
-// ==============================
-// 📥 سبد ارسال فاکتور
-// ==============================
 function addPendingInvoice(customerId) {
   const c = state.customers.find(x => x.id === customerId);
   if (!c) return;
@@ -4585,9 +4371,6 @@ function removePendingInvoice(invoiceId) {
   DB.set('pendingInvoices', pending);
 }
 
-// ==============================
-// 📥 آپدیت بج سبد ارسال
-// ==============================
 function updatePendingBadge() {
   const badge = document.getElementById('pending-badge');
   const btn = document.getElementById('btn-pending');
@@ -4603,10 +4386,6 @@ function updatePendingBadge() {
   }
 }
 
-
-// ==============================
-// 🎂 آپدیت بج تولدهای نزدیک
-// ==============================
 function updateBirthdayBadge() {
   const badge = document.getElementById('birthday-badge');
   if (!badge) return;
@@ -4616,10 +4395,8 @@ function updateBirthdayBadge() {
   const upcoming = state.customers.filter(c => {
     if (!c.birthDate) return false;
     
-    // 🔥 محاسبه‌ی دقیق روزهای باقی‌مانده تا تولد
     const days = daysUntilBirthday(c.birthDate);
     
-    // چک کردن دقیق: اگه روزها معتبر بود و توی بازه بود (حتی امروز با 0 روز)
     return days !== null && days >= 0 && days <= reminderDays;
   });
 
@@ -4633,10 +4410,6 @@ function updateBirthdayBadge() {
   }
 }
 
-
-// ==============================
-// 📥 باز کردن سبد ارسال
-// ==============================
 function openPendingList() {
   const pending = getPendingInvoices();
 
@@ -4694,9 +4467,6 @@ function openPendingList() {
   });
 }
 
-// ==============================
-// 📤 پرسیدن ارسال فاکتور موقع خروج از پروفایل
-// ==============================
 function checkAndAskSendInvoice(customerId) {
   const c = state.customers.find(x => x.id === customerId);
   if (!c) return;
@@ -4765,9 +4535,6 @@ function checkAndAskSendInvoice(customerId) {
   overlay.querySelector('#ask-make-no').onclick = () => closeModal(overlay);
 }
 
-// ==============================
-// ✏️ ویرایش خدمت
-// ==============================
 function openEditServiceDialog(customerId, serviceIdx) {
   const c = state.customers.find(x => x.id === customerId);
   if (!c) return;
@@ -4835,9 +4602,6 @@ function openEditServiceDialog(customerId, serviceIdx) {
   };
 }
 
-// ==============================
-// 📢 تبلیغات
-// ==============================
 function getAds() {
   return DB.get('ads', []);
 }
@@ -4846,7 +4610,6 @@ function saveAds(ads) {
   DB.set('ads', ads);
 }
 
-// 🔥 نرمال‌سازی جایگاه: 'A' → 'top'، 'C' → 'bottom'
 function normalizeSlot(slot) {
   if (slot === 'A' || slot === 'top') return 'top';
   if (slot === 'C' || slot === 'bottom') return 'bottom';
@@ -4923,13 +4686,11 @@ function renderAdsList(container) {
       const ad = ads[idx];
       if (!ad) return;
 
-      // چک کن که تبلیغ حذف نشده باشه
       if (!ad.id) {
         toast('تبلیغ پیدا نشد', 'error');
         return;
       }
 
-      // اگه قبلاً فاکتور صادر شده، تایید بگیر
       const issuedInvoices = DB.get('issuedInvoices', []);
       const alreadyIssued = issuedInvoices.find(inv => inv.itemId === ad.id && inv.type === 'ad');
 
@@ -4959,9 +4720,6 @@ function renderAdsList(container) {
   });
 }
 
-// ==============================
-// 📢 رندر کارت تبلیغ
-// ==============================
 function renderAdCard(ad, idx, isReserved, canUp = false, canDown = false) {
   const slotLabel = normalizeSlot(ad.slot) === 'top' ? 'بالا' : 'پایین';
   const remaining = (ad.totalShows || 0) - (ad.shownCount || 0);
@@ -4992,9 +4750,6 @@ function renderAdCard(ad, idx, isReserved, canUp = false, canDown = false) {
   `;
 }
 
-// ==============================
-// 📢 جابه‌جایی اولویت (🔥 اصلاح‌شده)
-// ==============================
 function swapPriority(idx, direction) {
   const ads = getAds();
   const ad = ads[idx];
@@ -5012,7 +4767,6 @@ function swapPriority(idx, direction) {
 
   const targetAd = slotReserved[targetPos];
 
-  // 🔥 به جای جابه‌جایی اولویت‌ها (که ممکنه تکراری بشه)، همه رو دوباره شماره‌گذاری کن
   const newOrder = slotReserved.slice();
   newOrder.splice(currentPos, 1);
   newOrder.splice(targetPos, 0, ad);
@@ -5025,9 +4779,6 @@ function swapPriority(idx, direction) {
   toast('اولویت تغییر کرد', 'success');
 }
 
-// ==============================
-// 📢 فرم تعریف تبلیغ (🔥 اصلاح‌شده: حذف بلوک تکراری)
-// ==============================
 function openAdForm(editIdx = null) {
   const ads = getAds();
   const editing = editIdx !== null ? ads[editIdx] : null;
@@ -5087,7 +4838,6 @@ function openAdForm(editIdx = null) {
     </div>
   `, { center: true });
 
-  // 🔥 آپلود عکس تبلیغ
   let adImageData = editing ? (editing.image || null) : null;
   const adImageInput = overlay.querySelector('#ad-image-input');
   const adImageBtn = overlay.querySelector('#ad-image-btn');
@@ -5166,7 +4916,6 @@ function openAdForm(editIdx = null) {
       return;
     }
 
-    // حالت ویرایش
     if (editing) {
       const currentAds = getAds();
       currentAds[editIdx] = {
@@ -5181,7 +4930,6 @@ function openAdForm(editIdx = null) {
       return;
     }
 
-    // چک کن جایگاه پر هست یا نه
     const adsNow = getAds();
     const activeInSlot = adsNow.find(ad =>
       normalizeSlot(ad.slot) === slot &&
@@ -5259,7 +5007,6 @@ function openAdForm(editIdx = null) {
       return;
     }
 
-    // جایگاه خالی → مستقیم فعال
     const result = addAdWithReservation({ name, text, phone, slot, totalShows, totalCost, image: adImageData })
     if (result.error) {
       toast(result.error, 'error');
@@ -5271,9 +5018,6 @@ function openAdForm(editIdx = null) {
   };
 }
 
-// ==============================
-// 📢 انتخاب تبلیغ فعال برای یه جایگاه
-// ==============================
 function getActiveAdForSlot(slot) {
   const normSlot = normalizeSlot(slot);
   const ads = getAds();
@@ -5286,13 +5030,9 @@ function getActiveAdForSlot(slot) {
   return activeAds[0];
 }
 
-// ==============================
-// 📢 ساخت HTML تبلیغ (با تیتر راست‌چین و لوگوی تلگرام)
-// ==============================
 function buildAdHtml(ad) {
   if (!ad) return '';
 
-  // لوگوی تلگرام (SVG)
   const telegramIcon = `
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="12" fill="#229ED9"/>
@@ -5331,9 +5071,7 @@ function buildAdHtml(ad) {
     </div>
   `;
 }
-// ==============================
-// 📢 اضافه کردن تبلیغ با منطق رزرو
-// ==============================
+
 function addAdWithReservation(adData) {
   const ads = getAds();
   const slot = normalizeSlot(adData.slot);
@@ -5388,13 +5126,9 @@ function addAdWithReservation(adData) {
   return { success: true, reserved: false };
 }
 
-// ==============================
-// 📢 بررسی و فعال‌سازی رزروها
-// ==============================
 function checkAndActivateReserved() {
   const ads = getAds();
-    // 🔥 اطمینان از اینکه در هر اسلات فقط یک تبلیغ active وجود دارد
-  ['top', 'bottom'].forEach(slot => {
+    ['top', 'bottom'].forEach(slot => {
     const activeInSlot = ads.filter(ad => normalizeSlot(ad.slot) === slot && ad.status === 'active' && (ad.shownCount || 0) < (ad.totalShows || 0));
     if (activeInSlot.length > 1) {
       for (let i = 1; i < activeInSlot.length; i++) {
@@ -5444,9 +5178,6 @@ function checkAndActivateReserved() {
   }
 }
 
-// ==============================
-// 🎂 اسپانسرهای تولد — داده
-// ==============================
 function getBirthdaySponsors() {
   return DB.get('birthdaySponsors', []);
 }
@@ -5455,9 +5186,6 @@ function saveBirthdaySponsors(sponsors) {
   DB.set('birthdaySponsors', sponsors);
 }
 
-// ==============================
-// 🎂 رندر لیست اسپانسرها
-// ==============================
 function renderBirthdaySponsorsList(container) {
   if (!container) return;
 
@@ -5499,7 +5227,6 @@ function renderBirthdaySponsorsList(container) {
 
   container.innerHTML = html;
 
-  // ویرایش
   container.querySelectorAll('[data-edit-sponsor]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.editSponsor);
@@ -5508,7 +5235,6 @@ function renderBirthdaySponsorsList(container) {
     };
   });
 
-  // حذف
   container.querySelectorAll('[data-delete-sponsor]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.deleteSponsor);
@@ -5522,7 +5248,6 @@ function renderBirthdaySponsorsList(container) {
     };
   });
 
-  // صدور فاکتور
   container.querySelectorAll('[data-issue-invoice-sponsor]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.issueInvoiceSponsor);
@@ -5542,7 +5267,6 @@ function renderBirthdaySponsorsList(container) {
     };
   });
 
-  // اولویت
   container.querySelectorAll('[data-priority-up-sponsor]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.priorityUpSponsor);
@@ -5560,9 +5284,6 @@ function renderBirthdaySponsorsList(container) {
   });
 }
 
-// ==============================
-// 🎂 رندر کارت اسپانسر
-// ==============================
 function renderBirthdaySponsorCard(sponsor, idx, isReserved, canUp = false, canDown = false) {
   const slotLabel = normalizeSlot(sponsor.slot) === 'top' ? 'بالا' : 'پایین';
   const remaining = (sponsor.totalShows || 0) - (sponsor.shownCount || 0);
@@ -5593,9 +5314,6 @@ function renderBirthdaySponsorCard(sponsor, idx, isReserved, canUp = false, canD
   `;
 }
 
-// ==============================
-// 🎂 جابه‌جایی اولویت اسپانسرها
-// ==============================
 function swapSponsorPriority(idx, direction) {
   const sponsors = getBirthdaySponsors();
   const sponsor = sponsors[idx];
@@ -5623,13 +5341,6 @@ function swapSponsorPriority(idx, direction) {
   toast('اولویت تغییر کرد', 'success');
 }
 
-
-// ==============================
-// 🎂 فرم تعریف اسپانسر
-// ==============================
-// ==============================
-// 🎂 فرم تعریف اسپانسر
-// ==============================
 function openBirthdaySponsorForm(editIdx = null) {
   const sponsors = getBirthdaySponsors();
   const editing = editIdx !== null ? sponsors[editIdx] : null;
@@ -5688,7 +5399,6 @@ function openBirthdaySponsorForm(editIdx = null) {
     </div>
   `, { center: true });
 
-  // 📷 آپلود عکس اسپانسر تولد
   let sponsorImageData = editing ? (editing.image || null) : null;
   const sponsorImageInput = overlay.querySelector('#sponsor-image-input');
   const sponsorImageBtn = overlay.querySelector('#sponsor-image-btn');
@@ -5812,117 +5522,8 @@ function openBirthdaySponsorForm(editIdx = null) {
     closeModal(overlay);
     setTimeout(openSettings, 150);
   };
-
-
-  overlay.querySelector('#sponsor-save').onclick = () => {
-    const name = overlay.querySelector('#sponsor-name').value.trim();
-    const text = overlay.querySelector('#sponsor-text').value.trim();
-    const phone = overlay.querySelector('#sponsor-phone').value.trim();
-    const slot = normalizeSlot(overlay.querySelector('#sponsor-slot').value);
-    const totalShows = parseInt(overlay.querySelector('#sponsor-shows').value) || 0;
-    const totalCost = parseInt(overlay.querySelector('#sponsor-cost').value.replace(/\D/g, '')) || 0;
-
-    if (!name) {
-      toast('نام اسپانسر را وارد کنید', 'error');
-      return;
-    }
-    if (totalShows <= 0) {
-      toast('تعداد تولد را وارد کنید', 'error');
-      return;
-    }
-
-    // حالت ویرایش
-    if (editing) {
-      const currentSponsors = getBirthdaySponsors();
-      currentSponsors[editIdx] = {
-        ...currentSponsors[editIdx],
-        name, text, phone, slot, totalShows, totalCost,
-        image: sponsorImageData
-      };
-      saveBirthdaySponsors(currentSponsors);
-      toast('اسپانسر ویرایش شد ✅', 'success');
-      closeModal(overlay);
-      setTimeout(openSettings, 150);
-      return;
-    }
-
-    // چک کن جایگاه پر هست یا نه
-    const sponsorsNow = getBirthdaySponsors();
-    const activeInSlot = sponsorsNow.find(s =>
-      normalizeSlot(s.slot) === slot &&
-      s.status === 'active' &&
-      (s.shownCount || 0) < (s.totalShows || 0)
-    );
-
-    if (activeInSlot) {
-      const slotLabel = slot === 'top' ? 'بالا' : 'پایین';
-      const remaining = (activeInSlot.totalShows || 0) - (activeInSlot.shownCount || 0);
-
-      closeModal(overlay);
-      setTimeout(() => {
-        const warnOverlay = showModal(`
-          <h3 class="modal-title" style="color:#F59E0B">⚠️ جایگاه ${slotLabel} اشغال است</h3>
-          <div style="background:rgba(245,158,11,0.1);border:1px solid #F59E0B;border-radius:12px;padding:14px;margin-bottom:16px">
-            <p style="font-size:13px;line-height:1.9;margin:0;text-align:center">
-              الان اسپانسر <strong>${escapeHtml(activeInSlot.name)}</strong> توی جایگاه ${slotLabel} فعاله.<br>
-              <span style="font-size:11px;color:var(--text-muted)">${remaining} تولد دیگه مونده تا تموم بشه.</span>
-            </p>
-          </div>
-          <p style="font-size:13px;line-height:1.9;text-align:center;margin-bottom:14px">می‌خوای چیکار کنی؟</p>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn-primary" id="warn-reserve" style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ رزرو کن (توی صف بمونه)</button>
-            <button class="btn-primary" id="warn-replace" style="background:linear-gradient(135deg,#EF4444,#B91C1C);color:#fff">🗑️ اسپانسر قبلی رو پاک کن</button>
-            <button class="btn-cancel" id="warn-cancel">انصراف</button>
-          </div>
-        `, { center: true });
-
-        warnOverlay.querySelector('#warn-reserve').onclick = () => {
-          closeModal(warnOverlay);
-          const result = addSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: sponsorImageData });
-          if (result.error) { toast(result.error, 'error'); return; }
-          toast(`رزرو شد (اولویت ${result.priority})`, 'success');
-          setTimeout(openSettings, 200);
-        };
-
-        warnOverlay.querySelector('#warn-replace').onclick = () => {
-          closeModal(warnOverlay);
-          const sponsorsNow2 = getBirthdaySponsors();
-          const activeIdx = sponsorsNow2.indexOf(activeInSlot);
-          if (activeIdx >= 0) sponsorsNow2.splice(activeIdx, 1);
-          
-          const newSponsor = {
-            name, text, phone, slot, totalShows, totalCost, image: sponsorImageData,
-            id: 'sp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-            status: 'active', priority: null, shownCount: 0,
-            createdAt: new Date().toISOString()
-          };
-          sponsorsNow2.push(newSponsor);
-          saveBirthdaySponsors(sponsorsNow2);
-          toast('اسپانسر جدید فعال شد ✅', 'success');
-          setTimeout(openSettings, 200);
-        };
-
-        warnOverlay.querySelector('#warn-cancel').onclick = () => {
-          closeModal(warnOverlay);
-          setTimeout(openSettings, 150);
-        };
-      }, 150);
-      return;
-    }
-
-    // جایگاه خالی → مستقیم فعال
-    const result = addSponsorWithReservation({ name, text, phone, slot, totalShows, totalCost, image: sponsorImageData });
-    if (result.error) { toast(result.error, 'error'); return; }
-    toast('اسپانسر ثبت و فعال شد ✅', 'success');
-    closeModal(overlay);
-    setTimeout(openSettings, 150);
-  };
 }
 
-
-// ==============================
-// 🎂 اضافه کردن اسپانسر با منطق رزرو
-// ==============================
 function addSponsorWithReservation(sponsorData) {
   const sponsors = getBirthdaySponsors();
   const slot = normalizeSlot(sponsorData.slot);
@@ -5977,9 +5578,6 @@ function addSponsorWithReservation(sponsorData) {
   return { success: true, reserved: false };
 }
 
-// ==============================
-// 🎂 بررسی و فعال‌سازی رزروهای اسپانسر
-// ==============================
 function checkAndActivateSponsorReserved() {
   const sponsors = getBirthdaySponsors();
   let changed = false;
@@ -6022,9 +5620,6 @@ function checkAndActivateSponsorReserved() {
   }
 }
 
-// ==============================
-// 📄 رندر لیست فاکتورهای صادرشده
-// ==============================
 function renderIssuedInvoicesList(container) {
   if (!container) return;
 
@@ -6039,7 +5634,6 @@ function renderIssuedInvoicesList(container) {
     return;
   }
 
-  // مرتب‌سازی از جدیدترین
   const sorted = invoices.slice().sort((a, b) =>
     (b.createdAt || '').localeCompare(a.createdAt || '')
   );
@@ -6075,7 +5669,6 @@ function renderIssuedInvoicesList(container) {
     `;
   }).join('');
 
-  // حذف
   container.querySelectorAll('[data-delete-issued]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.deleteIssued);
@@ -6089,9 +5682,6 @@ function renderIssuedInvoicesList(container) {
   });
 }
 
-// ==============================
-// 🎂 انتخاب اسپانسر فعال برای یه جایگاه
-// ==============================
 function getActiveSponsorForSlot(slot) {
   const normSlot = normalizeSlot(slot);
   const sponsors = getBirthdaySponsors();
@@ -6104,9 +5694,6 @@ function getActiveSponsorForSlot(slot) {
   return activeSponsors[0];
 }
 
-// ==============================
-// 🎂 ساخت HTML اسپانسر برای پیام تولد
-// ==============================
 function buildSponsorHtml(sponsor) {
   if (!sponsor) return '';
 
@@ -6142,10 +5729,6 @@ function buildSponsorHtml(sponsor) {
   `;
 }
 
-
-// ==============================
-// 📷 ساخت عکس پیام تبریک تولد
-// ==============================
 async function generateBirthdayImage(customerId, quoteText, messageText) {
   const c = state.customers.find(x => x.id === customerId);
   if (!c) {
@@ -6159,11 +5742,9 @@ async function generateBirthdayImage(customerId, quoteText, messageText) {
   const age = calculateAge(c.birthDate);
   const today = getTodayShamsi();
 
-  // 🔥 اسپانسرهای فعال
   const sponsorTop = getActiveSponsorForSlot('top');
   const sponsorBottom = getActiveSponsorForSlot('bottom');
 
-  // 🔥 عکس کیک
   const cakeHtml = b.birthdayImage
     ? `<img src="${b.birthdayImage}" style="width:130px;height:130px;object-fit:cover;border-radius:50%;box-shadow:0 4px 20px rgba(236,72,153,0.3)">`
     : `
@@ -6189,15 +5770,12 @@ async function generateBirthdayImage(customerId, quoteText, messageText) {
       </svg>
     `;
 
-  // 🔥 لوگو کسب‌وکار
   const logoHtml = b.logo
     ? `<img src="${b.logo}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 8px">`
         : `<img src="assets/icon-192.png" style="width:50px;height:50px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px">`;
 
-  // 🔥 متن پیام
   const messageHtml = escapeHtml(messageText).replace(/\n/g, '<br>');
 
-  // 🔥 container مخفی
   const container = document.createElement('div');
   container.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1';
   container.innerHTML = `
@@ -6294,9 +5872,6 @@ async function generateBirthdayImage(customerId, quoteText, messageText) {
   }
 }
 
-// ==============================
-// 📷 پیش‌نمایش عکس تبریک
-// ==============================
 function showBirthdayImagePreview(blob, fileName, customer) {
   const url = URL.createObjectURL(blob);
 
@@ -6342,9 +5917,6 @@ function showBirthdayImagePreview(blob, fileName, customer) {
   };
 }
 
-// ==============================
-// 🎂 افزایش شمارنده اسپانسر
-// ==============================
 function incrementSponsorShownCount(sponsor) {
   if (!sponsor) return;
   const sponsors = getBirthdaySponsors();
@@ -6358,8 +5930,6 @@ function incrementSponsorShownCount(sponsor) {
   }
 }
 
-
-// 🌊 مخفی کردن Splash Screen بعد از بارگذاری
 function hideSplashScreen() {
   const splash = document.getElementById('splash-screen');
   if (splash) {
@@ -6371,14 +5941,7 @@ function hideSplashScreen() {
   }
 }
 
-// ==============================
-// شروع
-// ==============================
-// ==============================
-// شروع
-// ==============================
 document.addEventListener('DOMContentLoaded', () => {
-  init();                        // 🚀 اول init
-  setTimeout(hideSplashScreen, 1500);  // 🌊 بعد از ۱.۵ ثانیه Splash رو مخفی کن
+  init();
+  setTimeout(hideSplashScreen, 1500);
 });
-
