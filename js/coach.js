@@ -2650,7 +2650,6 @@ EwIDAQAB
 
 `;
 
-// تولید Device ID یکتا
 function getOrCreateDeviceId() {
   // 🔥 اول چک کردن کوکی (برای جلوگیری از پاک شدن با localStorage)
   const getCookie = (name) => {
