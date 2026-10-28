@@ -920,7 +920,22 @@ function initLockScreen() {
   passInput.value = '';
     const tryLogin = async () => {
     const hashedInput = await hashPassword(passInput.value.trim());
-    if (hashedInput === b.password) {
+        // 🔥 سازگاری با رمزهای قدیمی (اگر رمز ذخیره‌شده هش نبود، با متن ساده مقایسه کن)
+    let isMatch = false;
+    if (b.password.length === 64) {
+        // رمز هش شده است
+        isMatch = (hashedInput === b.password);
+    } else {
+        // رمز قدیمی (متن ساده) است
+        isMatch = (passInput.value.trim() === b.password);
+        if (isMatch) {
+            // اگر رمز قدیمی درست بود، همین الان هشش کن و ذخیره کن
+            b.password = hashedInput;
+            DB.set('business', b);
+        }
+    }
+
+    if (isMatch) {
       showScreen('dashboard-screen');
       initDashboard();
     } else {
