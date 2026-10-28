@@ -909,6 +909,7 @@ function showWelcomeDialog() {
 function initLockScreen() {
   const b = state.business;
   if (!b) return;
+  
   document.getElementById('lock-business-name').textContent = b.name;
   document.getElementById('lock-business-job').textContent = b.job;
   const lockLogo = document.getElementById('lock-logo');
@@ -919,14 +920,13 @@ function initLockScreen() {
     lockIcon.style.display = 'none';
   }
   applyColors(b.buttonColor, b.backgroundColor);
+  
   const passInput = document.getElementById('lock-pass');
   passInput.value = '';
   
   const tryLogin = async () => {
     const hashedInput = await hashPassword(passInput.value.trim());
-    
     let isMatch = false;
-    
     if (b.password.length === 64) {
         isMatch = (hashedInput === b.password);
     } else {
@@ -943,24 +943,77 @@ function initLockScreen() {
     } else {
       toast('رمز عبور اشتباه است!', 'error');
     }
-  }; // <--- بستن تابع tryLogin
+  };
 
   document.getElementById('btn-login').onclick = tryLogin;
-  
+
   passInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       tryLogin();
     }
   });
-  
+
   document.getElementById('btn-forgot').onclick = () => {
-      // ... بقیه کدهای مربوط به فراموشی رمز
-  }; 
+    const overlay = showModal(`
+      <h3 class="modal-title">بازیابی رمز عبور</h3>
+      <div class="form-group"><label>شهر محل تولد ثبت‌شده:</label><input type="text" id="recover-input"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="recover-cancel">انصراف</button>
+        <button class="btn-primary" id="recover-submit">بررسی</button>
+      </div>
+    `, { center: true });
+    
+    overlay.querySelector('#recover-cancel').onclick = () => closeModal(overlay);
+    
+    overlay.querySelector('#recover-submit').onclick = async () => {
+      const ans = overlay.querySelector('#recover-input').value.trim();
+      const sec = b.security || '';
+      
+      if (!sec || !ans) {
+          toast('پاسخ امنیتی نامعتبر است!', 'error');
+          return;
+      }
 
-} // <--- این آکولاد رو به آخر اضافه کن (بستن تابع initLockScreen)
-  
+      let isMatch = false;
+      if (sec.length === 64) {
+          const hashedAns = await hashPassword(normalizeName(ans));
+          isMatch = (hashedAns === sec);
+      } else {
+          isMatch = (normalizeName(ans) === normalizeName(sec));
+          if (isMatch) {
+              b.security = await hashPassword(normalizeName(ans));
+              DB.set('business', b);
+          }
+      }
 
+      if (isMatch) {
+        closeModal(overlay);
+        setTimeout(() => {
+          const ov2 = showModal(`
+            <h3 class="modal-title">تعیین رمز جدید</h3>
+            <div class="form-group"><label>رمز جدید (عدد):</label><input type="text" id="new-pass-input" inputmode="numeric"></div>
+            <button class="btn-primary" id="set-new-pass-btn" style="margin-top:16px">ذخیره رمز جدید</button>
+          `, { center: true });
+          
+          ov2.querySelector('#set-new-pass-btn').onclick = async () => {
+            const newPass = ov2.querySelector('#new-pass-input').value.trim();
+            if (!newPass) { toast('رمز را وارد کنید', 'error'); return; }
+            b.password = await hashPassword(newPass);
+            DB.set('business', b);
+            closeModal(ov2);
+            toast('✅ رمز عبور با موفقیت تغییر کرد', 'success');
+          };
+        }, 200);
+      } else {
+        toast('پاسخ اشتباه است!', 'error');
+      }
+    };
+  };
+
+  const btnRestoreLock = document.getElementById('btn-restore-lock');
+  if (btnRestoreLock) btnRestoreLock.addEventListener('click', () => openRestoreDialog(true));
+}
   document.getElementById('btn-login').onclick = tryLogin;
 
   passInput.addEventListener('keydown', (e) => {
