@@ -965,21 +965,34 @@ function initLockScreen() {
       `, { center: true });
       overlay.querySelector('#recover-cancel').onclick = () => closeModal(overlay);
       overlay.querySelector('#recover-submit').onclick = async () => {
-        const ans = overlay.querySelector('#recover-input').value.trim();
+                const ans = overlay.querySelector('#recover-input').value.trim();
+        const sec = b.security || '';
+        
+        // ۱. اول چک می‌کنیم که اصلاً سوال امنیتی و جواب خالی نباشن
+        if (!sec || !ans) {
+            toast('پاسخ امنیتی نامعتبر است!', 'error');
+            return;
+        }
+
         let isMatch = false;
-        if (b.security.length === 64) {
-            // اگر قبلاً هش شده بود
+        
+        // ۲. چک می‌کنیم که آیا سوال امنیتی قبلاً هش شده یا نه
+        if (sec.length === 64) {
             const hashedAns = await hashPassword(normalizeName(ans));
-            isMatch = (hashedAns === b.security);
+            isMatch = (hashedAns === sec);
         } else {
-            // اگر کاربر قدیمی است (متن ساده)
-            isMatch = (normalizeName(ans) === normalizeName(b.security));
+            // کاربر قدیمی است (متن ساده)
+            isMatch = (normalizeName(ans) === normalizeName(sec));
             if (isMatch) {
                 // همین الان هشش کن و ذخیره کن
                 b.security = await hashPassword(normalizeName(ans));
                 DB.set('business', b);
             }
-        }            if (!b.security || !ans) {
+        }
+
+        if (isMatch) {
+            // ... (بقیه کدها که از قبل داشتی)     
+          if (!b.security || !ans) {
     toast('پاسخ امنیتی نامعتبر است!', 'error');
     return;
 }
