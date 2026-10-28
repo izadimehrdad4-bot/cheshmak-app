@@ -2732,21 +2732,7 @@ function isLicenseValid() {
   return todayNum <= endNum;
 }
 
-// تولید کد فعال‌سازی (همین الگوریتم توی ابزار جداگانه هم هست)
-function generateActivationCode(deviceId, years = 1) {
-  const raw = deviceId + LICENSE_SECRET + years;
-  let hash = 0;
-  for (let i = 0; i < raw.length; i++) {
-    const char = raw.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  const code = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0');
-  // فرمت: CHK-XXXX-XXXX-Y
-  const part1 = code.substring(0, 4);
-  const part2 = code.substring(4, 8);
-  return `CHK-${part1}-${part2}-${years}`;
-}
+
 
  async function validateActivationCode(code) {
   try {
