@@ -571,8 +571,7 @@ function openEditProfile() {
     <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>    <div class="form-group"><label>${(state.business && state.business.bizType === 'coach') ? 'نام باشگاه / محل تمرین' : 'نام کسب‌وکار'}</label><input type="text" id="edit-name" value="${escapeHtml(b.name)}"></div>    <div class="form-group"><label>نام و نام خانوادگی مدیر</label><input type="text" id="edit-manager" value="${escapeHtml(b.manager)}"></div>
     <div class="form-group"><label>شماره تماس</label><input type="tel" id="edit-phone" value="${escapeHtml(b.phone)}"></div>
     <div class="form-group"><label>تاریخ تولد</label><input type="text" id="edit-birth" value="${escapeHtml(b.birth || '')}" placeholder="برای انتخاب کلیک کنید" readonly style="cursor:pointer"></div>
-<div class="form-group"><label>رمز ورود عددی</label><input type="text" id="edit-pass" placeholder="برای عدم تغییر رمز، خالی بگذارید" style="width:100%"></div>    <div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" value="${escapeHtml(b.security)}"></div>
-
+<div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" placeholder="برای عدم تغییر، خالی بگذارید"></div>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color)">
       <label style="font-size:13px;font-weight:700;display:block;margin-bottom:12px">📱 شبکه‌های اجتماعی (اختیاری)</label>
       <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">${(state.business && state.business.bizType === 'coach') ? 'این اطلاعات پایین برنامه‌های تمرینی و پیام‌های تبریک تولد نشون داده می‌شن.' : 'این اطلاعات پایین فاکتورها نشون داده می‌شن.'} هر کدوم رو خواستی پر کن.</p>      <div class="form-group"><label>📸 اینستاگرام</label><input type="text" id="edit-instagram" value="${escapeHtml((b.social && b.social.instagram) || '')}" placeholder="مثلاً: cheshmak"></div>
@@ -623,6 +622,10 @@ function openEditProfile() {
       finalPass = await hashPassword(pass);
     }
     const security = overlay.querySelector('#edit-security').value.trim();
+        let finalSecurity = b.security;
+    if (security) {
+      finalSecurity = await hashPassword(normalizeName(security));
+    }
     const instagram = overlay.querySelector('#edit-instagram').value.trim();
     const telegram = overlay.querySelector('#edit-telegram').value.trim();
     const whatsapp = overlay.querySelector('#edit-whatsapp').value.trim();
@@ -632,7 +635,7 @@ function openEditProfile() {
       ? logoPreview.src
       : b.logo;
 
-    if (!job || !name || !manager || !phone || !pass) {
+    if (!job || !name || !manager || !phone) {
       toast('لطفاً همه‌ی فیلدهای ضروری را پر کنید', 'error');
       return;
     }
@@ -642,8 +645,8 @@ function openEditProfile() {
     b.manager = manager;
     b.phone = phone;
     b.birth = birth;
-    b.security = security;
-    b.logo = newLogo;
+    b.security = finalSecurity;
+        b.logo = newLogo;
     b.social = {
       instagram: instagram.replace(/^@/, ''),
       telegram: telegram.replace(/^@/, ''),
