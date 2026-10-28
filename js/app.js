@@ -555,6 +555,7 @@ function openEditProfile() {
     <div class="form-group"><label>نام و نام خانوادگی مدیر</label><input type="text" id="edit-manager" value="${escapeHtml(b.manager)}"></div>
     <div class="form-group"><label>شماره تماس</label><input type="tel" id="edit-phone" value="${escapeHtml(b.phone)}"></div>
     <div class="form-group"><label>تاریخ تولد</label><input type="text" id="edit-birth" value="${escapeHtml(b.birth || '')}" placeholder="برای انتخاب کلیک کنید" readonly style="cursor:pointer"></div>
+        <div class="form-group"><label>رمز ورود عددی</label><input type="text" id="edit-pass" placeholder="برای عدم تغییر رمز، خالی بگذارید" style="width:100%"></div>
     <div class="form-group"><label>رمز ورود عددی</label><input type="text" id="edit-pass" placeholder="برای عدم تغییر رمز، خالی بگذارید" style="width:100%"></div>
     <div class="form-group"><label>شهر محل تولد (برای بازیابی رمز)</label><input type="text" id="edit-security" placeholder="برای عدم تغییر، خالی بگذارید"></div>
 
