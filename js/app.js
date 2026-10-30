@@ -1965,8 +1965,8 @@ function openAddAppointmentForm() {
     <h3 class="modal-title">➕ افزودن نوبت جدید</h3>
     
     <div class="form-group">
-      <label>نام مشتری/شاگرد</label>
-      <input type="text" id="appt-name" placeholder="مثلاً: علی رضایی" style="width:100%;">
+      <label>نام ${getCustomerTitle().replace(' گرامی', '')}</label>
+            <input type="text" id="appt-name" placeholder="مثلاً: علی رضایی" style="width:100%;">
     </div>
     
     <div class="form-group">
