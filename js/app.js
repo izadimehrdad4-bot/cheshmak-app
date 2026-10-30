@@ -1839,26 +1839,38 @@ function openSchedulePage() {
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
-            <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
-        ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments.map((a, i) => `
-          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;">
-            <div style="flex:1;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-                <strong>${a.name}</strong>
-                <span>⏰ ${a.time}</span>
-              </div>
+                 <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
+        ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments
+          .slice()
+          .sort((a, b) => a.time.localeCompare(b.time))
+          .map((a) => {
+            const originalIndex = schedule.appointments.indexOf(a);
+            return `
+          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;">
+              <strong style="font-size:14px;color:var(--button-color)">${a.name}</strong>
+              <span style="font-weight:700;background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:10px;">⏰ ${a.time}</span>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;align-items:center;">
               <div style="color:var(--text-muted);">
-                ⏳ مدت تقریبی: ${a.duration} دقیقه
+                ⏳ مدت: ${a.duration} دقیقه<br>
+                📅 تاریخ: ${selectedDate}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <button type="button" class="btn-cancel" data-edit-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;">✏️ ویرایش</button>
+                <button type="button" class="btn-cancel" data-delete-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;">🗑️ حذف</button>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:4px;margin-right:8px;">
-              <button type="button" class="btn-cancel" data-edit-appt="${i}" style="padding:4px 8px;font-size:11px;">✏️ ویرایش</button>
-              <button type="button" class="btn-cancel" data-delete-appt="${i}" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;">🗑️ حذف</button>
+
+            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
+              <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid ${a.status === 'green' ? '#10B981' : 'rgba(255,255,255,0.2)'};background:${a.status === 'green' ? 'rgba(16,185,129,0.2)' : 'transparent'};color:${a.status === 'green' ? '#10B981' : 'var(--text-color)'};cursor:pointer;font-family:inherit;">🟢 اومد</button>
+              <button type="button" data-status="yellow" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid ${a.status === 'yellow' ? '#F59E0B' : 'rgba(255,255,255,0.2)'};background:${a.status === 'yellow' ? 'rgba(245,158,11,0.2)' : 'transparent'};color:${a.status === 'yellow' ? '#F59E0B' : 'var(--text-color)'};cursor:pointer;font-family:inherit;">🟡 دیر اومد</button>
+              <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid ${a.status === 'red' ? '#EF4444' : 'rgba(255,255,255,0.2)'};background:${a.status === 'red' ? 'rgba(239,68,68,0.2)' : 'transparent'};color:${a.status === 'red' ? '#EF4444' : 'var(--text-color)'};cursor:pointer;font-family:inherit;">🔴 نیامد</button>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
-    </div>
 
     <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
       ➕ افزودن نوبت جدید
@@ -1928,6 +1940,19 @@ function openSchedulePage() {
         closeModal(overlay);
         openSchedulePage();
       }
+    };
+  });
+    // دکمه‌های وضعیت (اومد، دیر اومد، نیامد)
+  overlay.querySelectorAll('[data-status]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.apptIndex);
+      const newStatus = btn.dataset.status;
+      schedule.appointments[idx].status = newStatus;
+      schedules[selectedDate] = schedule;
+      saveSchedules(schedules);
+      toast('وضعیت ثبت شد ✅', 'success');
+      closeModal(overlay);
+      openSchedulePage(); // رفرش لیست
     };
   });
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
@@ -2015,6 +2040,78 @@ function openAddAppointmentForm() {
     closeModal(overlay);
     openSchedulePage();
   };
+
+    // سیستم تحلیل رفتار مشتری (هوشمند و اصلاح‌پذیر)
+  const nameInput = overlay.querySelector('#appt-name');
+  const warningDiv = document.createElement('div');
+  warningDiv.id = 'appt-warning';
+  warningDiv.style.cssText = 'display:none;background:rgba(245,158,11,0.15);border:1px solid #F59E0B;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#F59E0B';
+  nameInput.parentNode.insertBefore(warningDiv, nameInput.nextSibling);
+
+  nameInput.addEventListener('input', () => {
+    const inputName = nameInput.value.trim();
+    if (inputName.length < 2) {
+      warningDiv.style.display = 'none';
+      return;
+    }
+
+    // پیدا کردن تمام نوبت‌های این شخص و مرتب‌سازی از جدید به قدیم
+    const allSchedules = getSchedules();
+    let userAppointments = [];
+
+    Object.keys(allSchedules).forEach(date => {
+      (allSchedules[date].appointments || []).forEach(appt => {
+        if (appt.name.includes(inputName)) {
+          // برای اینکه بتونیم تاریخ‌ها رو مقایسه کنیم، به هر نوبت تاریخش رو اضافه می‌کنیم
+          userAppointments.push({ ...appt, date: date });
+        }
+      });
+    });
+
+    if (userAppointments.length === 0) {
+      warningDiv.style.display = 'none';
+      return;
+    }
+
+    // مرتب‌سازی از جدیدترین تاریخ به قدیمی‌ترین
+    userAppointments.sort((a, b) => b.date.localeCompare(a.date));
+
+    let lateStreak = 0;
+    let noShowStreak = 0;
+
+    // از آخرین نوبت به عقب می‌ریم
+    for (let i = 0; i < userAppointments.length; i++) {
+      const appt = userAppointments[i];
+      
+      // اگه وضعیتش ثبت نشده بود، از این نوبت رد می‌شیم (چون هنوز اتفاق نیفتاده)
+      if (!appt.status || appt.status === 'pending') continue;
+
+      // شمارش دیر اومدن‌های پشت سر هم (اگر به یه "سر وقت" برسیم، صفر می‌شه)
+      if (appt.status === 'yellow') {
+        lateStreak++;
+      } else {
+        lateStreak = 0; // چون یه بار سر وقت (یا نیامدن) بوده، زنجیره دیر اومدن شکسته می‌شه
+      }
+
+      // شمارش نیامدن‌های پشت سر هم (اگر به یه "سر وقت" یا "دیر اومدن" برسیم، صفر می‌شه)
+      if (appt.status === 'red') {
+        noShowStreak++;
+      } else {
+        noShowStreak = 0; // چون یه بار اومده، زنجیره نیامدن شکسته می‌شه
+      }
+    }
+
+    let msg = '';
+    if (lateStreak >= 3) msg += `⚠️ این شخص توی نوبت‌های اخیرش <b>${lateStreak} بار پشت سر هم دیر اومده</b>.<br>`;
+    if (noShowStreak >= 3) msg += `🚨 این شخص توی نوبت‌های اخیرش <b>${noShowStreak} بار پشت سر هم نیامده</b>.<br>`;
+    
+    if (msg) {
+      warningDiv.innerHTML = msg + `<span style="color:var(--text-muted);font-size:10px">(پیشنهاد: زمان بیشتری براش در نظر بگیرید)</span>`;
+      warningDiv.style.display = 'block';
+    } else {
+      warningDiv.style.display = 'none';
+    }
+  });
 
   overlay.querySelector('#appt-save').onclick = () => {
     const name = overlay.querySelector('#appt-name').value.trim();
