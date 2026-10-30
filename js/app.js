@@ -1819,12 +1819,10 @@ function openSchedulePage() {
       <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
     </div>
 
-    <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
-      <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
-                  <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
+          <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
         ➕ افزودن نوبت جدید
       </button>
-      <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
+      
         ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments.map((a, i) => `
           <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
@@ -1841,9 +1839,7 @@ function openSchedulePage() {
 
     <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
   `);
-
-  overlay.querySelector('#save-work-hours').onclick = () => {
-      // 🔥 دکمه افزودن نوبت جدید
+  // 🔥 دکمه افزودن نوبت جدید (بیرون از save-work-hours)
   const addApptBtn = overlay.querySelector('#add-appointment-btn');
   if (addApptBtn) {
     addApptBtn.onclick = () => {
@@ -1851,6 +1847,9 @@ function openSchedulePage() {
       openAddAppointmentForm();
     };
   }
+  overlay.querySelector('#save-work-hours').onclick = () => {
+      // 🔥 دکمه افزودن نوبت جدید
+  
     const start = overlay.querySelector('#sched-start').value;
     const end = overlay.querySelector('#sched-end').value;
     
@@ -1869,6 +1868,9 @@ function openSchedulePage() {
 }
 // ==============================
 // ➕ فرم افزودن نوبت جدید
+// ==============================
+// ==============================
+// ➕ فرم افزودن نوبت جدید (با تاریخ و ساعت ساده)
 // ==============================
 // ==============================
 // ➕ فرم افزودن نوبت جدید (با تاریخ و ساعت ساده)
@@ -1933,7 +1935,7 @@ function openAddAppointmentForm() {
     </div>
   `);
 
-  // 🔥 انتخاب تاریخ با دیت پیکر شمسی
+  // انتخاب تاریخ با دیت پیکر شمسی
   overlay.querySelector('#appt-date').addEventListener('click', async () => {
     const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
     if (result) overlay.querySelector('#appt-date').value = result;
@@ -1943,7 +1945,7 @@ function openAddAppointmentForm() {
     if (result) overlay.querySelector('#appt-date').value = result;
   };
 
-  // 🔥 دکمه‌های تاریخ سریع
+  // دکمه‌های تاریخ سریع
   overlay.querySelectorAll('[data-quick-date]').forEach(btn => {
     btn.onclick = () => {
       const type = btn.dataset.quickDate;
@@ -1973,7 +1975,6 @@ function openAddAppointmentForm() {
 
     const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
-    // ذخیره در تاریخ انتخاب شده (نه فقط امروز)
     const schedules = getSchedules();
     if (!schedules[date]) {
       schedules[date] = { startTime: '', endTime: '', appointments: [] };
