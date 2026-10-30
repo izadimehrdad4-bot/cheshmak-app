@@ -4061,7 +4061,6 @@ function showInvoicePreview(blob, fileName, customer) {
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-primary" id="inv-share" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff">📱 ارسال با واتساپ</button>
       <button class="btn-cancel" id="inv-download">💾 دانلود عکس</button>
       <button class="btn-cancel" id="inv-close">بستن</button>
     </div>
@@ -4070,22 +4069,7 @@ function showInvoicePreview(blob, fileName, customer) {
     overlay.querySelector('#inv-download').onclick = async () => {
     await downloadImage(blob, fileName);
   };
-  overlay.querySelector('#inv-share').onclick = async () => {
-    try {
-      const file = new File([blob], fileName, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'فاکتور',
-          text: `فاکتور ${customer.fullName}`,
-        });
-      } else {
-        toast('اشتراک‌گذاری پشتیبانی نمی‌شه', 'error');
-      }
-    } catch (e) {
-      if (e.name !== 'AbortError') console.error(e);
-    }
-  };
+  
 }
 
 async function generateIssuedInvoice(type, itemId) {
@@ -4303,7 +4287,6 @@ function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type
       <div style="font-size:13px;font-weight:700;color:var(--button-color)">${totalCost.toLocaleString()} تومان</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-primary" id="inv-share" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff">📱 ارسال با واتساپ</button>
       <button class="btn-cancel" id="inv-download">💾 دانلود عکس</button>
       <button class="btn-cancel" id="inv-close">بستن</button>
     </div>
@@ -4312,22 +4295,7 @@ function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type
     overlay.querySelector('#inv-download').onclick = async () => {
     await downloadImage(blob, fileName);
   };
-  overlay.querySelector('#inv-share').onclick = async () => {
-    try {
-      const file = new File([blob], fileName, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'فاکتور',
-          text: `فاکتور ${recipientName}`,
-        });
-      } else {
-        toast('اشتراک‌گذاری پشتیبانی نمی‌شه', 'error');
-      }
-    } catch (e) {
-      if (e.name !== 'AbortError') console.error(e);
-    }
-  };
+  
 }
 
 function getRoseAvatarSvg(size = 40) {
