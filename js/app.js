@@ -349,6 +349,39 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+
+// 🔥 تابع استاندارد دانلود عکس برای همه دستگاه‌ها
+async function downloadImage(blob, fileName) {
+    if (navigator.canShare) {
+        try {
+            const file = new File([blob], fileName, { type: blob.type });
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'ذخیره عکس',
+                    text: 'عکس را ذخیره کنید'
+                });
+                return;
+            }
+        } catch (e) {
+            if (e.name === 'AbortError') return; 
+            console.log('Share API failed, falling back to download:', e);
+        }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast('عکس در حال دانلود است...', 'success');
+}
+
+
 // ==============================
 // 🖼️ فشرده‌سازی هوشمند عکس پس‌زمینه
 // ==============================
