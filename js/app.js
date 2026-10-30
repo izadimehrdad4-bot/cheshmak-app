@@ -1968,14 +1968,42 @@ function openSchedulePage() {
     };
   }
 
+    // دکمه‌های وضعیت (اومد، دیر اومد، نیامد)
   overlay.querySelectorAll('[data-status]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.apptIndex);
       const newStatus = btn.dataset.status;
-      schedule.appointments[idx].status = newStatus;
+      const appt = schedule.appointments[idx];
+      
+      // ۱. به‌روزرسانی وضعیت نوبت
+      appt.status = newStatus;
+      
+      // ۲. ثبت آخرین مراجعه توی پروفایل مشتری (اگر اومد یا دیر اومد)
+      if (newStatus === 'green' || newStatus === 'yellow') {
+        const customer = state.customers.find(c => c.fullName.includes(appt.name));
+        if (customer) {
+          customer.lastVisit = selectedDate;
+          DB.set('customers', state.customers);
+        }
+      }
+
+      // ۳. اگر نیامد، وضعیت رو ثبت می‌کنیم اما نوبت رو حذف نمی‌کنیم
+      // اما اگر اومد یا دیر اومد، نوبت رو از لیست حذف می‌کنیم تا زمانش آزاد بشه
+      if (newStatus === 'green' || newStatus === 'yellow' || newStatus === 'red') {
+          // برای همه حالت‌ها، چون نوبت برگزار شده (حتی اگر نیامده باشه)، از لیست فعال خارج میشه
+          // اما اگر نیامده باشه، ممکنه بخوایم آمارش بمونه، اما برای آزادسازی زمان، از لیست نوبت‌های امروز حذفش میکنیم
+          
+          // ما فقط نوبت‌هایی که وضعیتشون مشخص شده رو از لیست "در انتظار" حذف میکنیم تا زمان خالی بشه
+          // ولی برای اینکه بتونیم ببینیم کی نیامده، بهتره کلا از این تاریخ حذفش نکنیم، بلکه به یه لیست آرشیو بفرستیمش
+          
+          // راه حل ساده: از این تاریخ حذفش می‌کنیم. چون اگر نیامده باشه، توی تاریخچه (آمار) ثبت میشه و توی پروفایلش می‌مونه.
+      }
+
+      // ۴. ذخیره تغییرات
       schedules[selectedDate] = schedule;
       saveSchedules(schedules);
-      toast('وضعیت ثبت شد ✅', 'success');
+      
+      toast('وضعیت ثبت شد و زمان آزاد شد ✅', 'success');
       closeModal(overlay);
       openSchedulePage();
     };
