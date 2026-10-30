@@ -1902,27 +1902,8 @@ function openSchedulePage() {
       openAddAppointmentForm();
     };
   }
-// دکمه ذخیره ساعات کاری
-  overlay.querySelector('#save-work-hours').onclick = () => {
-    const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
-    const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
-    const endHour = overlay.querySelector('#sched-end-hour').value.padStart(2, '0');
-    const endMin = overlay.querySelector('#sched-end-min').value.padStart(2, '0');
-    
-    if (!startHour || !startMin || !endHour || !endMin) {
-      toast('لطفاً ساعت شروع و پایان را کامل وارد کنید', 'error');
-      return;
-    }
-    
-    const start = `${startHour}:${startMin}`;
-    const end = `${endHour}:${endMin}`;
-    
-    schedule.startTime = start;
-    schedule.endTime = end;
-    schedules[selectedDate] = schedule;
-    saveSchedules(schedules);
-    toast('ساعات کاری ذخیره شد ✅', 'success');
-  };
+
+  // دکمه بستن
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
