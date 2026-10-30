@@ -2158,8 +2158,8 @@ function openEditAppointmentForm(selectedDate, apptIndex, appt) {
     <h3 class="modal-title">✏️ ویرایش نوبت</h3>
     
     <div class="form-group">
-      <label>نام مشتری/شاگرد</label>
-      <input type="text" id="edit-appt-name" value="${escapeHtml(appt.name)}" style="width:100%;">
+      <label>نام ${getCustomerTitle().replace(' گرامی', '')}</label>
+            <input type="text" id="edit-appt-name" value="${escapeHtml(appt.name)}" style="width:100%;">
     </div>
     
     <div class="form-group">
