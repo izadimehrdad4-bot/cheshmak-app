@@ -2578,9 +2578,7 @@ function openSettings() {
       const refCode = deviceId.replace('DEV-', '').replace('-', '');
       const referralLink = `https://B2n.ir/cheshmakapp?ref=${refCode}`;
       
-      const message = `سلام 👋\n\nمن از اپلیکیشن «چشمک» استفاده می‌کنم و بهت پیشنهاد می‌دم.\nبا خرید از لینک زیر، ۳۰٪ از مبلغ خریدت به عنوان هدیه به من تعلق می‌گیره.\n\nلینک اختصاصی من:\n${referralLink}`;
-      
-      navigator.clipboard.writeText(message).then(() => {
+      const message = `سلام 👋\n\nمن از اپلیکیشن «چشمک» استفاده می‌کنم و واقعاً بهم کمک کرده تا کارم نظم بهتری بگیره و رونق بیشتری داشته باشه.\nپیشنهاد می‌دم تو هم امتحانش کنی. برای نصب و تست رایگان، از لینک زیر استفاده کن:\n\n${referralLink}`;      navigator.clipboard.writeText(message).then(() => {
         toast('📋 متن و لینک اختصاصی شما کپی شد. حالا برای دوستتان بفرستید.', 'success');
       }).catch(() => {
         toast('خطا در کپی کردن لینک.', 'error');
