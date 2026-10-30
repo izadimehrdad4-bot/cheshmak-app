@@ -1829,7 +1829,7 @@ function openSchedulePage() {
         </div>
       </div>
     </div>
-
+    
     <div style="text-align:center;margin-bottom:12px;">
       <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
     </div>
