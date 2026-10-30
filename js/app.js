@@ -1805,14 +1805,39 @@ function openSchedulePage() {
     <h3 class="modal-title">📅 زمان‌بندی امروز (${today})</h3>
     
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div class="form-group" style="margin:0;">
+            <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت شروع کار</label>
-        <input type="time" id="sched-start" value="${schedule.startTime || ''}" style="width:100%;">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:50%;text-align:center;">
+          <span style="font-weight:700;">:</span>
+          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
+        </div>
+      </div>
+            <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;">⏰ ساعت شروع کار</label>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:50%;text-align:center;">
+          <span style="font-weight:700;">:</span>
+          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
+        </div>
+      </div>
+      <div class="form-group" style="margin:0;">
+              <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;">⏰ ساعت شروع کار</label>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:50%;text-align:center;">
+          <span style="font-weight:700;">:</span>
+          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
+        </div>
       </div>
       <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت پایان کار</label>
-        <input type="time" id="sched-end" value="${schedule.endTime || ''}" style="width:100%;">
-      </div>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <input type="number" id="sched-end-hour" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" placeholder="17" inputmode="numeric" style="width:50%;text-align:center;">
+          <span style="font-weight:700;">:</span>
+          <input type="number" id="sched-end-min" min="0" max="59" value="${(schedule.endTime || '17:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
+        </div>
+      
     </div>
 
     <div style="text-align:center;margin-bottom:12px;">
@@ -1847,16 +1872,19 @@ function openSchedulePage() {
       openAddAppointmentForm();
     };
   }
-  overlay.querySelector('#save-work-hours').onclick = () => {
-      // 🔥 دکمه افزودن نوبت جدید
-  
-    const start = overlay.querySelector('#sched-start').value;
-    const end = overlay.querySelector('#sched-end').value;
+    overlay.querySelector('#save-work-hours').onclick = () => {
+    const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
+    const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
+    const endHour = overlay.querySelector('#sched-end-hour').value.padStart(2, '0');
+    const endMin = overlay.querySelector('#sched-end-min').value.padStart(2, '0');
     
-    if (!start || !end) {
-      toast('لطفاً ساعت شروع و پایان را وارد کنید', 'error');
+    if (!startHour || !startMin || !endHour || !endMin) {
+      toast('لطفاً ساعت شروع و پایان را کامل وارد کنید', 'error');
       return;
     }
+    
+    const start = `${startHour}:${startMin}`;
+    const end = `${endHour}:${endMin}`;
     
     schedule.startTime = start;
     schedule.endTime = end;
