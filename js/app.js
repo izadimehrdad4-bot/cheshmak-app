@@ -2292,7 +2292,14 @@ function openSettings() {
         برای تمدید لایسنس، این شناسه رو برای پشتیبانی بفرستید.
       </p>
     </div>
-
+    <h4 style="font-size:14px;margin-bottom:8px;color:#10B981">🎁 کد معرف شما:</h4>
+    <div style="margin-bottom:16px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:12px">
+      <div style="text-align:center;direction:ltr;font-size:18px;font-weight:800;color:#10B981;letter-spacing:3px;margin-bottom:8px" id="referral-code-display">—</div>
+      <button class="btn-cancel" id="copy-referral-code" style="width:100%;padding:8px;font-size:12px">📋 کپی کد معرف</button>
+      <p style="font-size:10px;color:var(--text-muted);margin-top:6px;line-height:1.6;text-align:center">
+        با ارسال لینک اختصاصی خود، ۳۰٪ از مبلغ خرید دوستتان به حساب شما واریز می‌شود.
+      </p>
+    </div>
         ${(state.business && state.business.bizType !== 'coach') ? `
     <h4 style="font-size:14px;margin-bottom:8px">📢 تبلیغات:</h4>
     <div style="margin-bottom:16px">
@@ -2544,7 +2551,22 @@ function openSettings() {
       toast('📋 شناسه کپی شد', 'success');
     };
   }
-
+  // 🔥 نمایش کد معرف
+  const referralDisplay = overlay.querySelector('#referral-code-display');
+  if (referralDisplay) {
+    const deviceId = getOrCreateDeviceId();
+    const refCode = deviceId.replace('DEV-', '').replace('-', '');
+    referralDisplay.textContent = refCode;
+  }
+  const copyReferralBtn = overlay.querySelector('#copy-referral-code');
+  if (copyReferralBtn) {
+    copyReferralBtn.onclick = () => {
+      const deviceId = getOrCreateDeviceId();
+      const refCode = deviceId.replace('DEV-', '').replace('-', '');
+      navigator.clipboard.writeText(refCode);
+      toast('📋 کد معرف کپی شد', 'success');
+    };
+  }
   const retentionEnabled = overlay.querySelector('#retention-enabled');
   const retentionDays = overlay.querySelector('#retention-days');
   const retentionMessage = overlay.querySelector('#retention-message');
