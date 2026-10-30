@@ -1821,6 +1821,9 @@ function openSchedulePage() {
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
+            <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:10px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">
+        ➕ افزودن نوبت جدید
+      </button>
       <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
         ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments.map((a, i) => `
           <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;">
@@ -1840,6 +1843,14 @@ function openSchedulePage() {
   `);
 
   overlay.querySelector('#save-work-hours').onclick = () => {
+      // 🔥 دکمه افزودن نوبت جدید
+  const addApptBtn = overlay.querySelector('#add-appointment-btn');
+  if (addApptBtn) {
+    addApptBtn.onclick = () => {
+      closeModal(overlay);
+      openAddAppointmentForm();
+    };
+  }
     const start = overlay.querySelector('#sched-start').value;
     const end = overlay.querySelector('#sched-end').value;
     
@@ -1856,7 +1867,75 @@ function openSchedulePage() {
 
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
+// ==============================
+// ➕ فرم افزودن نوبت جدید
+// ==============================
+function openAddAppointmentForm() {
+  const schedule = getTodaySchedule();
+  
+  const overlay = showModal(`
+    <h3 class="modal-title">➕ افزودن نوبت جدید</h3>
+    
+    <div class="form-group">
+      <label>نام مشتری/شاگرد</label>
+      <input type="text" id="appt-name" placeholder="مثلاً: علی رضایی" style="width:100%;">
+    </div>
+    
+    <div class="form-group">
+      <label>⏰ ساعت مراجعه</label>
+      <input type="time" id="appt-time" style="width:100%;">
+    </div>
+    
+    <div class="form-group">
+      <label>⏳ مدت تقریبی (دقیقه)</label>
+      <input type="number" id="appt-duration" value="30" inputmode="numeric" style="width:100%;">
+    </div>
 
+    <div class="form-group">
+      <label>وضعیت</label>
+      <select id="appt-status" style="width:100%;">
+        <option value="green">🟢 سر وقت آمد</option>
+        <option value="yellow">🟡 دیر آمد</option>
+        <option value="red">🔴 نیامد</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="appt-cancel">انصراف</button>
+      <button class="btn-primary" id="appt-save">ذخیره نوبت</button>
+    </div>
+  `);
+
+  overlay.querySelector('#appt-cancel').onclick = () => {
+    closeModal(overlay);
+    openSchedulePage(); // برگشت به صفحه زمان‌بندی
+  };
+
+  overlay.querySelector('#appt-save').onclick = () => {
+    const name = overlay.querySelector('#appt-name').value.trim();
+    const time = overlay.querySelector('#appt-time').value;
+    const duration = parseInt(overlay.querySelector('#appt-duration').value) || 30;
+    const status = overlay.querySelector('#appt-status').value;
+
+    if (!name || !time) {
+      toast('لطفاً نام و ساعت را وارد کنید', 'error');
+      return;
+    }
+
+    schedule.appointments.push({
+      id: 'appt_' + Date.now(),
+      name: name,
+      time: time,
+      duration: duration,
+      status: status,
+    });
+
+    saveTodaySchedule(schedule);
+    closeModal(overlay);
+    toast('✅ نوبت با موفقیت ثبت شد', 'success');
+    openSchedulePage(); // برگشت به صفحه زمان‌بندی
+  };
+}
 
 function renderReportContent(overlay) {
   const content = overlay.querySelector('#report-content');
