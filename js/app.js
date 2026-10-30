@@ -46,7 +46,29 @@ const state = {
   birthdayMessages: {},
   searchQuery: '',
 };
+// ==============================
+// 📅 سیستم زمان‌بندی
+// ==============================
+function getSchedules() {
+  return DB.get('schedules', {});
+}
 
+function saveSchedules(schedules) {
+  DB.set('schedules', schedules);
+}
+
+function getTodaySchedule() {
+  const today = getTodayShamsi();
+  const schedules = getSchedules();
+  return schedules[today] || { startTime: '', endTime: '', appointments: [] };
+}
+
+function saveTodaySchedule(schedule) {
+  const today = getTodayShamsi();
+  const schedules = getSchedules();
+  schedules[today] = schedule;
+  saveSchedules(schedules);
+}
 // 🔐 تابع هش کردن رمز عبور
 async function hashPassword(password) {
   if (!password) return '';
