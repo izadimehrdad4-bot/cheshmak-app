@@ -1821,23 +1821,22 @@ function openSchedulePage() {
           <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
         </div>
       </div>
-      <div class="form-group" style="margin:0;">
-              <div class="form-group" style="margin:0;">
+           <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت شروع کار</label>
-        <div style="display:flex;gap:4px;align-items:center;">
-          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:50%;text-align:center;">
-          <span style="font-weight:700;">:</span>
-          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
+        <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
+          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
+          <span style="font-weight:700;font-size:20px;">:</span>
+          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
         </div>
       </div>
       <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت پایان کار</label>
-        <div style="display:flex;gap:4px;align-items:center;">
-          <input type="number" id="sched-end-hour" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" placeholder="17" inputmode="numeric" style="width:50%;text-align:center;">
-          <span style="font-weight:700;">:</span>
-          <input type="number" id="sched-end-min" min="0" max="59" value="${(schedule.endTime || '17:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:50%;text-align:center;">
+        <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
+          <input type="number" id="sched-end-hour" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" placeholder="17" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
+          <span style="font-weight:700;font-size:20px;">:</span>
+          <input type="number" id="sched-end-min" min="0" max="59" value="${(schedule.endTime || '17:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
         </div>
-      
+      </div>
     </div>
 
     <div style="text-align:center;margin-bottom:12px;">
