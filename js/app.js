@@ -1821,7 +1821,7 @@ function openSchedulePage() {
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
-            <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:10px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">
+                  <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
         ➕ افزودن نوبت جدید
       </button>
       <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
@@ -1870,8 +1870,12 @@ function openSchedulePage() {
 // ==============================
 // ➕ فرم افزودن نوبت جدید
 // ==============================
+// ==============================
+// ➕ فرم افزودن نوبت جدید (با تاریخ و ساعت ساده)
+// ==============================
 function openAddAppointmentForm() {
   const schedule = getTodaySchedule();
+  const today = getTodayShamsi();
   
   const overlay = showModal(`
     <h3 class="modal-title">➕ افزودن نوبت جدید</h3>
@@ -1882,8 +1886,31 @@ function openAddAppointmentForm() {
     </div>
     
     <div class="form-group">
+      <label>📅 تاریخ</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="appt-date" value="${today}" readonly style="flex:1;cursor:pointer;" placeholder="انتخاب تاریخ">
+        <button type="button" class="btn-primary" id="btn-pick-date" style="padding:8px 12px;font-size:12px;">📅 تغییر</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button type="button" class="btn-cancel" data-quick-date="today" style="flex:1;font-size:11px;padding:6px;">امروز</button>
+        <button type="button" class="btn-cancel" data-quick-date="tomorrow" style="flex:1;font-size:11px;padding:6px;">فردا</button>
+        <button type="button" class="btn-cancel" data-quick-date="nextweek" style="flex:1;font-size:11px;padding:6px;">هفته بعد</button>
+      </div>
+    </div>
+    
+    <div class="form-group">
       <label>⏰ ساعت مراجعه</label>
-      <input type="time" id="appt-time" style="width:100%;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="flex:1;">
+          <label style="font-size:10px;color:var(--text-muted);">ساعت (۰-۲۳)</label>
+          <input type="number" id="appt-hour" min="0" max="23" value="10" inputmode="numeric" style="width:100%;text-align:center;">
+        </div>
+        <span style="font-size:20px;font-weight:700;">:</span>
+        <div style="flex:1;">
+          <label style="font-size:10px;color:var(--text-muted);">دقیقه (۰-۵۹)</label>
+          <input type="number" id="appt-minute" min="0" max="59" value="00" inputmode="numeric" style="width:100%;text-align:center;">
+        </div>
+      </div>
     </div>
     
     <div class="form-group">
@@ -1906,34 +1933,63 @@ function openAddAppointmentForm() {
     </div>
   `);
 
+  // 🔥 انتخاب تاریخ با دیت پیکر شمسی
+  overlay.querySelector('#appt-date').addEventListener('click', async () => {
+    const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
+    if (result) overlay.querySelector('#appt-date').value = result;
+  });
+  overlay.querySelector('#btn-pick-date').onclick = async () => {
+    const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
+    if (result) overlay.querySelector('#appt-date').value = result;
+  };
+
+  // 🔥 دکمه‌های تاریخ سریع
+  overlay.querySelectorAll('[data-quick-date]').forEach(btn => {
+    btn.onclick = () => {
+      const type = btn.dataset.quickDate;
+      if (type === 'today') overlay.querySelector('#appt-date').value = getTodayShamsi();
+      else if (type === 'tomorrow') overlay.querySelector('#appt-date').value = getShamsiDaysAgo(-1);
+      else if (type === 'nextweek') overlay.querySelector('#appt-date').value = getShamsiDaysAgo(-7);
+    };
+  });
+
   overlay.querySelector('#appt-cancel').onclick = () => {
     closeModal(overlay);
-    openSchedulePage(); // برگشت به صفحه زمان‌بندی
+    openSchedulePage();
   };
 
   overlay.querySelector('#appt-save').onclick = () => {
     const name = overlay.querySelector('#appt-name').value.trim();
-    const time = overlay.querySelector('#appt-time').value;
+    const date = overlay.querySelector('#appt-date').value.trim();
+    const hour = parseInt(overlay.querySelector('#appt-hour').value) || 0;
+    const minute = parseInt(overlay.querySelector('#appt-minute').value) || 0;
     const duration = parseInt(overlay.querySelector('#appt-duration').value) || 30;
     const status = overlay.querySelector('#appt-status').value;
 
-    if (!name || !time) {
-      toast('لطفاً نام و ساعت را وارد کنید', 'error');
+    if (!name || !date) {
+      toast('لطفاً نام و تاریخ را وارد کنید', 'error');
       return;
     }
 
-    schedule.appointments.push({
+    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+
+    // ذخیره در تاریخ انتخاب شده (نه فقط امروز)
+    const schedules = getSchedules();
+    if (!schedules[date]) {
+      schedules[date] = { startTime: '', endTime: '', appointments: [] };
+    }
+    schedules[date].appointments.push({
       id: 'appt_' + Date.now(),
       name: name,
-      time: time,
+      time: timeStr,
       duration: duration,
       status: status,
     });
+    saveSchedules(schedules);
 
-    saveTodaySchedule(schedule);
-    closeModal(overlay);
     toast('✅ نوبت با موفقیت ثبت شد', 'success');
-    openSchedulePage(); // برگشت به صفحه زمان‌بندی
+    closeModal(overlay);
+    openSchedulePage();
   };
 }
 
