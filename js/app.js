@@ -918,11 +918,18 @@ function openHelpGuide() {
     
     <div style="max-height: 60vh; overflow-y: auto; padding: 10px;">
       
-      <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
         <h4 style="color: #14B8A6; margin-bottom: 8px; font-size: 15px;">📱 نصب اپ روی گوشی</h4>
         <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
-          <b>اندروید:</b> لینک را باز کنید و روی "Install App" بزنید.<br>
-          <b>آیفون:</b> لینک را باز کنید، دکمه Share (مربع با فلش) را بزنید و "Add to Home Screen" را انتخاب کنید.
+          <b>📱 برای گوشی‌های اندروید:</b><br>
+          ۱. لینک را با مرورگر <b>Google Chrome</b> باز کنید.<br>
+          ۲. روی منوی سه نقطه (بالا سمت راست) بزنید.<br>
+          ۳. گزینه <b>Install App</b> (یا Add to Home Screen) را انتخاب کنید.<br><br>
+          
+          <b>🍏 برای گوشی‌های آیفون (Apple):</b><br>
+          ۱. لینک را با مرورگر <b>Safari</b> باز کنید.<br>
+          ۲. دکمه <b>Share</b> (مربع با فلش رو به بالا) را بزنید.<br>
+          ۳. گزینه <b>Add to Home Screen</b> را انتخاب کنید.
         </div>
       </div>
 
