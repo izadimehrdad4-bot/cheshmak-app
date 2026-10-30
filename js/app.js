@@ -1797,6 +1797,9 @@ function openReport() {
 // ==============================
 // 📅 صفحه زمان‌بندی امروز
 // ==============================
+// ==============================
+// 📅 صفحه زمان‌بندی امروز
+// ==============================
 function openSchedulePage() {
   const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
   const schedules = getSchedules();
@@ -1829,7 +1832,6 @@ function openSchedulePage() {
         </div>
       </div>
     </div>
-    </div>
 
     <div style="text-align:center;margin-bottom:12px;">
       <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
@@ -1859,7 +1861,6 @@ function openSchedulePage() {
     <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
   `, { center: true });
 
-  // دکمه تغییر تاریخ
   const dateBtn = overlay.querySelector('#btn-change-schedule-date');
   if (dateBtn) {
     dateBtn.onclick = async () => {
@@ -1872,7 +1873,6 @@ function openSchedulePage() {
     };
   }
 
-  // دکمه ذخیره ساعات کاری
   overlay.querySelector('#save-work-hours').onclick = () => {
     const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
     const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
@@ -1894,7 +1894,6 @@ function openSchedulePage() {
     toast('ساعات کاری ذخیره شد ✅', 'success');
   };
 
-  // دکمه افزودن نوبت
   const addApptBtn = overlay.querySelector('#add-appointment-btn');
   if (addApptBtn) {
     addApptBtn.onclick = () => {
@@ -1903,56 +1902,10 @@ function openSchedulePage() {
     };
   }
 
-  // دکمه بستن
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
-  
-
-  // دکمه افزودن نوبت
-  const addApptBtn = overlay.querySelector('#add-appointment-btn');
-  if (addApptBtn) {
-    addApptBtn.onclick = () => {
-      closeModal(overlay);
-      openAddAppointmentForm();
-    };
-  }
-
-  // دکمه بستن
-  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
-
-
-  
-      overlay.querySelector('#save-work-hours').onclick = () => {
-    const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
-    const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
-    const endHour = overlay.querySelector('#sched-end-hour').value.padStart(2, '0');
-    const endMin = overlay.querySelector('#sched-end-min').value.padStart(2, '0');
-    
-    if (!startHour || !startMin || !endHour || !endMin) {
-      toast('لطفاً ساعت شروع و پایان را کامل وارد کنید', 'error');
-      return;
-    }
-    
-    const start = `${startHour}:${startMin}`;
-    const end = `${endHour}:${endMin}`;
-    
-    schedule.startTime = start;
-    schedule.endTime = end;
-    schedules[selectedDate] = schedule;
-    saveSchedules(schedules);
-    toast('ساعات کاری ذخیره شد ✅', 'success');
-  };
-
-  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
-  
-
-// ➕ فرم افزودن نوبت جدید (با تاریخ و ساعت ساده)
-// ==============================
 function openAddAppointmentForm() {
-  const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
-  const schedules = getSchedules();
-  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
   const today = getTodayShamsi();
   
   const overlay = showModal(`
@@ -2011,17 +1964,16 @@ function openAddAppointmentForm() {
     </div>
   `);
 
-  // انتخاب تاریخ با دیت پیکر شمسی
   overlay.querySelector('#appt-date').addEventListener('click', async () => {
     const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
     if (result) overlay.querySelector('#appt-date').value = result;
   });
+  
   overlay.querySelector('#btn-pick-date').onclick = async () => {
     const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
     if (result) overlay.querySelector('#appt-date').value = result;
   };
 
-  // دکمه‌های تاریخ سریع
   overlay.querySelectorAll('[data-quick-date]').forEach(btn => {
     btn.onclick = () => {
       const type = btn.dataset.quickDate;
@@ -2069,7 +2021,6 @@ function openAddAppointmentForm() {
     openSchedulePage();
   };
 }
-
 function renderReportContent(overlay) {
   const content = overlay.querySelector('#report-content');
 
