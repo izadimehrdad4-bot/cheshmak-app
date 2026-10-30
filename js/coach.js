@@ -242,17 +242,42 @@ function bindCoachDatePickers(overlay) {
   const imagePreview = overlay.querySelector('#cust-image-preview');
   const imageIcon = overlay.querySelector('#cust-image-icon');
 
-  if (imageInput) {
+    if (imageInput) {
     imageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      
       const reader = new FileReader();
       reader.onload = (ev) => {
-        if (imagePreview) {
-          imagePreview.src = ev.target.result;
-          imagePreview.style.display = 'block';
-        }
-        if (imageIcon) imageIcon.style.display = 'none';
+        const img = new Image();
+        img.onload = () => {
+          // 🔥 فشرده‌سازی عکس مشتری
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 200; // حداکثر ابعاد ۲۰۰ پیکسل
+          let w = img.width;
+          let h = img.height;
+          
+          if (w > h) {
+            if (w > MAX_SIZE) { h = h * MAX_SIZE / w; w = MAX_SIZE; }
+          } else {
+            if (h > MAX_SIZE) { w = w * MAX_SIZE / h; h = MAX_SIZE; }
+          }
+          
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          
+          // کیفیت 0.7 برای حجم کم و ظاهر خوب
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          if (imagePreview) {
+            imagePreview.src = compressedDataUrl;
+            imagePreview.style.display = 'block';
+          }
+          if (imageIcon) imageIcon.style.display = 'none';
+        };
+        img.src = ev.target.result;
       };
       reader.readAsDataURL(file);
     });
