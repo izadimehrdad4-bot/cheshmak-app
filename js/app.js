@@ -6162,7 +6162,22 @@ function hideSplashScreen() {
     }, 400);
   }
 }
-
+// 🔥 بروزرسانی خودکار اپ وقتی نسخه جدید اومد
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then((registration) => {
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // نسخه جدید نصب شد
+                    if (confirm('نسخه جدید اپ آماده است. برای بروزرسانی صفحه رفرش شود؟')) {
+                        window.location.reload();
+                    }
+                }
+            });
+        });
+    });
+}
 document.addEventListener('DOMContentLoaded', () => {
   init();
   setTimeout(hideSplashScreen, 1500);
