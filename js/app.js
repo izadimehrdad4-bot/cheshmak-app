@@ -1800,18 +1800,26 @@ function openReport() {
 function openSchedulePage() {
   const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
   const schedules = getSchedules();
-  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };  const today = getTodayShamsi();
+  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
   
   const overlay = showModal(`
-    <h3 class="modal-title">📅 زمان‌بندی امروز (${today})</h3>
-        <div style="text-align:center;margin-bottom:16px;">
+    <h3 class="modal-title">📅 زمان‌بندی امروز (${selectedDate})</h3>
+    
+    <div style="text-align:center;margin-bottom:16px;">
       <button type="button" class="btn-cancel" id="btn-change-schedule-date" style="font-size:12px;padding:8px 12px;">
-        📅 تاریخ: ${selectedDate} (تغییر)
+        📅 تغییر تاریخ (${selectedDate})
       </button>
     </div>
-    
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-            
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;">⏰ ساعت شروع کار</label>
+        <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
+          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
+          <span style="font-weight:700;font-size:20px;">:</span>
+          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
+        </div>
+      </div>
       <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت پایان کار</label>
         <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
@@ -1821,15 +1829,14 @@ function openSchedulePage() {
         </div>
       </div>
     </div>
-      
+
     <div style="text-align:center;margin-bottom:12px;">
       <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
     </div>
 
-          <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
-        ➕ افزودن نوبت جدید
-      </button>
-      
+    <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
+      <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
         ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments.map((a, i) => `
           <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
@@ -1844,12 +1851,18 @@ function openSchedulePage() {
       </div>
     </div>
 
+    <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
+      ➕ افزودن نوبت جدید
+    </button>
+
     <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
-      // 🔥 دکمه تغییر تاریخ
+  `, { center: true });
+
+  // دکمه تغییر تاریخ
   const dateBtn = overlay.querySelector('#btn-change-schedule-date');
   if (dateBtn) {
     dateBtn.onclick = async () => {
-      const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
+      const result = await showShamsiDatePicker(selectedDate, 'انتخاب تاریخ');
       if (result) {
         window._scheduleSelectedDate = result;
         closeModal(overlay);
@@ -1857,9 +1870,30 @@ function openSchedulePage() {
       }
     };
   }
-  `, { center: true });   
-  
-  // 🔥 دکمه افزودن نوبت جدید (بیرون از save-work-hours)
+
+  // دکمه ذخیره ساعات کاری
+  overlay.querySelector('#save-work-hours').onclick = () => {
+    const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
+    const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
+    const endHour = overlay.querySelector('#sched-end-hour').value.padStart(2, '0');
+    const endMin = overlay.querySelector('#sched-end-min').value.padStart(2, '0');
+    
+    if (!startHour || !startMin || !endHour || !endMin) {
+      toast('لطفاً ساعت شروع و پایان را کامل وارد کنید', 'error');
+      return;
+    }
+    
+    const start = `${startHour}:${startMin}`;
+    const end = `${endHour}:${endMin}`;
+    
+    schedule.startTime = start;
+    schedule.endTime = end;
+    schedules[selectedDate] = schedule;
+    saveSchedules(schedules);
+    toast('ساعات کاری ذخیره شد ✅', 'success');
+  };
+
+  // دکمه افزودن نوبت
   const addApptBtn = overlay.querySelector('#add-appointment-btn');
   if (addApptBtn) {
     addApptBtn.onclick = () => {
@@ -1867,6 +1901,47 @@ function openSchedulePage() {
       openAddAppointmentForm();
     };
   }
+
+  // دکمه بستن
+  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
+}
+
+  // دکمه ذخیره ساعات کاری
+  overlay.querySelector('#save-work-hours').onclick = () => {
+    const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
+    const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
+    const endHour = overlay.querySelector('#sched-end-hour').value.padStart(2, '0');
+    const endMin = overlay.querySelector('#sched-end-min').value.padStart(2, '0');
+    
+    if (!startHour || !startMin || !endHour || !endMin) {
+      toast('لطفاً ساعت شروع و پایان را کامل وارد کنید', 'error');
+      return;
+    }
+    
+    const start = `${startHour}:${startMin}`;
+    const end = `${endHour}:${endMin}`;
+    
+    schedule.startTime = start;
+    schedule.endTime = end;
+    schedules[selectedDate] = schedule;
+    saveSchedules(schedules);
+    toast('ساعات کاری ذخیره شد ✅', 'success');
+  };
+
+  // دکمه افزودن نوبت
+  const addApptBtn = overlay.querySelector('#add-appointment-btn');
+  if (addApptBtn) {
+    addApptBtn.onclick = () => {
+      closeModal(overlay);
+      openAddAppointmentForm();
+    };
+  }
+
+  // دکمه بستن
+  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
+
+
+  
       overlay.querySelector('#save-work-hours').onclick = () => {
     const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
     const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
@@ -1889,29 +1964,7 @@ function openSchedulePage() {
   };
 
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
-  overlay.querySelector('#btn-change-schedule-date').onclick = async () => {
-    const result = await showShamsiDatePicker(selectedDate, 'انتخاب تاریخ');
-    if (result) {
-      window._scheduleSelectedDate = result;
-      closeModal(overlay);
-      openSchedulePage();
-      , { center: true });
-    }
-  };
-  // تغییر تاریخ
-  const dateBtn = overlay.querySelector('#btn-change-schedule-date');
-  if (dateBtn) {
-    dateBtn.onclick = async () => {
-      const result = await showShamsiDatePicker(selectedDate, 'انتخاب تاریخ');
-      if (result) {
-        window._scheduleSelectedDate = result;
-        closeModal(overlay);
-        openSchedulePage();
-      }
-    };
-  }
-
-}
+  
 
 // ➕ فرم افزودن نوبت جدید (با تاریخ و ساعت ساده)
 // ==============================
