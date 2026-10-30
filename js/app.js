@@ -1797,14 +1797,12 @@ function openReport() {
 // ==============================
 // 📅 صفحه زمان‌بندی امروز
 // ==============================
-// ==============================
-// 📅 صفحه زمان‌بندی امروز
-// ==============================
 function openSchedulePage() {
   const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
   const schedules = getSchedules();
   const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
-    // محاسبه زمان خالی
+  
+  // محاسبه زمان خالی
   let freeTimeStr = 'نامشخص';
   const startParts = (schedule.startTime || '08:00').split(':');
   const endParts = (schedule.endTime || '17:00').split(':');
@@ -1812,10 +1810,7 @@ function openSchedulePage() {
   if (startParts.length === 2 && endParts.length === 2) {
     const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
     const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
-    
-    // مجموع زمان اشغال شده توسط نوبت‌ها
     const occupiedMinutes = schedule.appointments.reduce((total, appt) => total + (parseInt(appt.duration) || 30), 0);
-    
     const totalWorkMinutes = endMinutes - startMinutes;
     const freeMinutes = totalWorkMinutes - occupiedMinutes;
     
@@ -1829,7 +1824,7 @@ function openSchedulePage() {
       freeTimeStr = 'بیش از حد ظرفیت!';
     }
   }
-  
+
   const overlay = showModal(`
     <h3 class="modal-title">📅 زمان‌بندی امروز (${selectedDate})</h3>
     
@@ -1839,11 +1834,12 @@ function openSchedulePage() {
       </button>
     </div>
 
-        <!-- نمایش زمان خالی -->
+    <!-- نمایش زمان خالی -->
     <div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;">
       <span style="font-size:12px;color:var(--text-muted)">⏳ زمان خالی این روز:</span>
       <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
     </div>
+
     <!-- باکس تاریخ‌های دارای نوبت -->
     <div style="margin-bottom:16px;">
       <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
@@ -1862,6 +1858,7 @@ function openSchedulePage() {
         ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted)">هیچ نوبتی ثبت نشده</span>' : ''}
       </div>
     </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
       <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت شروع کار</label>
@@ -1887,7 +1884,7 @@ function openSchedulePage() {
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
-                 <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
+      <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
         ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments
           .slice()
           .sort((a, b) => a.time.localeCompare(b.time))
@@ -1919,6 +1916,7 @@ function openSchedulePage() {
           </div>
         `}).join('')}
       </div>
+    </div>
 
     <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
       ➕ افزودن نوبت جدید
@@ -1958,16 +1956,31 @@ function openSchedulePage() {
     schedules[selectedDate] = schedule;
     saveSchedules(schedules);
     toast('ساعات کاری ذخیره شد ✅', 'success');
+    closeModal(overlay);
+    openSchedulePage();
   };
 
   const addApptBtn = overlay.querySelector('#add-appointment-btn');
   if (addApptBtn) {
     addApptBtn.onclick = () => {
       closeModal(overlay);
-      openAddAppointmentForm();
+      openAddAppointmentForm(selectedDate);
     };
   }
-  // قابلیت ویرایش و حذف نوبت‌ها
+
+  overlay.querySelectorAll('[data-status]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.apptIndex);
+      const newStatus = btn.dataset.status;
+      schedule.appointments[idx].status = newStatus;
+      schedules[selectedDate] = schedule;
+      saveSchedules(schedules);
+      toast('وضعیت ثبت شد ✅', 'success');
+      closeModal(overlay);
+      openSchedulePage();
+    };
+  });
+
   overlay.querySelectorAll('[data-edit-appt]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.editAppt);
@@ -1990,21 +2003,8 @@ function openSchedulePage() {
       }
     };
   });
-    // دکمه‌های وضعیت (اومد، دیر اومد، نیامد)
-  overlay.querySelectorAll('[data-status]').forEach(btn => {
-    btn.onclick = () => {
-      const idx = parseInt(btn.dataset.apptIndex);
-      const newStatus = btn.dataset.status;
-      schedule.appointments[idx].status = newStatus;
-      schedules[selectedDate] = schedule;
-      saveSchedules(schedules);
-      toast('وضعیت ثبت شد ✅', 'success');
-      closeModal(overlay);
-      openSchedulePage(); // رفرش لیست
-    };
-  });
 
-    // دکمه‌های پرش به تاریخ
+  // دکمه‌های پرش به تاریخ
   overlay.querySelectorAll('[data-jump-to-date]').forEach(btn => {
     btn.onclick = () => {
       window._scheduleSelectedDate = btn.dataset.jumpToDate;
@@ -2012,24 +2012,26 @@ function openSchedulePage() {
       openSchedulePage();
     };
   });
+
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
-function openAddAppointmentForm() {
+function openAddAppointmentForm(targetDate = null) {
   const today = getTodayShamsi();
+  const selectedDate = targetDate || window._scheduleSelectedDate || today;
   
   const overlay = showModal(`
     <h3 class="modal-title">➕ افزودن نوبت جدید</h3>
     
     <div class="form-group">
       <label>نام ${getCustomerTitle().replace(' گرامی', '')}</label>
-            <input type="text" id="appt-name" placeholder="مثلاً: علی رضایی" style="width:100%;">
+      <input type="text" id="appt-name" placeholder="مثلاً: علی رضایی" style="width:100%;">
     </div>
     
     <div class="form-group">
       <label>📅 تاریخ</label>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="appt-date" value="${today}" readonly style="flex:1;cursor:pointer;" placeholder="انتخاب تاریخ">
+        <input type="text" id="appt-date" value="${selectedDate}" readonly style="flex:1;cursor:pointer;" placeholder="انتخاب تاریخ">
         <button type="button" class="btn-primary" id="btn-pick-date" style="padding:8px 12px;font-size:12px;">📅 تغییر</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
@@ -2059,20 +2061,64 @@ function openAddAppointmentForm() {
       <input type="number" id="appt-duration" value="30" inputmode="numeric" style="width:100%;">
     </div>
 
-    <div class="form-group">
-      <label>وضعیت</label>
-      <select id="appt-status" style="width:100%;">
-        <option value="green">🟢 سر وقت آمد</option>
-        <option value="yellow">🟡 دیر آمد</option>
-        <option value="red">🔴 نیامد</option>
-      </select>
-    </div>
-
     <div class="modal-actions">
       <button class="btn-cancel" id="appt-cancel">انصراف</button>
       <button class="btn-primary" id="appt-save">ذخیره نوبت</button>
     </div>
   `);
+
+  // سیستم تحلیل رفتار مشتری (هوشمند و اصلاح‌پذیر)
+  const nameInput = overlay.querySelector('#appt-name');
+  const warningDiv = document.createElement('div');
+  warningDiv.id = 'appt-warning';
+  warningDiv.style.cssText = 'display:none;background:rgba(245,158,11,0.15);border:1px solid #F59E0B;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#F59E0B';
+  nameInput.parentNode.insertBefore(warningDiv, nameInput.nextSibling);
+
+  nameInput.addEventListener('input', () => {
+    const inputName = nameInput.value.trim();
+    if (inputName.length < 2) {
+      warningDiv.style.display = 'none';
+      return;
+    }
+
+    const allSchedules = getSchedules();
+    let userAppointments = [];
+    Object.keys(allSchedules).forEach(date => {
+      (allSchedules[date].appointments || []).forEach(appt => {
+        if (appt.name.includes(inputName)) {
+          userAppointments.push({ ...appt, date: date });
+        }
+      });
+    });
+
+    if (userAppointments.length === 0) {
+      warningDiv.style.display = 'none';
+      return;
+    }
+
+    userAppointments.sort((a, b) => b.date.localeCompare(a.date));
+
+    let lateStreak = 0;
+    let noShowStreak = 0;
+
+    for (let i = 0; i < userAppointments.length; i++) {
+      const appt = userAppointments[i];
+      if (!appt.status || appt.status === 'pending') continue;
+      if (appt.status === 'yellow') { lateStreak++; } else { lateStreak = 0; }
+      if (appt.status === 'red') { noShowStreak++; } else { noShowStreak = 0; }
+    }
+
+    let msg = '';
+    if (lateStreak >= 3) msg += `⚠️ این شخص توی نوبت‌های اخیرش <b>${lateStreak} بار پشت سر هم دیر اومده</b>.<br>`;
+    if (noShowStreak >= 3) msg += `🚨 این شخص توی نوبت‌های اخیرش <b>${noShowStreak} بار پشت سر هم نیامده</b>.<br>`;
+    
+    if (msg) {
+      warningDiv.innerHTML = msg + `<span style="color:var(--text-muted);font-size:10px">(پیشنهاد: زمان بیشتری براش در نظر بگیرید)</span>`;
+      warningDiv.style.display = 'block';
+    } else {
+      warningDiv.style.display = 'none';
+    }
+  });
 
   overlay.querySelector('#appt-date').addEventListener('click', async () => {
     const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
@@ -2098,92 +2144,17 @@ function openAddAppointmentForm() {
     openSchedulePage();
   };
 
-    // سیستم تحلیل رفتار مشتری (هوشمند و اصلاح‌پذیر)
-  const nameInput = overlay.querySelector('#appt-name');
-  const warningDiv = document.createElement('div');
-  warningDiv.id = 'appt-warning';
-  warningDiv.style.cssText = 'display:none;background:rgba(245,158,11,0.15);border:1px solid #F59E0B;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#F59E0B';
-  nameInput.parentNode.insertBefore(warningDiv, nameInput.nextSibling);
-
-  nameInput.addEventListener('input', () => {
-    const inputName = nameInput.value.trim();
-    if (inputName.length < 2) {
-      warningDiv.style.display = 'none';
-      return;
-    }
-
-    // پیدا کردن تمام نوبت‌های این شخص و مرتب‌سازی از جدید به قدیم
-    const allSchedules = getSchedules();
-    let userAppointments = [];
-
-    Object.keys(allSchedules).forEach(date => {
-      (allSchedules[date].appointments || []).forEach(appt => {
-        if (appt.name.includes(inputName)) {
-          // برای اینکه بتونیم تاریخ‌ها رو مقایسه کنیم، به هر نوبت تاریخش رو اضافه می‌کنیم
-          userAppointments.push({ ...appt, date: date });
-        }
-      });
-    });
-
-    if (userAppointments.length === 0) {
-      warningDiv.style.display = 'none';
-      return;
-    }
-
-    // مرتب‌سازی از جدیدترین تاریخ به قدیمی‌ترین
-    userAppointments.sort((a, b) => b.date.localeCompare(a.date));
-
-    let lateStreak = 0;
-    let noShowStreak = 0;
-
-    // از آخرین نوبت به عقب می‌ریم
-    for (let i = 0; i < userAppointments.length; i++) {
-      const appt = userAppointments[i];
-      
-      // اگه وضعیتش ثبت نشده بود، از این نوبت رد می‌شیم (چون هنوز اتفاق نیفتاده)
-      if (!appt.status || appt.status === 'pending') continue;
-
-      // شمارش دیر اومدن‌های پشت سر هم (اگر به یه "سر وقت" برسیم، صفر می‌شه)
-      if (appt.status === 'yellow') {
-        lateStreak++;
-      } else {
-        lateStreak = 0; // چون یه بار سر وقت (یا نیامدن) بوده، زنجیره دیر اومدن شکسته می‌شه
-      }
-
-      // شمارش نیامدن‌های پشت سر هم (اگر به یه "سر وقت" یا "دیر اومدن" برسیم، صفر می‌شه)
-      if (appt.status === 'red') {
-        noShowStreak++;
-      } else {
-        noShowStreak = 0; // چون یه بار اومده، زنجیره نیامدن شکسته می‌شه
-      }
-    }
-
-    let msg = '';
-    if (lateStreak >= 3) msg += `⚠️ این شخص توی نوبت‌های اخیرش <b>${lateStreak} بار پشت سر هم دیر اومده</b>.<br>`;
-    if (noShowStreak >= 3) msg += `🚨 این شخص توی نوبت‌های اخیرش <b>${noShowStreak} بار پشت سر هم نیامده</b>.<br>`;
-    
-    if (msg) {
-      warningDiv.innerHTML = msg + `<span style="color:var(--text-muted);font-size:10px">(پیشنهاد: زمان بیشتری براش در نظر بگیرید)</span>`;
-      warningDiv.style.display = 'block';
-    } else {
-      warningDiv.style.display = 'none';
-    }
-  });
-
   overlay.querySelector('#appt-save').onclick = () => {
     const name = overlay.querySelector('#appt-name').value.trim();
     const date = overlay.querySelector('#appt-date').value.trim();
     const hour = parseInt(overlay.querySelector('#appt-hour').value) || 0;
     const minute = parseInt(overlay.querySelector('#appt-minute').value) || 0;
     const duration = parseInt(overlay.querySelector('#appt-duration').value) || 30;
-    const status = overlay.querySelector('#appt-status').value;
 
     if (!name || !date) {
       toast('لطفاً نام و تاریخ را وارد کنید', 'error');
       return;
     }
-
-    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
     const schedules = getSchedules();
     if (!schedules[date]) {
@@ -2192,9 +2163,9 @@ function openAddAppointmentForm() {
     schedules[date].appointments.push({
       id: 'appt_' + Date.now(),
       name: name,
-      time: timeStr,
+      time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
       duration: duration,
-      status: status,
+      status: 'pending',
     });
     saveSchedules(schedules);
 
@@ -2203,6 +2174,7 @@ function openAddAppointmentForm() {
     openSchedulePage();
   };
 }
+
 // ==============================
 // ✏️ فرم ویرایش نوبت
 // ==============================
