@@ -1426,7 +1426,6 @@ async function generateTrainingPlanImage(customerId, plan) {
           <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(139,92,246,0.3)">
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn-primary" id="tpi-share" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff">📱 اشتراک‌گذاری</button>
           <button class="btn-cancel" id="tpi-download">💾 دانلود عکس</button>
           <button class="btn-cancel" id="tpi-close">بستن</button>
         </div>
@@ -1435,18 +1434,7 @@ async function generateTrainingPlanImage(customerId, plan) {
             ov.querySelector('#tpi-download').onclick = async () => {
         await downloadImage(blob, fileName);
       };
-      ov.querySelector('#tpi-share').onclick = async () => {
-        try {
-          const file = new File([blob], fileName, { type: 'image/png' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'برنامه تمرینی', text: `برنامه تمرینی ${c.fullName}` });
-          } else {
-            toast('اشتراک‌گذاری پشتیبانی نمی‌شه', 'error');
-          }
-        } catch (e) {
-          if (e.name !== 'AbortError') console.error(e);
-        }
-      };
+      
     }, 'image/png', 0.95);
   } catch (err) {
     console.error(err);

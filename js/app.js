@@ -3783,7 +3783,6 @@ function showRetentionImagePreview(blob, fileName, customer) {
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(59,130,246,0.25)">
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-primary" id="ri-share" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff">📱 اشتراک‌گذاری</button>
       <button class="btn-cancel" id="ri-download">💾 دانلود عکس</button>
       <button class="btn-cancel" id="ri-close">بستن</button>
     </div>
@@ -3798,22 +3797,7 @@ function showRetentionImagePreview(blob, fileName, customer) {
     await downloadImage(blob, fileName);
   };
 
-  overlay.querySelector('#ri-share').onclick = async () => {
-    try {
-      const file = new File([blob], fileName, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'یادآوری',
-          text: `یادآوری برای ${customer.fullName}`,
-        });
-      } else {
-        toast('اشتراک‌گذاری پشتیبانی نمی‌شه', 'error');
-      }
-    } catch (e) {
-      if (e.name !== 'AbortError') console.error(e);
-    }
-  };
+  
 }
 
 // ==============================
@@ -5874,7 +5858,6 @@ function showBirthdayImagePreview(blob, fileName, customer) {
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(236,72,153,0.3)">
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-primary" id="bdi-share" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff">📱 اشتراک‌گذاری</button>
       <button class="btn-cancel" id="bdi-download">💾 دانلود عکس</button>
       <button class="btn-cancel" id="bdi-close">بستن</button>
     </div>
@@ -5889,22 +5872,7 @@ function showBirthdayImagePreview(blob, fileName, customer) {
     await downloadImage(blob, fileName);
   };
 
-  overlay.querySelector('#bdi-share').onclick = async () => {
-    try {
-      const file = new File([blob], fileName, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'تبریک تولد',
-          text: `تبریک تولد ${customer.fullName}`,
-        });
-      } else {
-        toast('اشتراک‌گذاری پشتیبانی نمی‌شه', 'error');
-      }
-    } catch (e) {
-      if (e.name !== 'AbortError') console.error(e);
-    }
-  };
+  
 }
 
 function incrementSponsorShownCount(sponsor) {
