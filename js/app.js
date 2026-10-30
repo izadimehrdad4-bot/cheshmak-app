@@ -4548,30 +4548,102 @@ function openPendingList() {
     return;
   }
 
-  const listHtml = pending.map(p => `
+    const listHtml = pending.map(p => `
     <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <strong style="font-size:14px">${escapeHtml(p.customerName)}</strong>
-        <span style="font-size:11px;color:var(--text-muted)">${escapeHtml(p.lastServiceDate)}</span>
+        <strong style="font-size:14px">${escapeHtml(p.customerName || p.itemName || 'ناشناس')}</strong>
+        <span style="font-size:11px;color:var(--text-muted)">${escapeHtml(p.lastServiceDate || p.issuedAt || '')}</span>
       </div>
       <div style="font-size:12px;color:var(--text-muted);line-height:1.7;margin-bottom:8px">
-        📋 ${escapeHtml(p.lastServiceName)}<br>
-        💰 ${(p.lastServiceCost || 0).toLocaleString()} تومان<br>
-        📞 ${escapeHtml(p.customerPhone || '—')}
+        📋 ${escapeHtml(p.lastServiceName || p.itemDesc || '')}<br>
+        💰 ${(p.lastServiceCost || p.itemCost || 0).toLocaleString()} تومان<br>
+        📞 ${escapeHtml(p.customerPhone || p.itemPhone || '—')}
       </div>
-      <button class="btn-primary" style="padding:8px 12px;font-size:12px;width:100%;background:linear-gradient(135deg,#10B981,#059669);color:#fff" data-send="${p.id}">
-        📱 ارسال فاکتور
-      </button>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn-primary" style="padding:8px 12px;font-size:12px;width:100%;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff" data-download="${p.id}">
+          💾 دانلود مجدد
+        </button>
+        <button class="btn-primary" style="padding:8px 12px;font-size:12px;width:100%;background:linear-gradient(135deg,#10B981,#059669);color:#fff" data-mark-sent="${p.id}">
+          ✅ ارسال کردید
+        </button>
+      </div>
     </div>
   `).join('');
 
   const overlay = showModal(`
-    <h3 class="modal-title">📥 فاکتورهای ارسال‌نشده (${pending.length})</h3>
+    <h3 class="modal-title">📥 موارد ارسال‌نشده (${pending.length})</h3>
     <div style="max-height:400px;overflow-y:auto;margin-bottom:16px">
       ${listHtml}
     </div>
-    <button class="btn-cancel" id="pend-close" style="width:100%">بستن</button>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-primary" id="pend-all-sent" style="width:100%;background:linear-gradient(135deg,#10B981,#059669);color:#fff">✅ همه ارسال شدند</button>
+      <button class="btn-cancel" id="pend-close" style="width:100%">بستن</button>
+    </div>
   `);
+    overlay.querySelector('#pend-close').onclick = () => closeModal(overlay);
+
+  // دکمه همه ارسال شدند
+  overlay.querySelector('#pend-all-sent').onclick = () => {
+    if (!confirm('همه موارد ارسال شدند؟ سبد خالی می‌شود.')) return;
+    DB.set('pendingInvoices', []);
+    updatePendingBadge();
+    closeModal(overlay);
+    toast('✅ سبد ارسال‌نشده‌ها خالی شد.', 'success');
+  };
+
+  // دکمه‌های دانلود مجدد و ارسال شد
+  overlay.querySelectorAll('[data-download]').forEach(btn => {
+    btn.onclick = async () => {
+      const invId = btn.dataset.download;
+      const invoice = pending.find(p => p.id === invId);
+      if (!invoice) return;
+
+      // 🔥 دانلود مجدد بر اساس نوع مورد
+      if (invoice.type === 'birthday') {
+        // برای تبریک تولد، دوباره از تابع generateBirthdayImage استفاده می‌کنیم
+        closeModal(overlay);
+        setTimeout(() => {
+          openBirthdayMessage(invoice.customerId);
+        }, 200);
+      } else if (invoice.type === 'trainingPlan') {
+        // برای برنامه تمرینی، دوباره از openTrainingPlan استفاده می‌کنیم
+        closeModal(overlay);
+        setTimeout(() => {
+          if (typeof openTrainingPlan === 'function') {
+            openTrainingPlan(invoice.customerId);
+          }
+        }, 200);
+      } else if (invoice.type === 'retention') {
+         // برای یادآوری، پیام رو دوباره باز می‌کنیم
+         closeModal(overlay);
+         setTimeout(() => openRetentionMessageForm(invoice.customerId), 200);
+      } else if (invoice.type === 'issuedInvoice') {
+         // برای فاکتور اسپانسر، دوباره از generateIssuedInvoice استفاده می‌کنیم
+         closeModal(overlay);
+         setTimeout(() => {
+            // پیدا کردن آیتم اصلی و تولید مجدد فاکتور
+            toast('برای دانلود مجدد فاکتور اسپانسر، به بخش تنظیمات مراجعه کنید.', 'info');
+         }, 200);
+      } else {
+        // برای فاکتور عادی
+        closeModal(overlay);
+        setTimeout(() => {
+          generateInvoiceImage(invoice.customerId);
+        }, 200);
+      }
+    };
+  });
+
+  // دکمه‌های ارسال شد
+  overlay.querySelectorAll('[data-mark-sent]').forEach(btn => {
+    btn.onclick = () => {
+      const invId = btn.dataset.markSent;
+      removePendingInvoice(invId);
+      updatePendingBadge();
+      closeModal(overlay);
+      toast('✅ مورد از سبد حذف شد.', 'success');
+    };
+  });
 
   overlay.querySelector('#pend-close').onclick = () => closeModal(overlay);
 
