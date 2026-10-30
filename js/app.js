@@ -1839,15 +1839,21 @@ function openSchedulePage() {
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
-      <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
+            <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
         ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments.map((a, i) => `
-          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-              <strong>${a.name}</strong>
-              <span>⏰ ${a.time}</span>
+          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <strong>${a.name}</strong>
+                <span>⏰ ${a.time}</span>
+              </div>
+              <div style="color:var(--text-muted);">
+                ⏳ مدت تقریبی: ${a.duration} دقیقه
+              </div>
             </div>
-            <div style="color:var(--text-muted);">
-              ⏳ مدت تقریبی: ${a.duration} دقیقه
+            <div style="display:flex;flex-direction:column;gap:4px;margin-right:8px;">
+              <button type="button" class="btn-cancel" data-edit-appt="${i}" style="padding:4px 8px;font-size:11px;">✏️ ویرایش</button>
+              <button type="button" class="btn-cancel" data-delete-appt="${i}" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;">🗑️ حذف</button>
             </div>
           </div>
         `).join('')}
@@ -1901,7 +1907,29 @@ function openSchedulePage() {
       openAddAppointmentForm();
     };
   }
+  // قابلیت ویرایش و حذف نوبت‌ها
+  overlay.querySelectorAll('[data-edit-appt]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.editAppt);
+      const appt = schedule.appointments[idx];
+      closeModal(overlay);
+      setTimeout(() => openEditAppointmentForm(selectedDate, idx, appt), 200);
+    };
+  });
 
+  overlay.querySelectorAll('[data-delete-appt]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.deleteAppt);
+      if (confirm('این نوبت حذف بشه؟')) {
+        schedule.appointments.splice(idx, 1);
+        schedules[selectedDate] = schedule;
+        saveSchedules(schedules);
+        toast('نوبت حذف شد ✅', 'success');
+        closeModal(overlay);
+        openSchedulePage();
+      }
+    };
+  });
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
@@ -2017,6 +2045,90 @@ function openAddAppointmentForm() {
     saveSchedules(schedules);
 
     toast('✅ نوبت با موفقیت ثبت شد', 'success');
+    closeModal(overlay);
+    openSchedulePage();
+  };
+}
+// ==============================
+// ✏️ فرم ویرایش نوبت
+// ==============================
+function openEditAppointmentForm(selectedDate, apptIndex, appt) {
+  const schedules = getSchedules();
+  const schedule = schedules[selectedDate];
+  if (!schedule) return;
+
+  const overlay = showModal(`
+    <h3 class="modal-title">✏️ ویرایش نوبت</h3>
+    
+    <div class="form-group">
+      <label>نام مشتری/شاگرد</label>
+      <input type="text" id="edit-appt-name" value="${escapeHtml(appt.name)}" style="width:100%;">
+    </div>
+    
+    <div class="form-group">
+      <label>⏰ ساعت مراجعه</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="flex:1;">
+          <label style="font-size:10px;color:var(--text-muted);">ساعت (۰-۲۳)</label>
+          <input type="number" id="edit-appt-hour" min="0" max="23" value="${appt.time.split(':')[0]}" inputmode="numeric" style="width:100%;text-align:center;">
+        </div>
+        <span style="font-size:20px;font-weight:700;">:</span>
+        <div style="flex:1;">
+          <label style="font-size:10px;color:var(--text-muted);">دقیقه (۰-۵۹)</label>
+          <input type="number" id="edit-appt-minute" min="0" max="59" value="${appt.time.split(':')[1]}" inputmode="numeric" style="width:100%;text-align:center;">
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>⏳ مدت تقریبی (دقیقه)</label>
+      <input type="number" id="edit-appt-duration" value="${appt.duration}" inputmode="numeric" style="width:100%;">
+    </div>
+
+    <div class="form-group">
+      <label>وضعیت</label>
+      <select id="edit-appt-status" style="width:100%;">
+        <option value="green" ${appt.status === 'green' ? 'selected' : ''}>🟢 سر وقت آمد</option>
+        <option value="yellow" ${appt.status === 'yellow' ? 'selected' : ''}>🟡 دیر آمد</option>
+        <option value="red" ${appt.status === 'red' ? 'selected' : ''}>🔴 نیامد</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="edit-appt-cancel">انصراف</button>
+      <button class="btn-primary" id="edit-appt-save">ذخیره تغییرات</button>
+    </div>
+  `);
+
+  overlay.querySelector('#edit-appt-cancel').onclick = () => {
+    closeModal(overlay);
+    openSchedulePage();
+  };
+
+  overlay.querySelector('#edit-appt-save').onclick = () => {
+    const name = overlay.querySelector('#edit-appt-name').value.trim();
+    const hour = parseInt(overlay.querySelector('#edit-appt-hour').value) || 0;
+    const minute = parseInt(overlay.querySelector('#edit-appt-minute').value) || 0;
+    const duration = parseInt(overlay.querySelector('#edit-appt-duration').value) || 30;
+    const status = overlay.querySelector('#edit-appt-status').value;
+
+    if (!name) {
+      toast('نام را وارد کنید', 'error');
+      return;
+    }
+
+    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+
+    schedule.appointments[apptIndex] = {
+      ...schedule.appointments[apptIndex],
+      name: name,
+      time: timeStr,
+      duration: duration,
+      status: status,
+    };
+    saveSchedules(schedules);
+    
+    toast('نوبت ویرایش شد ✅', 'success');
     closeModal(overlay);
     openSchedulePage();
   };
