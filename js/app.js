@@ -933,10 +933,20 @@ function openHelpGuide() {
         </div>
       </div>
 
-      <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
         <h4 style="color: #EC4899; margin-bottom: 8px; font-size: 15px;">🚀 شروع کار</h4>
         <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
-          در صفحه اول، اطلاعات کسب‌وکار خود را وارد کنید. ${isCoach ? 'اگر مربی هستید، نوع ورزش و نام باشگاه را بنویسید.' : 'اگر فروشگاه دارید، نام و شغل خود را وارد کنید.'}
+          در صفحه اول، اطلاعات کسب‌وکار خود را وارد کنید.
+        </div>
+        
+        <div style="background: rgba(236,72,153,0.1); padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid rgba(236,72,153,0.3);">
+          <div style="font-size: 12px; line-height: 1.8; color: var(--text-color);">
+            <b>🏋️ اگر مربی ورزشی هستید:</b><br>
+            در قسمت <b>«شغل شما»</b>، فقط کلمه <b>«مربی»</b> را بنویسید (مثلاً: مربی).<br>
+            <span style="color: #EF4444;">توجه: چیزی غیر از کلمه مربی در این کادر ننویسید (مثل نام باشگاه یا نوع ورزش).</span><br>
+            سایر فیلدها (نام باشگاه، نام مدیر و...) را طبق معمول پر کنید.<br>
+            پس از ثبت، گزینه‌ای باز می‌شود که نوع مربیگری خود را انتخاب کنید.
+          </div>
         </div>
       </div>
 
