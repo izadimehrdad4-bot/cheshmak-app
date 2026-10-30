@@ -3794,11 +3794,8 @@ function showRetentionImagePreview(blob, fileName, customer) {
     closeModal(overlay);
   };
 
-  overlay.querySelector('#ri-download').onclick = () => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
+    overlay.querySelector('#ri-download').onclick = async () => {
+    await downloadImage(blob, fileName);
   };
 
   overlay.querySelector('#ri-share').onclick = async () => {
@@ -4070,11 +4067,8 @@ function showInvoicePreview(blob, fileName, customer) {
     </div>
   `);
   overlay.querySelector('#inv-close').onclick = () => { URL.revokeObjectURL(url); closeModal(overlay); };
-  overlay.querySelector('#inv-download').onclick = () => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
+    overlay.querySelector('#inv-download').onclick = async () => {
+    await downloadImage(blob, fileName);
   };
   overlay.querySelector('#inv-share').onclick = async () => {
     try {
@@ -4315,11 +4309,8 @@ function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type
     </div>
   `);
   overlay.querySelector('#inv-close').onclick = () => { URL.revokeObjectURL(url); closeModal(overlay); };
-  overlay.querySelector('#inv-download').onclick = () => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
+    overlay.querySelector('#inv-download').onclick = async () => {
+    await downloadImage(blob, fileName);
   };
   overlay.querySelector('#inv-share').onclick = async () => {
     try {
@@ -5926,11 +5917,8 @@ function showBirthdayImagePreview(blob, fileName, customer) {
     closeModal(overlay);
   };
 
-  overlay.querySelector('#bdi-download').onclick = () => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
+    overlay.querySelector('#bdi-download').onclick = async () => {
+    await downloadImage(blob, fileName);
   };
 
   overlay.querySelector('#bdi-share').onclick = async () => {

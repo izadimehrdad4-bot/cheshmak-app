@@ -1432,8 +1432,8 @@ async function generateTrainingPlanImage(customerId, plan) {
         </div>
       `);
       ov.querySelector('#tpi-close').onclick = () => { URL.revokeObjectURL(url); closeModal(ov); };
-      ov.querySelector('#tpi-download').onclick = () => {
-        const a = document.createElement('a'); a.href = url; a.download = fileName; a.click();
+            ov.querySelector('#tpi-download').onclick = async () => {
+        await downloadImage(blob, fileName);
       };
       ov.querySelector('#tpi-share').onclick = async () => {
         try {
