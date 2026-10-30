@@ -2296,6 +2296,9 @@ function openSettings() {
     <div style="margin-bottom:16px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:12px">
       <div style="text-align:center;direction:ltr;font-size:18px;font-weight:800;color:#10B981;letter-spacing:3px;margin-bottom:8px" id="referral-code-display">—</div>
       <button class="btn-cancel" id="copy-referral-code" style="width:100%;padding:8px;font-size:12px">📋 کپی کد معرف</button>
+            <button class="btn-primary" id="share-referral-link" style="width:100%;padding:10px;font-size:13px;margin-top:8px;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff">
+        📤 ارسال لینک اختصاصی
+      </button>
       <p style="font-size:10px;color:var(--text-muted);margin-top:6px;line-height:1.6;text-align:center">
         با ارسال لینک اختصاصی خود، ۳۰٪ از مبلغ خرید دوستتان به حساب شما واریز می‌شود.
       </p>
@@ -2565,6 +2568,23 @@ function openSettings() {
       const refCode = deviceId.replace('DEV-', '').replace('-', '');
       navigator.clipboard.writeText(refCode);
       toast('📋 کد معرف کپی شد', 'success');
+    };
+  }
+    // 🔥 دکمه ارسال لینک اختصاصی
+  const shareReferralBtn = overlay.querySelector('#share-referral-link');
+  if (shareReferralBtn) {
+    shareReferralBtn.onclick = () => {
+      const deviceId = getOrCreateDeviceId();
+      const refCode = deviceId.replace('DEV-', '').replace('-', '');
+      const referralLink = `https://B2n.ir/cheshmakapp?ref=${refCode}`;
+      
+      const message = `سلام 👋\n\nمن از اپلیکیشن «چشمک» استفاده می‌کنم و بهت پیشنهاد می‌دم.\nبا خرید از لینک زیر، ۳۰٪ از مبلغ خریدت به عنوان هدیه به من تعلق می‌گیره.\n\nلینک اختصاصی من:\n${referralLink}`;
+      
+      navigator.clipboard.writeText(message).then(() => {
+        toast('📋 متن و لینک اختصاصی شما کپی شد. حالا برای دوستتان بفرستید.', 'success');
+      }).catch(() => {
+        toast('خطا در کپی کردن لینک.', 'error');
+      });
     };
   }
   const retentionEnabled = overlay.querySelector('#retention-enabled');
