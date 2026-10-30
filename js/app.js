@@ -1804,6 +1804,31 @@ function openSchedulePage() {
   const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
   const schedules = getSchedules();
   const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
+    // محاسبه زمان خالی
+  let freeTimeStr = 'نامشخص';
+  const startParts = (schedule.startTime || '08:00').split(':');
+  const endParts = (schedule.endTime || '17:00').split(':');
+  
+  if (startParts.length === 2 && endParts.length === 2) {
+    const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+    const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+    
+    // مجموع زمان اشغال شده توسط نوبت‌ها
+    const occupiedMinutes = schedule.appointments.reduce((total, appt) => total + (parseInt(appt.duration) || 30), 0);
+    
+    const totalWorkMinutes = endMinutes - startMinutes;
+    const freeMinutes = totalWorkMinutes - occupiedMinutes;
+    
+    if (freeMinutes > 0) {
+      const h = Math.floor(freeMinutes / 60);
+      const m = freeMinutes % 60;
+      freeTimeStr = `${h > 0 ? h + ' ساعت و ' : ''}${m > 0 ? m + ' دقیقه' : (h > 0 ? 'کامل' : '')}`;
+    } else if (freeMinutes === 0) {
+      freeTimeStr = 'تکمیل (هیچ زمانی خالی نیست)';
+    } else {
+      freeTimeStr = 'بیش از حد ظرفیت!';
+    }
+  }
   
   const overlay = showModal(`
     <h3 class="modal-title">📅 زمان‌بندی امروز (${selectedDate})</h3>
@@ -1814,6 +1839,29 @@ function openSchedulePage() {
       </button>
     </div>
 
+        <!-- نمایش زمان خالی -->
+    <div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;">
+      <span style="font-size:12px;color:var(--text-muted)">⏳ زمان خالی این روز:</span>
+      <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
+    </div>
+    <!-- باکس تاریخ‌های دارای نوبت -->
+    <div style="margin-bottom:16px;">
+      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+        ${Object.keys(schedules)
+          .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
+          .sort()
+          .map(date => {
+            const apptCount = schedules[date].appointments.length;
+            return `
+              <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="padding:6px 10px;font-size:11px;border-radius:8px;background:${date === selectedDate ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.04)'};border-color:${date === selectedDate ? 'var(--button-color)' : 'transparent'};">
+                ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
+              </button>
+            `;
+          }).join('')}
+        ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted)">هیچ نوبتی ثبت نشده</span>' : ''}
+      </div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
       <div class="form-group" style="margin:0;">
         <label style="font-size:12px;">⏰ ساعت شروع کار</label>
@@ -1953,6 +2001,15 @@ function openSchedulePage() {
       toast('وضعیت ثبت شد ✅', 'success');
       closeModal(overlay);
       openSchedulePage(); // رفرش لیست
+    };
+  });
+
+    // دکمه‌های پرش به تاریخ
+  overlay.querySelectorAll('[data-jump-to-date]').forEach(btn => {
+    btn.onclick = () => {
+      window._scheduleSelectedDate = btn.dataset.jumpToDate;
+      closeModal(overlay);
+      openSchedulePage();
     };
   });
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
