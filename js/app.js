@@ -1829,7 +1829,8 @@ function openSchedulePage() {
         </div>
       </div>
     </div>
-    
+    </div>
+
     <div style="text-align:center;margin-bottom:12px;">
       <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
     </div>
@@ -1901,12 +1902,7 @@ function openSchedulePage() {
       openAddAppointmentForm();
     };
   }
-
-  // دکمه بستن
-  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
-}
-
-  // دکمه ذخیره ساعات کاری
+// دکمه ذخیره ساعات کاری
   overlay.querySelector('#save-work-hours').onclick = () => {
     const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
     const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
@@ -1927,6 +1923,10 @@ function openSchedulePage() {
     saveSchedules(schedules);
     toast('ساعات کاری ذخیره شد ✅', 'success');
   };
+  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
+}
+
+  
 
   // دکمه افزودن نوبت
   const addApptBtn = overlay.querySelector('#add-appointment-btn');
