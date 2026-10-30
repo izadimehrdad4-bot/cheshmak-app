@@ -50,6 +50,13 @@ self.addEventListener('fetch', (event) => {
   // فقط درخواست‌های GET رو کش کن
   if (event.request.method !== 'GET') return;
 
+    // 🔥 این خط برای اپ‌های PWA در اندروید حیاتیه
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
   // درخواست‌های کروم extension رو نادیده بگیر
   if (!event.request.url.startsWith('http')) return;
 
