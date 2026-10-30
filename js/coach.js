@@ -1420,16 +1420,65 @@ async function generateTrainingPlanImage(customerId, plan) {
       container.remove();
       // پیش‌نمایش
       const url = URL.createObjectURL(blob);
-      const ov = showModal(`
+            const ov = showModal(`
         <h3 class="modal-title">📷 عکس برنامه آماده شد</h3>
         <div style="text-align:center;margin-bottom:16px">
           <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(139,92,246,0.3)">
         </div>
+        
+        <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+          <div style="font-size:13px;color:#8B5CF6;line-height:1.8">
+            ✅ عکس در گالری/دانلودهای شما ذخیره شد.<br>
+            <span style="font-size:11px;color:var(--text-muted)">می‌توانید از گالری برای شاگرد ارسال کنید.</span>
+          </div>
+        </div>
+
         <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn-cancel" id="tpi-download">💾 دانلود عکس</button>
-          <button class="btn-cancel" id="tpi-close">بستن</button>
+          <button class="btn-cancel" id="tpi-download" style="border-color:#3B82F6;color:#3B82F6">💾 دانلود مجدد</button>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn-primary" id="tpi-sent" style="flex:1;background:linear-gradient(135deg,#10B981,#059669);color:#fff">✅ ارسال کردید</button>
+            <button class="btn-primary" id="tpi-later" style="flex:1;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ بعداً می‌فرستید</button>
+          </div>
+          <button class="btn-cancel" id="tpi-close" style="width:100%;margin-top:8px">بستن</button>
         </div>
       `);
+            // دکمه دانلود مجدد
+      ov.querySelector('#tpi-download').onclick = async () => {
+        await downloadImage(blob, fileName);
+      };
+
+      // دکمه ارسال شد
+      ov.querySelector('#tpi-sent').onclick = () => {
+        toast('✅ عالی! برنامه تمرینی ارسال شد.', 'success');
+        closeModal(ov);
+      };
+
+      // دکمه بعداً می‌فرستید
+      ov.querySelector('#tpi-later').onclick = () => {
+        const pending = DB.get('pendingInvoices', []);
+        const today = getTodayShamsi();
+        const alreadyExists = pending.find(p => p.customerId === c.id && p.type === 'trainingPlan');
+        
+        if (!alreadyExists) {
+            pending.push({
+                id: 'tp_' + Date.now(),
+                customerId: c.id,
+                customerName: c.fullName,
+                customerPhone: c.phone1,
+                type: 'trainingPlan',
+                lastServiceDate: today,
+                lastServiceName: 'برنامه تمرینی',
+                lastServiceCost: 0,
+                createdAt: new Date().toISOString(),
+                status: 'pending'
+            });
+            DB.set('pendingInvoices', pending);
+            updatePendingBadge();
+        }
+        
+        toast('⏳ برنامه تمرینی در سبد ارسال‌نشده‌ها ذخیره شد.', 'info');
+        closeModal(ov);
+      };
       ov.querySelector('#tpi-close').onclick = () => { URL.revokeObjectURL(url); closeModal(ov); };
             ov.querySelector('#tpi-download').onclick = async () => {
         await downloadImage(blob, fileName);

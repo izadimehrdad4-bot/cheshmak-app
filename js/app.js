@@ -3777,16 +3777,65 @@ async function generateRetentionImage(customerId, messageText) {
 function showRetentionImagePreview(blob, fileName, customer) {
   const url = URL.createObjectURL(blob);
 
-  const overlay = showModal(`
+    const overlay = showModal(`
     <h3 class="modal-title">💙 عکس پیام آماده شد</h3>
     <div style="text-align:center;margin-bottom:16px">
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(59,130,246,0.25)">
     </div>
+    
+    <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:#3B82F6;line-height:1.8">
+        ✅ عکس در گالری/دانلودهای شما ذخیره شد.<br>
+        <span style="font-size:11px;color:var(--text-muted)">می‌توانید از گالری برای مشتری ارسال کنید.</span>
+      </div>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-cancel" id="ri-download">💾 دانلود عکس</button>
-      <button class="btn-cancel" id="ri-close">بستن</button>
+      <button class="btn-cancel" id="ri-download" style="border-color:#3B82F6;color:#3B82F6">💾 دانلود مجدد</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn-primary" id="ri-sent" style="flex:1;background:linear-gradient(135deg,#10B981,#059669);color:#fff">✅ ارسال کردید</button>
+        <button class="btn-primary" id="ri-later" style="flex:1;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ بعداً می‌فرستید</button>
+      </div>
+      <button class="btn-cancel" id="ri-close" style="width:100%;margin-top:8px">بستن</button>
     </div>
   `);
+    // دکمه دانلود مجدد
+  overlay.querySelector('#ri-download').onclick = async () => {
+    await downloadImage(blob, fileName);
+  };
+
+  // دکمه ارسال شد
+  overlay.querySelector('#ri-sent').onclick = () => {
+    toast('✅ عالی! پیام ارسال شد.', 'success');
+    closeModal(overlay);
+  };
+
+  // دکمه بعداً می‌فرستید
+  overlay.querySelector('#ri-later').onclick = () => {
+    const pending = DB.get('pendingInvoices', []);
+    const today = getTodayShamsi();
+    const alreadyExists = pending.find(p => p.customerId === customer.id && p.type === 'retention');
+    
+    if (!alreadyExists) {
+        pending.push({
+            id: 'ret_' + Date.now(),
+            customerId: customer.id,
+            customerName: customer.fullName,
+            customerPhone: customer.phone1,
+            type: 'retention',
+            lastServiceDate: today,
+            lastServiceName: 'یادآوری غیبت',
+            lastServiceCost: 0,
+            createdAt: new Date().toISOString(),
+            status: 'pending'
+        });
+        DB.set('pendingInvoices', pending);
+        updatePendingBadge();
+    }
+    
+    toast('⏳ پیام یادآوری در سبد ارسال‌نشده‌ها ذخیره شد.', 'info');
+    closeModal(overlay);
+  };
 
   overlay.querySelector('#ri-close').onclick = () => {
     URL.revokeObjectURL(url);
@@ -4039,16 +4088,62 @@ function incrementAdShownCount(ad) {
 
 function showInvoicePreview(blob, fileName, customer) {
   const url = URL.createObjectURL(blob);
-  const overlay = showModal(`
+    const overlay = showModal(`
     <h3 class="modal-title">📄 فاکتور آماده شد</h3>
     <div style="text-align:center;margin-bottom:16px">
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
     </div>
+    
+    <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:#10B981;line-height:1.8">
+        ✅ عکس در گالری/دانلودهای شما ذخیره شد.<br>
+        <span style="font-size:11px;color:var(--text-muted)">می‌توانید از گالری برای مشتری ارسال کنید.</span>
+      </div>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-cancel" id="inv-download">💾 دانلود عکس</button>
-      <button class="btn-cancel" id="inv-close">بستن</button>
+      <button class="btn-cancel" id="inv-download" style="border-color:#3B82F6;color:#3B82F6">💾 دانلود مجدد</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn-primary" id="inv-sent" style="flex:1;background:linear-gradient(135deg,#10B981,#059669);color:#fff">✅ ارسال کردید</button>
+        <button class="btn-primary" id="inv-later" style="flex:1;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ بعداً می‌فرستید</button>
+      </div>
+      <button class="btn-cancel" id="inv-close" style="width:100%;margin-top:8px">بستن</button>
     </div>
   `);
+    // دکمه دانلود مجدد
+  overlay.querySelector('#inv-download').onclick = async () => {
+    await downloadImage(blob, fileName);
+  };
+
+  // دکمه ارسال شد (حذف از سبد اگر بود)
+  overlay.querySelector('#inv-sent').onclick = () => {
+    // حذف از سبد ارسال‌نشده‌ها اگر وجود داشت
+    const pending = getPendingInvoices();
+    const pendingItem = pending.find(p => p.customerId === customer.id && p.lastServiceDate === customer.history[customer.history.length - 1].dateShamsi);
+    if (pendingItem) {
+      removePendingInvoice(pendingItem.id);
+      updatePendingBadge();
+    }
+    toast('✅ عالی! فاکتور ارسال شد.', 'success');
+    closeModal(overlay);
+  };
+
+  // دکمه بعداً می‌فرستید (اضافه به سبد)
+  overlay.querySelector('#inv-later').onclick = () => {
+    if (!customer.history || customer.history.length === 0) {
+        toast('خدمتی برای این مشتری ثبت نشده است.', 'error');
+        closeModal(overlay);
+        return;
+    }
+    
+    // اضافه کردن به سبد
+    const wasAdded = addPendingInvoice(customer.id);
+    if (wasAdded) {
+        updatePendingBadge();
+        toast('⏳ فاکتور در سبد ارسال‌نشده‌ها ذخیره شد.', 'info');
+    }
+    closeModal(overlay);
+  };
   overlay.querySelector('#inv-close').onclick = () => { URL.revokeObjectURL(url); closeModal(overlay); };
     overlay.querySelector('#inv-download').onclick = async () => {
     await downloadImage(blob, fileName);
@@ -4260,7 +4355,7 @@ function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type
   const url = URL.createObjectURL(blob);
   const typeLabel = type === 'ad' ? '📢 تبلیغ' : '🎂 اسپانسر تولد';
 
-  const overlay = showModal(`
+    const overlay = showModal(`
     <h3 class="modal-title">📄 فاکتور ${typeLabel} آماده شد</h3>
     <div style="text-align:center;margin-bottom:16px">
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
@@ -4270,11 +4365,58 @@ function showIssuedInvoicePreview(blob, fileName, recipientName, totalCost, type
       <div style="font-size:15px;font-weight:700;margin-bottom:6px">${escapeHtml(recipientName)}</div>
       <div style="font-size:13px;font-weight:700;color:var(--button-color)">${totalCost.toLocaleString()} تومان</div>
     </div>
+    
+    <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:#10B981;line-height:1.8">
+        ✅ عکس در گالری/دانلودهای شما ذخیره شد.<br>
+        <span style="font-size:11px;color:var(--text-muted)">می‌توانید از گالری برای طرف قرارداد ارسال کنید.</span>
+      </div>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-cancel" id="inv-download">💾 دانلود عکس</button>
-      <button class="btn-cancel" id="inv-close">بستن</button>
+      <button class="btn-cancel" id="inv-download" style="border-color:#3B82F6;color:#3B82F6">💾 دانلود مجدد</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn-primary" id="inv-sent" style="flex:1;background:linear-gradient(135deg,#10B981,#059669);color:#fff">✅ ارسال کردید</button>
+        <button class="btn-primary" id="inv-later" style="flex:1;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ بعداً می‌فرستید</button>
+      </div>
+      <button class="btn-cancel" id="inv-close" style="width:100%;margin-top:8px">بستن</button>
     </div>
   `);
+    // دکمه دانلود مجدد
+  overlay.querySelector('#inv-download').onclick = async () => {
+    await downloadImage(blob, fileName);
+  };
+
+  // دکمه ارسال شد
+  overlay.querySelector('#inv-sent').onclick = () => {
+    toast('✅ عالی! فاکتور اسپانسر ارسال شد.', 'success');
+    closeModal(overlay);
+  };
+
+  // دکمه بعداً می‌فرستید
+  overlay.querySelector('#inv-later').onclick = () => {
+    const pending = DB.get('pendingInvoices', []);
+    const today = getTodayShamsi();
+    const alreadyExists = pending.find(p => p.customerName === recipientName && p.type === 'issuedInvoice');
+    
+    if (!alreadyExists) {
+        pending.push({
+            id: 'iss_' + Date.now(),
+            customerName: recipientName,
+            type: 'issuedInvoice',
+            lastServiceDate: today,
+            lastServiceName: 'فاکتور ' + typeLabel,
+            lastServiceCost: totalCost,
+            createdAt: new Date().toISOString(),
+            status: 'pending'
+        });
+        DB.set('pendingInvoices', pending);
+        updatePendingBadge();
+    }
+    
+    toast('⏳ فاکتور اسپانسر در سبد ارسال‌نشده‌ها ذخیره شد.', 'info');
+    closeModal(overlay);
+  };
   overlay.querySelector('#inv-close').onclick = () => { URL.revokeObjectURL(url); closeModal(overlay); };
     overlay.querySelector('#inv-download').onclick = async () => {
     await downloadImage(blob, fileName);
@@ -5852,16 +5994,66 @@ async function generateBirthdayImage(customerId, quoteText, messageText) {
 function showBirthdayImagePreview(blob, fileName, customer) {
   const url = URL.createObjectURL(blob);
 
-  const overlay = showModal(`
+    const overlay = showModal(`
     <h3 class="modal-title">🎂 عکس تبریک آماده شد</h3>
     <div style="text-align:center;margin-bottom:16px">
       <img src="${url}" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(236,72,153,0.3)">
     </div>
+    
+    <div style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:#EC4899;line-height:1.8">
+        ✅ عکس در گالری/دانلودهای شما ذخیره شد.<br>
+        <span style="font-size:11px;color:var(--text-muted)">می‌توانید از گالری برای مشتری ارسال کنید.</span>
+      </div>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-cancel" id="bdi-download">💾 دانلود عکس</button>
-      <button class="btn-cancel" id="bdi-close">بستن</button>
+      <button class="btn-cancel" id="bdi-download" style="border-color:#3B82F6;color:#3B82F6">💾 دانلود مجدد</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn-primary" id="bdi-sent" style="flex:1;background:linear-gradient(135deg,#10B981,#059669);color:#fff">✅ ارسال کردید</button>
+        <button class="btn-primary" id="bdi-later" style="flex:1;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff">⏳ بعداً می‌فرستید</button>
+      </div>
+      <button class="btn-cancel" id="bdi-close" style="width:100%;margin-top:8px">بستن</button>
     </div>
   `);
+    // دکمه دانلود مجدد
+  overlay.querySelector('#bdi-download').onclick = async () => {
+    await downloadImage(blob, fileName);
+  };
+
+  // دکمه ارسال شد
+  overlay.querySelector('#bdi-sent').onclick = () => {
+    toast('✅ عالی! تبریک تولد ارسال شد.', 'success');
+    closeModal(overlay);
+  };
+
+  // دکمه بعداً می‌فرستید
+  overlay.querySelector('#bdi-later').onclick = () => {
+    // برای تبریک تولد، از سیستم سبد ارسال استفاده می‌کنیم
+    const pending = DB.get('pendingInvoices', []);
+    const today = getTodayShamsi();
+    const alreadyExists = pending.find(p => p.customerId === customer.id && p.type === 'birthday');
+    
+    if (!alreadyExists) {
+        pending.push({
+            id: 'bday_' + Date.now(),
+            customerId: customer.id,
+            customerName: customer.fullName,
+            customerPhone: customer.phone1,
+            type: 'birthday',
+            lastServiceDate: today,
+            lastServiceName: 'تبریک تولد',
+            lastServiceCost: 0,
+            createdAt: new Date().toISOString(),
+            status: 'pending'
+        });
+        DB.set('pendingInvoices', pending);
+        updatePendingBadge();
+    }
+    
+    toast('⏳ تبریک تولد در سبد ارسال‌نشده‌ها ذخیره شد.', 'info');
+    closeModal(overlay);
+  };
 
   overlay.querySelector('#bdi-close').onclick = () => {
     URL.revokeObjectURL(url);
