@@ -1952,7 +1952,8 @@ function openSchedulePage() {
 function openAddAppointmentForm() {
   const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
   const schedules = getSchedules();
-  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };  const today = getTodayShamsi();
+  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
+  const today = getTodayShamsi();
   
   const overlay = showModal(`
     <h3 class="modal-title">➕ افزودن نوبت جدید</h3>
