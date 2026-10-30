@@ -905,6 +905,72 @@ function initSetupScreen() {
   if (btnRestoreSetup) btnRestoreSetup.addEventListener('click', () => openRestoreDialog(false));
 }
 
+
+// ==============================
+// 📖 صفحه راهنمای کاربر (داینامیک برای عادی و مربی)
+// ==============================
+function openHelpGuide() {
+  const isCoach = state.business && state.business.bizType === 'coach';
+  const customerTerm = isCoach ? 'شاگرد' : 'مشتری';
+  
+  const overlay = showModal(`
+    <h3 class="modal-title">📖 راهنمای کاربری چشمک</h3>
+    
+    <div style="max-height: 60vh; overflow-y: auto; padding: 10px;">
+      
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #14B8A6; margin-bottom: 8px; font-size: 15px;">📱 نصب اپ روی گوشی</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
+          <b>اندروید:</b> لینک را باز کنید و روی "Install App" بزنید.<br>
+          <b>آیفون:</b> لینک را باز کنید، دکمه Share (مربع با فلش) را بزنید و "Add to Home Screen" را انتخاب کنید.
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #EC4899; margin-bottom: 8px; font-size: 15px;">🚀 شروع کار</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
+          در صفحه اول، اطلاعات کسب‌وکار خود را وارد کنید. ${isCoach ? 'اگر مربی هستید، نوع ورزش و نام باشگاه را بنویسید.' : 'اگر فروشگاه دارید، نام و شغل خود را وارد کنید.'}
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #F59E0B; margin-bottom: 8px; font-size: 15px;">👥 مدیریت ${customerTerm}ها</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
+          از دکمه "ثبت ${customerTerm}" استفاده کنید. تاریخ تولد را ثبت کنید تا به شما یادآوری شود.
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #3B82F6; margin-bottom: 8px; font-size: 15px;">📄 فاکتور و تبلیغات</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
+          <b>مهم:</b> فاکتورهای این اپ در واقع یک <b>ابزار تبلیغاتی</b> هستند تا ${customerTerm}های شما برای دیگران بفرستند و کسب‌وکارتان دیده شود. اگر الان وقت ارسال ندارید، دکمه "بعداً می‌فرستید" را بزنید تا توی سبد ارسال‌نشده‌ها بماند.
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px; background: rgba(20,184,166,0.1); padding: 12px; border-radius: 10px; border: 1px solid rgba(20,184,166,0.3);">
+        <h4 style="color: #10B981; margin-bottom: 8px; font-size: 15px;">🎁 سیستم همکاری در فروش</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
+          با ارسال لینک اختصاصی خود به دوستانتان، در صورت خرید اپ توسط آن‌ها، <b>۳۰٪ از مبلغ خرید به صورت نقدی به حساب شما واریز می‌شود.</b> کد معرف شما در تنظیمات قابل مشاهده است.
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #8B5CF6; margin-bottom: 8px; font-size: 15px;">📞 پشتیبانی</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
+          برای تمدید لایسنس یا رفع مشکل: <strong>@cheshmak_help</strong>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-actions" style="margin-top: 16px;">
+      <button class="btn-primary" id="help-close" style="width: 100%;">متوجه شدم</button>
+    </div>
+  `, { center: true });
+
+  overlay.querySelector('#help-close').onclick = () => closeModal(overlay);
+}
+
 function showWelcomeDialog() {
   const overlay = showModal(`
     <div style="text-align:center;padding:10px">
@@ -1098,6 +1164,7 @@ function initDashboard() {
     renderCustomers();
   };
   document.getElementById('btn-settings').onclick = openSettings;
+  document.getElementById('btn-help').onclick = openHelpGuide;
 
   const btnPending = document.getElementById('btn-pending');
   if (btnPending) {
