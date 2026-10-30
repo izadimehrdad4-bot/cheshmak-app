@@ -967,8 +967,9 @@ function openHelpGuide() {
       <div style="margin-bottom: 20px; background: rgba(20,184,166,0.1); padding: 12px; border-radius: 10px; border: 1px solid rgba(20,184,166,0.3);">
         <h4 style="color: #10B981; margin-bottom: 8px; font-size: 15px;">🎁 سیستم همکاری در فروش</h4>
         <div style="font-size: 13px; line-height: 2; color: var(--text-color);">
-          با ارسال لینک اختصاصی خود به دوستانتان، در صورت خرید اپ توسط آن‌ها، <b>۳۰٪ از مبلغ خرید به صورت نقدی به حساب شما واریز می‌شود.</b> کد معرف شما در تنظیمات قابل مشاهده است.
-        </div>
+      <p style="font-size:10px;color:#10B981;margin-top:6px;line-height:1.6;text-align:center;font-weight:bold">
+        🎁 با ارسال لینک به دوستانتان، ۳۰٪ از مبلغ خریدشان به عنوان هدیه نقدی به شما تعلق می‌گیرد.
+      </p>        </div>
       </div>
 
       <div style="margin-bottom: 20px;">
