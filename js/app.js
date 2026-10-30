@@ -1205,7 +1205,10 @@ function initDashboard() {
   };
   document.getElementById('btn-settings').onclick = openSettings;
   document.getElementById('btn-help').onclick = openHelpGuide;
-
+  const btnSchedule = document.getElementById('btn-schedule');
+  if (btnSchedule) {
+    btnSchedule.onclick = () => openSchedulePage();
+  }
   const btnPending = document.getElementById('btn-pending');
   if (btnPending) {
     btnPending.onclick = openPendingList;
@@ -1791,6 +1794,69 @@ function openReport() {
   overlay.querySelector('#rep-close').onclick = () => closeModal(overlay);
   renderReportContent(overlay);
 }
+// ==============================
+// 📅 صفحه زمان‌بندی امروز
+// ==============================
+function openSchedulePage() {
+  const schedule = getTodaySchedule();
+  const today = getTodayShamsi();
+  
+  const overlay = showModal(`
+    <h3 class="modal-title">📅 زمان‌بندی امروز (${today})</h3>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;">⏰ ساعت شروع کار</label>
+        <input type="time" id="sched-start" value="${schedule.startTime || ''}" style="width:100%;">
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;">⏰ ساعت پایان کار</label>
+        <input type="time" id="sched-end" value="${schedule.endTime || ''}" style="width:100%;">
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:12px;">
+      <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
+    </div>
+
+    <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
+      <div id="appointments-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
+        ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments.map((a, i) => `
+          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <strong>${a.name}</strong>
+              <span>⏰ ${a.time}</span>
+            </div>
+            <div style="color:var(--text-muted);">
+              ⏳ مدت تقریبی: ${a.duration} دقیقه
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
+  `);
+
+  overlay.querySelector('#save-work-hours').onclick = () => {
+    const start = overlay.querySelector('#sched-start').value;
+    const end = overlay.querySelector('#sched-end').value;
+    
+    if (!start || !end) {
+      toast('لطفاً ساعت شروع و پایان را وارد کنید', 'error');
+      return;
+    }
+    
+    schedule.startTime = start;
+    schedule.endTime = end;
+    saveTodaySchedule(schedule);
+    toast('ساعات کاری ذخیره شد ✅', 'success');
+  };
+
+  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
+}
+
 
 function renderReportContent(overlay) {
   const content = overlay.querySelector('#report-content');
