@@ -1936,28 +1936,38 @@ ${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text
     };
   }
 
-  overlay.querySelector('#save-work-hours').onclick = () => {
-    const startHour = overlay.querySelector('#sched-start-hour').value.padStart(2, '0');
-    const startMin = overlay.querySelector('#sched-start-min').value.padStart(2, '0');
-    const endHour = overlay.querySelector('#sched-end-hour').value.padStart(2, '0');
-    const endMin = overlay.querySelector('#sched-end-min').value.padStart(2, '0');
-    
-    if (!startHour || !startMin || !endHour || !endMin) {
-      toast('لطفاً ساعت شروع و پایان را کامل وارد کنید', 'error');
-      return;
-    }
-    
-    const start = `${startHour}:${startMin}`;
-    const end = `${endHour}:${endMin}`;
-    
-    schedule.startTime = start;
-    schedule.endTime = end;
-    schedules[selectedDate] = schedule;
-    saveSchedules(schedules);
-    toast('ساعات کاری ذخیره شد ✅', 'success');
-    closeModal(overlay);
-    openSchedulePage();
-  };
+    // عملکرد دکمه‌های اومد و نیامد
+  overlay.querySelectorAll('[data-status]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.apptIndex);
+      const newStatus = btn.dataset.status;
+      const appt = schedule.appointments[idx];
+      
+      if (!appt) return;
+
+      // ۱. علامت‌گذاری به عنوان انجام‌شده
+      appt.completed = true;
+      appt.status = newStatus;
+      
+      // ۲. ثبت آخرین مراجعه توی پروفایل مشتری (فقط اگر اومد)
+      if (newStatus === 'green') {
+        const customer = state.customers.find(c => c.fullName.includes(appt.name));
+        if (customer) {
+          customer.lastVisit = selectedDate;
+          DB.set('customers', state.customers);
+        }
+      }
+
+      // ۳. ذخیره تغییرات و رفرش
+      schedules[selectedDate] = schedule;
+      saveSchedules(schedules);
+      
+      toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
+      
+      closeModal(overlay);
+      openSchedulePage();
+    };
+  });
 
   const addApptBtn = overlay.querySelector('#add-appointment-btn');
   if (addApptBtn) {
