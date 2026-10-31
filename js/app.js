@@ -1908,12 +1908,11 @@ ${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text
                 <button type="button" class="btn-cancel" data-delete-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;">🗑️ حذف</button>
               </div>
             </div>
-
-                        <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
+            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
               <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #10B981;background:rgba(16,185,129,0.2);color:#10B981;cursor:pointer;font-family:inherit;">✔️ اومد</button>
               <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #EF4444;background:rgba(239,68,68,0.2);color:#EF4444;cursor:pointer;font-family:inherit;">✖️ نیامد</button>
             </div>
-          </div>
+                  
         `}).join('')}
       </div>
     </div>
