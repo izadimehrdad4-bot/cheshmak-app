@@ -1824,10 +1824,21 @@ function openSchedulePage() {
       freeTimeStr = 'بیش از حد ظرفیت!';
     }
   }
+  // محاسبه بازه زمانی برای نوار افقی
+  const startT = schedule.startTime || '08:00';
+  const endT = schedule.endTime || '17:00';
+  const [startH, startM] = startT.split(':').map(Number);
+  const [endH, endM] = endT.split(':').map(Number);
+  const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
 
   const overlay = showModal(`
     <h3 class="modal-title">📅 زمان‌بندی امروز (${selectedDate})</h3>
-    
+        <!-- شمارنده نوبت‌های امروز -->
+    <div style="text-align:center;margin-bottom:12px;">
+      <span style="background:rgba(20,184,166,0.2);color:#14B8A6;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;">
+        📊 امروز ${schedule.appointments.filter(a => !a.completed).length} نوبت داری
+      </span>
+    </div>
     <div style="text-align:center;margin-bottom:16px;">
       <button type="button" class="btn-cancel" id="btn-change-schedule-date" style="font-size:12px;padding:8px 12px;">
         📅 تغییر تاریخ (${selectedDate})
@@ -1839,6 +1850,26 @@ function openSchedulePage() {
       <span style="font-size:12px;color:var(--text-muted)">⏳ زمان خالی این روز:</span>
       <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
     </div>
+
+    <!-- نوار افقی (تایم‌لاین) -->
+    <div style="margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px;">
+      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏱️ تایم‌لاین امروز:</h4>
+      <div style="position:relative;height:40px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;direction:ltr;">
+        ${schedule.appointments.filter(a => !a.completed).map(a => {
+          const [h, m] = a.time.split(':').map(Number);
+          const apptStart = (h * 60 + m) - (startH * 60 + startM);
+          const apptDuration = parseInt(a.duration) || 30;
+          const leftPercent = (apptStart / totalMinutes) * 100;
+          const widthPercent = (apptDuration / totalMinutes) * 100;
+          return `
+            <div style="position:absolute;left:${leftPercent}%;top:0;height:100%;width:${widthPercent}%;background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;color:#fff;font-weight:700;" title="${a.name} - ${a.time} - ${a.duration} دقیقه">
+              ${a.name}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
 
     <!-- باکس تاریخ‌های دارای نوبت -->
     <div style="margin-bottom:16px;">
