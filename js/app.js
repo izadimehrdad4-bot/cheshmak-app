@@ -1336,12 +1336,12 @@ function openCustomerForm(id = null) {
     bindCoachDatePickers(overlay);
   }
 
-  const nameInput = overlay.querySelector('#cust-name');
+  const autoNameInput = overlay.querySelector('#cust-name');
   const phoneInput = overlay.querySelector('#cust-phone1');
   const dupWarning = overlay.querySelector('#dup-warning');
 
   const checkDuplicatesLive = () => {
-    const name = nameInput.value.trim();
+    const name = autoNameInput.value.trim();
     const phone = phoneInput.value.trim();
     if (!name && !phone) { dupWarning.style.display = 'none'; return; }
     const similar = findSimilarCustomers(name, phone, editing ? editing.id : null);
@@ -1375,7 +1375,7 @@ function openCustomerForm(id = null) {
     dupTimeout = setTimeout(checkDuplicatesLive, 500);
   };
   
-  nameInput.addEventListener('input', debouncedCheck);
+  autoNameInput.addEventListener('input', debouncedCheck);
   phoneInput.addEventListener('input', debouncedCheck);
   if (editing) checkDuplicatesLive();
 
@@ -2056,7 +2056,10 @@ function openAddAppointmentForm(targetDate = null) {
       <label>نام ${getCustomerTitle().replace(' گرامی', '')}</label>
       <input type="text" id="appt-name" placeholder="مثلاً: علی رضایی" style="width:100%;">
     </div>
-    
+        <div class="form-group">
+      <label>📝 شرح کار (اختیاری)</label>
+      <input type="text" id="appt-desc" placeholder="مثلاً: کوتاهی مو، اصلاح ریش" style="width:100%;">
+    </div>
     <div class="form-group">
       <label>📅 تاریخ</label>
       <div style="display:flex;gap:8px;">
@@ -2097,14 +2100,14 @@ function openAddAppointmentForm(targetDate = null) {
   `);
 
   // سیستم تحلیل رفتار مشتری (هوشمند و اصلاح‌پذیر)
-  const nameInput = overlay.querySelector('#appt-name');
+  const autoNameInput = overlay.querySelector('#appt-name');
   const warningDiv = document.createElement('div');
   warningDiv.id = 'appt-warning';
   warningDiv.style.cssText = 'display:none;background:rgba(245,158,11,0.15);border:1px solid #F59E0B;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#F59E0B';
-  nameInput.parentNode.insertBefore(warningDiv, nameInput.nextSibling);
+  autoNameInput.parentNode.insertBefore(warningDiv, autoNameInput.nextSibling);
 
-  nameInput.addEventListener('input', () => {
-    const inputName = nameInput.value.trim();
+  autoNameInput.addEventListener('input', () => {
+    const inputName = autoNameInput.value.trim();
     if (inputName.length < 2) {
       warningDiv.style.display = 'none';
       return;
@@ -2148,7 +2151,49 @@ function openAddAppointmentForm(targetDate = null) {
       warningDiv.style.display = 'none';
     }
   });
+  // اتوکامپلیت برای اسم مشتری‌ها
+  let suggestionBox = null;
 
+  autoNameInput.addEventListener('input', () => {
+    const query = autoNameInput.value.trim();
+    
+    if (suggestionBox) {
+      suggestionBox.remove();
+      suggestionBox = null;
+    }
+
+    if (query.length < 2) return;
+
+    const matches = state.customers.filter(c => c.fullName.includes(query)).slice(0, 5);
+    
+    if (matches.length === 0) return;
+
+    suggestionBox = document.createElement('div');
+    suggestionBox.style.cssText = 'background:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;margin-top:4px;max-height:150px;overflow-y:auto;z-index:1000;';
+    
+    matches.forEach(c => {
+      const item = document.createElement('div');
+      item.textContent = c.fullName;
+      item.style.cssText = 'padding:10px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border-color);';
+      item.onmouseover = () => item.style.background = 'rgba(255,255,255,0.1)';
+      item.onmouseout = () => item.style.background = 'transparent';
+      item.onclick = () => {
+        autoNameInput.value = c.fullName;
+        suggestionBox.remove();
+        suggestionBox = null;
+      };
+      suggestionBox.appendChild(item);
+    });
+
+    autoNameInput.parentNode.appendChild(suggestionBox);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (suggestionBox && !suggestionBox.contains(e.target) && e.target !== autoNameInput) {
+      suggestionBox.remove();
+      suggestionBox = null;
+    }
+  }, { once: true });
   overlay.querySelector('#appt-date').addEventListener('click', async () => {
     const result = await showShamsiDatePicker(overlay.querySelector('#appt-date').value, 'تاریخ نوبت');
     if (result) overlay.querySelector('#appt-date').value = result;
@@ -2194,6 +2239,7 @@ function openAddAppointmentForm(targetDate = null) {
       name: name,
       time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
       duration: duration,
+            desc: overlay.querySelector('#appt-desc').value.trim(),
       status: 'pending',
     });
     saveSchedules(schedules);
