@@ -1891,29 +1891,7 @@ function openSchedulePage() {
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div class="form-group" style="margin:0;">
-        <label style="font-size:12px;">⏰ ساعت شروع کار</label>
-        <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
-          <input type="number" id="sched-start-hour" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" placeholder="08" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
-          <span style="font-weight:700;font-size:20px;">:</span>
-          <input type="number" id="sched-start-min" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
-        </div>
-      </div>
-      <div class="form-group" style="margin:0;">
-        <label style="font-size:12px;">⏰ ساعت پایان کار</label>
-        <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
-          <input type="number" id="sched-end-hour" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" placeholder="17" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
-          <span style="font-weight:700;font-size:20px;">:</span>
-          <input type="number" id="sched-end-min" min="0" max="59" value="${(schedule.endTime || '17:00').split(':')[1] || '00'}" placeholder="00" inputmode="numeric" style="width:80px;text-align:center;padding:10px;font-size:16px;border-radius:8px;">
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-bottom:12px;">
-      <button class="btn-primary" id="save-work-hours" style="width:100%;">💾 ذخیره ساعات کاری</button>
-    </div>
-
+    
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
       <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
