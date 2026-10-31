@@ -1885,8 +1885,7 @@ function openSchedulePage() {
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
       <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
-        ${schedule.appointments.length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments
-          .slice()
+${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments          .slice()
           .sort((a, b) => a.time.localeCompare(b.time))
           .map((a) => {
             const originalIndex = schedule.appointments.indexOf(a);
@@ -1969,7 +1968,6 @@ function openSchedulePage() {
   }
 
     // دکمه‌های وضعیت (اومد، دیر اومد، نیامد)
-    // دکمه‌های وضعیت (اومد، دیر اومد، نیامد)
   overlay.querySelectorAll('[data-status]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.apptIndex);
@@ -1978,7 +1976,11 @@ function openSchedulePage() {
       
       if (!appt) return;
 
-      // ۱. ثبت آخرین مراجعه توی پروفایل مشتری (اگر اومد یا دیر اومد)
+      // ۱. علامت‌گذاری به عنوان انجام‌شده (تا از لیست مخفی بشه ولی سابقه‌ش بمونه)
+      appt.completed = true;
+      appt.status = newStatus;
+      
+      // ۲. ثبت آخرین مراجعه توی پروفایل مشتری (اگر اومد یا دیر اومد)
       if (newStatus === 'green' || newStatus === 'yellow') {
         const customer = state.customers.find(c => c.fullName.includes(appt.name));
         if (customer) {
@@ -1987,18 +1989,16 @@ function openSchedulePage() {
         }
       }
 
-      // ۲. حذف نوبت از لیست (چون وضعیتش مشخص شده)
-      schedule.appointments.splice(idx, 1);
-      
       // ۳. ذخیره تغییرات
       schedules[selectedDate] = schedule;
       saveSchedules(schedules);
       
-      toast('وضعیت ثبت شد و نوبت از لیست خارج شد ✅', 'success');
+      toast('وضعیت ثبت شد ✅', 'success');
       closeModal(overlay);
       openSchedulePage();
     };
   });
+
 
   overlay.querySelectorAll('[data-edit-appt]').forEach(btn => {
     btn.onclick = () => {
