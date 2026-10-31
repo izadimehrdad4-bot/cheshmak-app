@@ -1885,7 +1885,9 @@ function openSchedulePage() {
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
       <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
-${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments          .slice()
+${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments  
+                  .filter(a => !a.completed)
+    .slice()
           .sort((a, b) => a.time.localeCompare(b.time))
           .map((a) => {
             const originalIndex = schedule.appointments.indexOf(a);
@@ -1907,10 +1909,9 @@ ${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text
               </div>
             </div>
 
-            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
-              <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid ${a.status === 'green' ? '#10B981' : 'rgba(255,255,255,0.2)'};background:${a.status === 'green' ? 'rgba(16,185,129,0.2)' : 'transparent'};color:${a.status === 'green' ? '#10B981' : 'var(--text-color)'};cursor:pointer;font-family:inherit;">🟢 اومد</button>
-              <button type="button" data-status="yellow" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid ${a.status === 'yellow' ? '#F59E0B' : 'rgba(255,255,255,0.2)'};background:${a.status === 'yellow' ? 'rgba(245,158,11,0.2)' : 'transparent'};color:${a.status === 'yellow' ? '#F59E0B' : 'var(--text-color)'};cursor:pointer;font-family:inherit;">🟡 دیر اومد</button>
-              <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid ${a.status === 'red' ? '#EF4444' : 'rgba(255,255,255,0.2)'};background:${a.status === 'red' ? 'rgba(239,68,68,0.2)' : 'transparent'};color:${a.status === 'red' ? '#EF4444' : 'var(--text-color)'};cursor:pointer;font-family:inherit;">🔴 نیامد</button>
+                        <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
+              <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #10B981;background:rgba(16,185,129,0.2);color:#10B981;cursor:pointer;font-family:inherit;">✔️ اومد</button>
+              <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #EF4444;background:rgba(239,68,68,0.2);color:#EF4444;cursor:pointer;font-family:inherit;">✖️ نیامد</button>
             </div>
           </div>
         `}).join('')}
