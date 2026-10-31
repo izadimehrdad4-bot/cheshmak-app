@@ -1794,279 +1794,74 @@ function openReport() {
   overlay.querySelector('#rep-close').onclick = () => closeModal(overlay);
   renderReportContent(overlay);
 }
+
 // ==============================
-// 📅 صفحه زمان‌بندی امروز
+// 📅 صفحه انتخاب تاریخ
 // ==============================
 function openSchedulePage() {
-  const selectedDate = window._scheduleSelectedDate || getTodayShamsi();
   const schedules = getSchedules();
-  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
   
-  // محاسبه زمان خالی
-  let freeTimeStr = 'نامشخص';
-  const startParts = (schedule.startTime || '08:00').split(':');
-  const endParts = (schedule.endTime || '17:00').split(':');
-  
-  if (startParts.length === 2 && endParts.length === 2) {
-    const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
-    const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
-    const occupiedMinutes = schedule.appointments.reduce((total, appt) => total + (parseInt(appt.duration) || 30), 0);
-    const totalWorkMinutes = endMinutes - startMinutes;
-    const freeMinutes = totalWorkMinutes - occupiedMinutes;
-    
-    if (freeMinutes > 0) {
-      const h = Math.floor(freeMinutes / 60);
-      const m = freeMinutes % 60;
-      freeTimeStr = `${h > 0 ? h + ' ساعت و ' : ''}${m > 0 ? m + ' دقیقه' : (h > 0 ? 'کامل' : '')}`;
-    } else if (freeMinutes === 0) {
-      freeTimeStr = 'تکمیل (هیچ زمانی خالی نیست)';
-    } else {
-      freeTimeStr = 'بیش از حد ظرفیت!';
-    }
-  }
-  // محاسبه بازه زمانی برای نوار افقی
-  const startT = schedule.startTime || '08:00';
-  const endT = schedule.endTime || '17:00';
-  const [startH, startM] = startT.split(':').map(Number);
-  const [endH, endM] = endT.split(':').map(Number);
-  const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
-
   const overlay = showModal(`
-    <h3 class="modal-title">📅 زمان‌بندی امروز (${selectedDate})</h3>
-        <!-- شمارنده نوبت‌های امروز -->
-    <div style="text-align:center;margin-bottom:12px;">
-      <span style="background:rgba(20,184,166,0.2);color:#14B8A6;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;">
-        📊 امروز ${schedule.appointments.filter(a => !a.completed).length} نوبت داری
-      </span>
-    </div>
-    <div style="text-align:center;margin-bottom:16px;">
-      <button type="button" class="btn-cancel" id="btn-change-schedule-date" style="font-size:12px;padding:8px 12px;">
-        📅 تغییر تاریخ (${selectedDate})
-      </button>
-    </div>
-
-    <!-- نمایش زمان خالی -->
-    <div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;">
-      <span style="font-size:12px;color:var(--text-muted)">⏳ زمان خالی این روز:</span>
-      <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
+    <h3 class="modal-title">📅 انتخاب تاریخ</h3>
+    
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+      <div class="form-group">
+        <label>تاریخ مورد نظر را انتخاب کنید:</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="schedule-date-picker" readonly style="flex:1;cursor:pointer;" placeholder="برای انتخاب کلیک کنید">
+          <button type="button" class="btn-primary" id="btn-pick-schedule-date" style="padding:10px 16px;">📅 انتخاب</button>
+        </div>
+      </div>
     </div>
 
-    <!-- نوار افقی (تایم‌لاین) -->
-    <div style="margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px;">
-      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏱️ تایم‌لاین امروز:</h4>
-      <div style="position:relative;height:40px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;direction:ltr;">
-        ${schedule.appointments.filter(a => !a.completed).map(a => {
-          const [h, m] = a.time.split(':').map(Number);
-          const apptStart = (h * 60 + m) - (startH * 60 + startM);
-          const apptDuration = parseInt(a.duration) || 30;
-          const leftPercent = (apptStart / totalMinutes) * 100;
-          const widthPercent = (apptDuration / totalMinutes) * 100;
+    <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;">
+      ${Object.keys(schedules)
+        .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
+        .sort()
+        .map(date => {
+          const apptCount = schedules[date].appointments.length;
           return `
-            <div style="position:absolute;left:${leftPercent}%;top:0;height:100%;width:${widthPercent}%;background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;color:#fff;font-weight:700;" title="${a.name} - ${a.time} - ${a.duration} دقیقه">
-              ${a.name}
-            </div>
+            <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="padding:6px 10px;font-size:11px;border-radius:8px;background:rgba(255,255,255,0.04);border-color:transparent;">
+              ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
+            </button>
           `;
         }).join('')}
-      </div>
+      ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted)">هیچ نوبتی ثبت نشده</span>' : ''}
     </div>
 
-
-    <!-- باکس تاریخ‌های دارای نوبت -->
-    <div style="margin-bottom:16px;">
-      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
-        ${Object.keys(schedules)
-          .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
-          .sort()
-          .map(date => {
-            const apptCount = schedules[date].appointments.length;
-            return `
-              <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="padding:6px 10px;font-size:11px;border-radius:8px;background:${date === selectedDate ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.04)'};border-color:${date === selectedDate ? 'var(--button-color)' : 'transparent'};">
-                ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
-              </button>
-                            <button type="button" class="btn-cancel" data-delete-date="${date}" style="padding:6px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;margin-right:4px;" title="حذف کل این روز">🗑️</button>
-            `;
-          }).join('')}
-        ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted)">هیچ نوبتی ثبت نشده</span>' : ''}
-      </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
     </div>
-
-    
-    <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
-      <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
-      <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
-${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments  
-                  .filter(a => !a.completed)
-    .slice()
-          .sort((a, b) => a.time.localeCompare(b.time))
-          .map((a) => {
-            const originalIndex = schedule.appointments.indexOf(a);
-            return `
-          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;">
-              <strong style="font-size:14px;color:var(--button-color)">${a.name}</strong>
-              <span style="font-weight:700;background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:10px;">⏰ ${a.time}</span>
-            </div>
-            
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div style="color:var(--text-muted);">
-                ⏳ مدت: ${a.duration} دقیقه<br>
-                📅 تاریخ: ${selectedDate}
-              </div>
-              <div style="display:flex;flex-direction:column;gap:4px;">
-                <button type="button" class="btn-cancel" data-edit-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;">✏️ ویرایش</button>
-                <button type="button" class="btn-cancel" data-delete-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;">🗑️ حذف</button>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
-              <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #10B981;background:rgba(16,185,129,0.2);color:#10B981;cursor:pointer;font-family:inherit;">✔️ اومد</button>
-              <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #EF4444;background:rgba(239,68,68,0.2);color:#EF4444;cursor:pointer;font-family:inherit;">✖️ نیامد</button>
-            </div>
-                  
-        `}).join('')}
-      </div>
-    </div>
-
-    <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
-      ➕ افزودن نوبت جدید
-    </button>
-
-    <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
   `, { center: true });
 
-  const dateBtn = overlay.querySelector('#btn-change-schedule-date');
-  if (dateBtn) {
-    dateBtn.onclick = async () => {
-      const result = await showShamsiDatePicker(selectedDate, 'انتخاب تاریخ');
-      if (result) {
-        window._scheduleSelectedDate = result;
-        closeModal(overlay);
-        openSchedulePage();
-      }
-    };
-  }
-
-    // عملکرد دکمه‌های اومد و نیامد
-  overlay.querySelectorAll('[data-status]').forEach(btn => {
-    btn.onclick = () => {
-      const idx = parseInt(btn.dataset.apptIndex);
-      const newStatus = btn.dataset.status;
-      const appt = schedule.appointments[idx];
-      
-      if (!appt) return;
-
-      // ۱. علامت‌گذاری به عنوان انجام‌شده
-      appt.completed = true;
-      appt.status = newStatus;
-      
-      // ۲. ثبت آخرین مراجعه توی پروفایل مشتری (فقط اگر اومد)
-      if (newStatus === 'green') {
-        const customer = state.customers.find(c => c.fullName.includes(appt.name));
-        if (customer) {
-          customer.lastVisit = selectedDate;
-          DB.set('customers', state.customers);
-        }
-      }
-
-      // ۳. ذخیره تغییرات و رفرش
-      schedules[selectedDate] = schedule;
-      saveSchedules(schedules);
-      
-      toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
-      
+  // دکمه انتخاب تاریخ
+  overlay.querySelector('#schedule-date-picker').addEventListener('click', async () => {
+    const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
+    if (result) {
+      window._scheduleSelectedDate = result;
       closeModal(overlay);
-      openSchedulePage();
-    };
+      openSchedulePageForDate(result);
+    }
   });
 
-  const addApptBtn = overlay.querySelector('#add-appointment-btn');
-  if (addApptBtn) {
-    addApptBtn.onclick = () => {
+  overlay.querySelector('#btn-pick-schedule-date').onclick = async () => {
+    const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
+    if (result) {
+      window._scheduleSelectedDate = result;
       closeModal(overlay);
-      openAddAppointmentForm(selectedDate);
-    };
-  }
-
-    // دکمه‌های وضعیت (اومد، دیر اومد، نیامد)
-  overlay.querySelectorAll('[data-status]').forEach(btn => {
-    btn.onclick = () => {
-      const idx = parseInt(btn.dataset.apptIndex);
-      const newStatus = btn.dataset.status;
-      const appt = schedule.appointments[idx];
-      
-      if (!appt) return;
-
-      // ۱. علامت‌گذاری به عنوان انجام‌شده (تا از لیست مخفی بشه ولی سابقه‌ش بمونه)
-      appt.completed = true;
-      appt.status = newStatus;
-      
-      // ۲. ثبت آخرین مراجعه توی پروفایل مشتری (اگر اومد یا دیر اومد)
-      if (newStatus === 'green' || newStatus === 'yellow') {
-        const customer = state.customers.find(c => c.fullName.includes(appt.name));
-        if (customer) {
-          customer.lastVisit = selectedDate;
-          DB.set('customers', state.customers);
-        }
-      }
-
-      // ۳. ذخیره تغییرات
-      schedules[selectedDate] = schedule;
-      saveSchedules(schedules);
-      
-      toast('وضعیت ثبت شد ✅', 'success');
-      closeModal(overlay);
-      openSchedulePage();
-    };
-  });
-
-
-  overlay.querySelectorAll('[data-edit-appt]').forEach(btn => {
-    btn.onclick = () => {
-      const idx = parseInt(btn.dataset.editAppt);
-      const appt = schedule.appointments[idx];
-      closeModal(overlay);
-      setTimeout(() => openEditAppointmentForm(selectedDate, idx, appt), 200);
-    };
-  });
-
-  overlay.querySelectorAll('[data-delete-appt]').forEach(btn => {
-    btn.onclick = () => {
-      const idx = parseInt(btn.dataset.deleteAppt);
-      if (confirm('این نوبت حذف بشه؟')) {
-        schedule.appointments.splice(idx, 1);
-        schedules[selectedDate] = schedule;
-        saveSchedules(schedules);
-        toast('نوبت حذف شد ✅', 'success');
-        closeModal(overlay);
-        openSchedulePage();
-      }
-    };
-  });
+      openSchedulePageForDate(result);
+    }
+  };
 
   // دکمه‌های پرش به تاریخ
   overlay.querySelectorAll('[data-jump-to-date]').forEach(btn => {
     btn.onclick = () => {
       window._scheduleSelectedDate = btn.dataset.jumpToDate;
       closeModal(overlay);
-      openSchedulePage();
+      openSchedulePageForDate(btn.dataset.jumpToDate);
     };
   });
-
-  // دکمه‌های حذف کل تاریخ
-  overlay.querySelectorAll('[data-delete-date]').forEach(btn => {
-    btn.onclick = () => {
-      const dateToDelete = btn.dataset.deleteDate;
-      if (confirm(`آیا از حذف کل نوبت‌های تاریخ ${dateToDelete} مطمئن هستید؟`)) {
-        delete schedules[dateToDelete];
-        saveSchedules(schedules);
-        toast('کل نوبت‌های این روز حذف شد ✅', 'success');
-        closeModal(overlay);
-        openSchedulePage();
-      }
-    };
-  });
-
-
 
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
@@ -2274,6 +2069,201 @@ function openAddAppointmentForm(targetDate = null) {
     closeModal(overlay);
     openSchedulePage();
   };
+}
+
+// ==============================
+// 📅 صفحه نوبت‌دهی برای یک تاریخ خاص
+// ==============================
+function openSchedulePageForDate(selectedDate) {
+  const schedules = getSchedules();
+  const schedule = schedules[selectedDate] || { startTime: '', endTime: '', appointments: [] };
+  
+  // محاسبه زمان خالی
+  let freeTimeStr = 'نامشخص';
+  const startParts = (schedule.startTime || '08:00').split(':');
+  const endParts = (schedule.endTime || '17:00').split(':');
+  
+  if (startParts.length === 2 && endParts.length === 2) {
+    const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+    const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+    const occupiedMinutes = schedule.appointments.reduce((total, appt) => total + (parseInt(appt.duration) || 30), 0);
+    const totalWorkMinutes = endMinutes - startMinutes;
+    const freeMinutes = totalWorkMinutes - occupiedMinutes;
+    
+    if (freeMinutes > 0) {
+      const h = Math.floor(freeMinutes / 60);
+      const m = freeMinutes % 60;
+      freeTimeStr = `${h > 0 ? h + ' ساعت و ' : ''}${m > 0 ? m + ' دقیقه' : (h > 0 ? 'کامل' : '')}`;
+    } else if (freeMinutes === 0) {
+      freeTimeStr = 'تکمیل (هیچ زمانی خالی نیست)';
+    } else {
+      freeTimeStr = 'بیش از حد ظرفیت!';
+    }
+  }
+
+  // محاسبه بازه زمانی برای نوار افقی
+  const startT = schedule.startTime || '08:00';
+  const endT = schedule.endTime || '17:00';
+  const [startH, startM] = startT.split(':').map(Number);
+  const [endH, endM] = endT.split(':').map(Number);
+  const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+
+  const overlay = showModal(`
+    <h3 class="modal-title">📅 زمان‌بندی ${selectedDate}</h3>
+    
+    <!-- شمارنده نوبت‌های امروز -->
+    <div style="text-align:center;margin-bottom:12px;">
+      <span style="background:rgba(20,184,166,0.2);color:#14B8A6;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;">
+        📊 امروز ${schedule.appointments.filter(a => !a.completed).length} نوبت داری
+      </span>
+    </div>
+
+    <div style="text-align:center;margin-bottom:16px;">
+      <button type="button" class="btn-cancel" id="btn-change-schedule-date" style="font-size:12px;padding:8px 12px;">
+        📅 تغییر تاریخ (${selectedDate})
+      </button>
+    </div>
+
+    <!-- نمایش زمان خالی -->
+    <div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;">
+      <span style="font-size:12px;color:var(--text-muted)">⏳ زمان خالی این روز:</span>
+      <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
+    </div>
+
+    <!-- نوار افقی (تایم‌لاین) -->
+    <div style="margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px;">
+      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏱️ تایم‌لاین امروز:</h4>
+      <div style="position:relative;height:40px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;direction:ltr;">
+        ${schedule.appointments.filter(a => !a.completed).map(a => {
+          const [h, m] = a.time.split(':').map(Number);
+          const apptStart = (h * 60 + m) - (startH * 60 + startM);
+          const apptDuration = parseInt(a.duration) || 30;
+          const leftPercent = (apptStart / totalMinutes) * 100;
+          const widthPercent = (apptDuration / totalMinutes) * 100;
+          return `
+            <div style="position:absolute;left:${leftPercent}%;top:0;height:100%;width:${widthPercent}%;background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;color:#fff;font-weight:700;" title="${a.name} - ${a.time} - ${a.duration} دقیقه">
+              ${a.name}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">📋 لیست نوبت‌ها:</h4>
+      <div id="appointments-list" style="max-height:250px;overflow-y:auto;margin-bottom:12px;">
+        ${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;">هنوز نوبتی ثبت نشده</p>' : schedule.appointments
+          .filter(a => !a.completed)
+          .slice()
+          .sort((a, b) => a.time.localeCompare(b.time))
+          .map((a) => {
+            const originalIndex = schedule.appointments.indexOf(a);
+            return `
+          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;">
+              <strong style="font-size:14px;color:var(--button-color)">${a.name}</strong>
+              <span style="font-weight:700;background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:10px;">⏰ ${a.time}</span>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="color:var(--text-muted);">
+                ⏳ مدت: ${a.duration} دقیقه<br>
+                📝 ${a.desc || 'بدون شرح'}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <button type="button" class="btn-cancel" data-edit-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;">✏️ ویرایش</button>
+                <button type="button" class="btn-cancel" data-delete-appt="${originalIndex}" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;">🗑️ حذف</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
+              <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #10B981;background:rgba(16,185,129,0.2);color:#10B981;cursor:pointer;font-family:inherit;">✔️ اومد</button>
+              <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:6px;font-size:11px;border-radius:6px;border:1px solid #EF4444;background:rgba(239,68,68,0.2);color:#EF4444;cursor:pointer;font-family:inherit;">✖️ نیامد</button>
+            </div>
+          </div>
+        `}).join('')}
+      </div>
+    </div>
+
+    <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
+      ➕ افزودن نوبت جدید
+    </button>
+
+    <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
+  `, { center: true });
+
+  const dateBtn = overlay.querySelector('#btn-change-schedule-date');
+  if (dateBtn) {
+    dateBtn.onclick = async () => {
+      const result = await showShamsiDatePicker(selectedDate, 'انتخاب تاریخ');
+      if (result) {
+        closeModal(overlay);
+        openSchedulePageForDate(result);
+      }
+    };
+  }
+
+  const addApptBtn = overlay.querySelector('#add-appointment-btn');
+  if (addApptBtn) {
+    addApptBtn.onclick = () => {
+      closeModal(overlay);
+      openAddAppointmentForm(selectedDate);
+    };
+  }
+
+  overlay.querySelectorAll('[data-status]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.apptIndex);
+      const newStatus = btn.dataset.status;
+      const appt = schedule.appointments[idx];
+      
+      if (!appt) return;
+
+      appt.completed = true;
+      appt.status = newStatus;
+      
+      if (newStatus === 'green') {
+        const customer = state.customers.find(c => c.fullName.includes(appt.name));
+        if (customer) {
+          customer.lastVisit = selectedDate;
+          DB.set('customers', state.customers);
+        }
+      }
+
+      schedules[selectedDate] = schedule;
+      saveSchedules(schedules);
+      
+      toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
+      
+      closeModal(overlay);
+      openSchedulePageForDate(selectedDate);
+    };
+  });
+
+  overlay.querySelectorAll('[data-edit-appt]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.editAppt);
+      const appt = schedule.appointments[idx];
+      closeModal(overlay);
+      setTimeout(() => openEditAppointmentForm(selectedDate, idx, appt), 200);
+    };
+  });
+
+  overlay.querySelectorAll('[data-delete-appt]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.deleteAppt);
+      if (confirm('این نوبت حذف بشه؟')) {
+        schedule.appointments.splice(idx, 1);
+        schedules[selectedDate] = schedule;
+        saveSchedules(schedules);
+        toast('نوبت حذف شد ✅', 'success');
+        closeModal(overlay);
+        openSchedulePageForDate(selectedDate);
+      }
+    };
+  });
+
+  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
 // ==============================
