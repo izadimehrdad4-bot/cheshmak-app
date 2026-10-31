@@ -1884,6 +1884,7 @@ function openSchedulePage() {
               <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="padding:6px 10px;font-size:11px;border-radius:8px;background:${date === selectedDate ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.04)'};border-color:${date === selectedDate ? 'var(--button-color)' : 'transparent'};">
                 ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
               </button>
+                            <button type="button" class="btn-cancel" data-delete-date="${date}" style="padding:6px 8px;font-size:11px;border-color:#EF4444;color:#EF4444;margin-right:4px;" title="حذف کل این روز">🗑️</button>
             `;
           }).join('')}
         ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted)">هیچ نوبتی ثبت نشده</span>' : ''}
@@ -2072,6 +2073,22 @@ ${schedule.appointments.filter(a => !a.completed).length === 0 ? '<p style="text
       openSchedulePage();
     };
   });
+
+  // دکمه‌های حذف کل تاریخ
+  overlay.querySelectorAll('[data-delete-date]').forEach(btn => {
+    btn.onclick = () => {
+      const dateToDelete = btn.dataset.deleteDate;
+      if (confirm(`آیا از حذف کل نوبت‌های تاریخ ${dateToDelete} مطمئن هستید؟`)) {
+        delete schedules[dateToDelete];
+        saveSchedules(schedules);
+        toast('کل نوبت‌های این روز حذف شد ✅', 'success');
+        closeModal(overlay);
+        openSchedulePage();
+      }
+    };
+  });
+
+
 
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
