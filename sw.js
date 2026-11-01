@@ -3,7 +3,7 @@
    برای کار آفلاین
    ============================== */
 
-const CACHE_NAME = 'cheshmak-v28';
+const CACHE_NAME = 'cheshmak-v29';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

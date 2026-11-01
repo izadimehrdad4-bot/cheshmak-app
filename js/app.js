@@ -1853,6 +1853,7 @@ function openSchedulePage() {
       openSchedulePage(); // رفرش صفحه برای نمایش تاریخ جدید
     }
   };
+  
 
   
   // دکمه‌های پرش به تاریخ
