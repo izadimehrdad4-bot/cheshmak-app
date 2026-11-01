@@ -1832,8 +1832,7 @@ function openSchedulePage() {
                 </div>
               `;
             }).join('')}
-          ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted);text-align:center;display:block;padding:10px;">هیچ نوبتی ثبت نشده</span>' : ''}
-        </div>
+${Object.keys(schedules).length === 0 ? '<span style="font-size:11px;color:var(--text-muted);text-align:center;display:block;padding:10px;">هیچ تاریخی ثبت نشده</span>' : ''}        </div>
       </div>
     </div>
 
@@ -1853,7 +1852,7 @@ function openSchedulePage() {
       openSchedulePage(); // رفرش صفحه برای نمایش تاریخ جدید
     }
   };
-  
+
 
   
   // دکمه‌های پرش به تاریخ
