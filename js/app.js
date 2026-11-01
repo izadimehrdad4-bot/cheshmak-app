@@ -2182,7 +2182,7 @@ function openSchedulePageForDate(selectedDate) {
     <!-- نوار افقی (تایم‌لاین) -->
     <div style="margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px;">
       <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏱️ تایم‌لاین امروز:</h4>
-      <div style="position:relative;height:40px;background:linear-gradient(90deg, #14B8A6, #0D9488);border-radius:20px;overflow:hidden;direction:ltr;box-shadow:inset 0 2px 4px rgba(0,0,0,0.2);">
+background:linear-gradient(90deg, #00D2FF, #0099CC)
         ${schedule.appointments.filter(a => !a.completed).map(a => {
           const [h, m] = a.time.split(':').map(Number);
           const apptStart = (h * 60 + m) - (startH * 60 + startM);
