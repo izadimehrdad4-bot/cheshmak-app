@@ -1813,20 +1813,28 @@ function openSchedulePage() {
       </div>
     </div>
 
-    <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;">
-      ${Object.keys(schedules)
-        .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
-        .sort()
-        .map(date => {
-          const apptCount = schedules[date].appointments.length;
-          return `
-            <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="padding:6px 10px;font-size:11px;border-radius:8px;background:rgba(255,255,255,0.04);border-color:transparent;">
-              ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
-            </button>
-          `;
-        }).join('')}
-      ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted)">هیچ نوبتی ثبت نشده</span>' : ''}
+        <div style="display:flex; gap:10px;">
+      <!-- ستون راست: لیست تاریخ‌ها -->
+      <div style="flex:1; max-height:250px; overflow-y:auto; background:rgba(255,255,255,0.04); border-radius:10px; padding:10px;">
+        <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${Object.keys(schedules)
+            .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
+            .sort()
+            .map(date => {
+              const apptCount = schedules[date].appointments.length;
+              return `
+                <div style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); padding:8px; border-radius:8px;">
+                  <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="flex:1; padding:6px 10px; font-size:11px; border-radius:6px; border-color:transparent; text-align:right;">
+                    ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
+                  </button>
+                  <button type="button" class="btn-cancel" data-delete-date="${date}" style="padding:4px 8px; font-size:11px; border-color:#EF4444; color:#EF4444; border-radius:6px;" title="حذف این تاریخ">🗑️</button>
+                </div>
+              `;
+            }).join('')}
+          ${Object.keys(schedules).filter(date => schedules[date].appointments && schedules[date].appointments.length > 0).length === 0 ? '<span style="font-size:11px;color:var(--text-muted);text-align:center;display:block;padding:10px;">هیچ نوبتی ثبت نشده</span>' : ''}
+        </div>
+      </div>
     </div>
 
     <div class="modal-actions">
@@ -1834,15 +1842,7 @@ function openSchedulePage() {
     </div>
   `, { center: true });
 
-  // دکمه انتخاب تاریخ
-  overlay.querySelector('#schedule-date-picker').addEventListener('click', async () => {
-    const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
-    if (result) {
-      window._scheduleSelectedDate = result;
-      closeModal(overlay);
-      openSchedulePageForDate(result);
-    }
-  });
+ 
 
   overlay.querySelector('#btn-pick-schedule-date').onclick = async () => {
     const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
