@@ -1849,8 +1849,9 @@ ${Object.keys(schedules).length === 0 ? '<span style="font-size:11px;color:var(-
         saveSchedules(schedules);
       }
       closeModal(overlay);
-      openSchedulePage(); // رفرش صفحه برای نمایش تاریخ جدید
-    }
+      // به جای رفرش کل صفحه، فقط مودال رو ببند و دوباره باز کن
+      closeModal(overlay);
+      setTimeout(() => openSchedulePage(), 100);    }
   };
 
 
