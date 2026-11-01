@@ -1819,7 +1819,6 @@ function openSchedulePage() {
         <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${Object.keys(schedules)
-            .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
             .sort()
             .map(date => {
               const apptCount = schedules[date].appointments.length;
