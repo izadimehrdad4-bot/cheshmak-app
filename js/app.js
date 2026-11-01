@@ -1847,9 +1847,7 @@ function openSchedulePage() {
   overlay.querySelector('#btn-pick-schedule-date').onclick = async () => {
     const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
     if (result) {
-      window._scheduleSelectedDate = result;
       closeModal(overlay);
-      openSchedulePageForDate(result);
     }
   };
 
