@@ -1808,7 +1808,6 @@ function openSchedulePage() {
       <div class="form-group">
         <label>تاریخ مورد نظر را انتخاب کنید:</label>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="schedule-date-picker" readonly style="flex:1;cursor:pointer;" placeholder="برای انتخاب کلیک کنید">
           <button type="button" class="btn-primary" id="btn-pick-schedule-date" style="padding:10px 16px;">📅 انتخاب</button>
         </div>
       </div>
