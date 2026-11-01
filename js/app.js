@@ -2123,6 +2123,24 @@ function openSchedulePageForDate(selectedDate) {
       </button>
     </div>
 
+
+    <!-- تنظیم ساعت کاری -->
+    <div style="margin-bottom:16px; padding:10px; background:rgba(255,255,255,0.04); border-radius:10px;">
+      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏰ ساعت کاری این روز:</h4>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <div>
+          <label style="font-size:10px;color:var(--text-muted);">شروع</label>
+          <input type="number" id="edit-sched-start" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border-color);color:var(--text-color);text-align:center;" placeholder="08">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--text-muted);">پایان</label>
+          <input type="number" id="edit-sched-end" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border-color);color:var(--text-color);text-align:center;" placeholder="17">
+        </div>
+      </div>
+      <button type="button" id="save-sched-hours" style="width:100%; padding:8px; background:linear-gradient(135deg,#3B82F6,#2563EB); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;">💾 ذخیره ساعت کاری</button>
+    </div>
+
+
     <!-- نمایش زمان خالی -->
     <div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;">
       <span style="font-size:12px;color:var(--text-muted)">⏳ زمان خالی این روز:</span>
@@ -2261,7 +2279,26 @@ function openSchedulePageForDate(selectedDate) {
       }
     };
   });
-
+  // ذخیره ساعت کاری
+  overlay.querySelector('#save-sched-hours').onclick = () => {
+    const startH = parseInt(overlay.querySelector('#edit-sched-start').value) || 0;
+    const endH = parseInt(overlay.querySelector('#edit-sched-end').value) || 0;
+    
+    if (startH >= endH) {
+      toast('ساعت پایان باید بعد از ساعت شروع باشد', 'error');
+      return;
+    }
+    
+    schedule.startTime = `${startH.toString().padStart(2, '0')}:00`;
+    schedule.endTime = `${endH.toString().padStart(2, '0')}:00`;
+    
+    schedules[selectedDate] = schedule;
+    saveSchedules(schedules);
+    
+    toast('ساعت کاری ذخیره شد ✅', 'success');
+    closeModal(overlay);
+    openSchedulePageForDate(selectedDate);
+  };
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
