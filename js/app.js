@@ -836,6 +836,12 @@ function showModal(contentHtml, options = {}) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay' + (options.center ? ' center' : '');
   overlay.innerHTML = `<div class="modal${options.center ? ' center' : ''}">${contentHtml}</div>`;
+    // اضافه کردن استایل برای وسط‌چین کردن مودال
+  overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; z-index:1000; background:rgba(0,0,0,0.8); overflow-y:auto;';
+  const modalBox = overlay.querySelector('.modal');
+  if (modalBox) {
+    modalBox.style.cssText = 'margin: auto; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;';
+  }
   document.body.appendChild(overlay);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay && !options.noCloseOnOverlay) closeModal(overlay);
