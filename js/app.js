@@ -1819,6 +1819,7 @@ function openSchedulePage() {
         <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${Object.keys(schedules)
+            .filter(date => schedules[date].appointments && schedules[date].appointments.length > 0)
             .sort()
             .map(date => {
               const apptCount = schedules[date].appointments.length;
@@ -2125,20 +2126,39 @@ function openSchedulePageForDate(selectedDate) {
     </div>
 
 
-    <!-- تنظیم ساعت کاری -->
+        <!-- تنظیم ساعت کاری -->
     <div style="margin-bottom:16px; padding:10px; background:rgba(255,255,255,0.04); border-radius:10px;">
-      <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏰ ساعت کاری این روز:</h4>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-        <div>
-          <label style="font-size:10px;color:var(--text-muted);">شروع</label>
-          <input type="number" id="edit-sched-start" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border-color);color:var(--text-color);text-align:center;" placeholder="08">
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--text-muted);">پایان</label>
-          <input type="number" id="edit-sched-end" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border-color);color:var(--text-color);text-align:center;" placeholder="17">
-        </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h4 style="font-size:12px;color:var(--text-muted);margin:0;">⏰ ساعت کاری این روز:</h4>
+        <button type="button" id="edit-sched-toggle" style="padding:4px 10px; font-size:11px; border-radius:6px; background:transparent; border:1px solid var(--button-color); color:var(--button-color); cursor:pointer; font-family:inherit;">✏️ ویرایش</button>
       </div>
-      <button type="button" id="save-sched-hours" style="width:100%; padding:8px; background:linear-gradient(135deg,#3B82F6,#2563EB); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;">💾 ذخیره ساعت کاری</button>
+      
+      <div id="sched-display-mode" style="display:flex; gap:16px; justify-content:center; font-size:14px; font-weight:700;">
+        <span>شروع: ${schedule.startTime || '08:00'}</span>
+        <span>پایان: ${schedule.endTime || '17:00'}</span>
+      </div>
+
+      <div id="sched-edit-mode" style="display:none; flex-direction:column; gap:8px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <label style="font-size:10px;color:var(--text-muted);">شروع (ساعت:دقیقه)</label>
+            <div style="display:flex; gap:4px;">
+              <input type="number" id="edit-sched-start-h" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="08">
+              <span style="align-self:center;">:</span>
+              <input type="number" id="edit-sched-start-m" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="00">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--text-muted);">پایان (ساعت:دقیقه)</label>
+            <div style="display:flex; gap:4px;">
+              <input type="number" id="edit-sched-end-h" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="17">
+              <span style="align-self:center;">:</span>
+              <input type="number" id="edit-sched-end-m" min="0" max="59" value="${(schedule.endTime || '17:00').split(':')[1] || '00'}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="00">
+            </div>
+          </div>
+        </div>
+        <button type="button" id="save-sched-hours" style="width:100%; padding:10px; background:linear-gradient(135deg,#10B981,#059669); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;">💾 ذخیره ساعت کاری</button>
+      </div>
     </div>
 
 
@@ -2281,17 +2301,33 @@ function openSchedulePageForDate(selectedDate) {
     };
   });
   // ذخیره ساعت کاری
+   // دکمه ویرایش
+  overlay.querySelector('#edit-sched-toggle').onclick = () => {
+    const displayMode = overlay.querySelector('#sched-display-mode');
+    const editMode = overlay.querySelector('#sched-edit-mode');
+    if (editMode.style.display === 'none') {
+      displayMode.style.display = 'none';
+      editMode.style.display = 'flex';
+    } else {
+      displayMode.style.display = 'flex';
+      editMode.style.display = 'none';
+    }
+  };
+
+  // دکمه ذخیره ساعت کاری
   overlay.querySelector('#save-sched-hours').onclick = () => {
-    const startH = parseInt(overlay.querySelector('#edit-sched-start').value) || 0;
-    const endH = parseInt(overlay.querySelector('#edit-sched-end').value) || 0;
+    const startH = parseInt(overlay.querySelector('#edit-sched-start-h').value) || 0;
+    const startM = parseInt(overlay.querySelector('#edit-sched-start-m').value) || 0;
+    const endH = parseInt(overlay.querySelector('#edit-sched-end-h').value) || 0;
+    const endM = parseInt(overlay.querySelector('#edit-sched-end-m').value) || 0;
     
-    if (startH >= endH) {
+    if (startH >= endH && startM >= endM) {
       toast('ساعت پایان باید بعد از ساعت شروع باشد', 'error');
       return;
     }
     
-    schedule.startTime = `${startH.toString().padStart(2, '0')}:00`;
-    schedule.endTime = `${endH.toString().padStart(2, '0')}:00`;
+    schedule.startTime = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+    schedule.endTime = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
     
     schedules[selectedDate] = schedule;
     saveSchedules(schedules);
