@@ -1861,7 +1861,20 @@ function openSchedulePage() {
       openSchedulePageForDate(btn.dataset.jumpToDate);
     };
   });
-
+  // دکمه‌های حذف تاریخ
+  overlay.querySelectorAll('[data-delete-date]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation(); // جلوگیری از باز شدن صفحه تاریخ
+      const dateToDelete = btn.dataset.deleteDate;
+      if (confirm(`آیا از حذف کل نوبت‌های تاریخ ${dateToDelete} مطمئن هستید؟`)) {
+        delete schedules[dateToDelete];
+        saveSchedules(schedules);
+        toast('کل نوبت‌های این روز حذف شد ✅', 'success');
+        closeModal(overlay);
+        setTimeout(() => openSchedulePage(), 100);
+      }
+    };
+  });
   overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
 }
 
