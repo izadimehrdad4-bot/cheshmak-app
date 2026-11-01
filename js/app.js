@@ -1818,8 +1818,8 @@ function openSchedulePage() {
       <div style="flex:1; max-height:250px; overflow-y:auto; background:rgba(255,255,255,0.04); border-radius:10px; padding:10px;">
         <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">📅 تاریخ‌های دارای نوبت:</h4>
                 <div style="display:flex;flex-direction:column;gap:6px;">
-          ${Object.keys(schedules).map(date => {
-            const apptCount = schedules[date].appointments ? schedules[date].appointments.length : 0;
+${Object.keys(schedules).sort().map(date => {
+              const apptCount = schedules[date].appointments ? schedules[date].appointments.length : 0;
             return `
               <div style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); padding:8px; border-radius:8px;">
                 <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="flex:1; padding:6px 10px; font-size:11px; border-radius:6px; border-color:transparent; text-align:right;">
