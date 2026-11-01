@@ -2179,23 +2179,29 @@ function openSchedulePageForDate(selectedDate) {
       <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
     </div>
 
-    <!-- نوار افقی (تایم‌لاین) -->
+        <!-- نوار افقی (تایم‌لاین) -->
     <div style="margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px;">
       <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:right;">⏱️ تایم‌لاین امروز:</h4>
-      <div style="position:relative;height:40px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;direction:ltr;">
+      <div style="position:relative;height:40px;background:rgba(16,185,129,0.3);border-radius:20px;overflow:hidden;direction:ltr;border:1px solid rgba(16,185,129,0.5);">
         ${schedule.appointments.filter(a => !a.completed).map(a => {
           const [h, m] = a.time.split(':').map(Number);
           const apptStart = (h * 60 + m) - (startH * 60 + startM);
           const apptDuration = parseInt(a.duration) || 30;
-          const leftPercent = (apptStart / totalMinutes) * 100;
-          const widthPercent = (apptDuration / totalMinutes) * 100;
+          const leftPercent = Math.max(0, (apptStart / totalMinutes) * 100);
+          const widthPercent = Math.min(100 - leftPercent, (apptDuration / totalMinutes) * 100);
           return `
-            <div style="position:absolute;left:${leftPercent}%;top:0;height:100%;width:${widthPercent}%;background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;color:#fff;font-weight:700;" title="${a.name} - ${a.time} - ${a.duration} دقیقه">
+            <div style="position:absolute;left:${leftPercent}%;top:0;height:100%;width:${widthPercent}%;background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.2);" title="${a.name} - ${a.time} - ${a.duration} دقیقه">
               ${a.name}
             </div>
           `;
         }).join('')}
       </div>
+      <!-- برچسب ساعت شروع و پایان -->
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
+        <span>${schedule.startTime || '08:00'}</span>
+        <span>${schedule.endTime || '17:00'}</span>
+      </div>
+    </div>
     </div>
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
