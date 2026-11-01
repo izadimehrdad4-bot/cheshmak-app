@@ -2209,12 +2209,10 @@ function openSchedulePageForDate(selectedDate) {
       <span style="font-size:13px;font-weight:700;color:#10B981;margin-right:6px;">${freeTimeStr}</span>
     </div>
     
-      <!-- برچسب ساعت شروع و پایان -->
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
-        <span>${schedule.startTime || '08:00'}</span>
-        <span>${schedule.endTime || '17:00'}</span>
-      </div>
-    </div>
+          <!-- 🔥 دکمه‌ها رو اینجا بذارید (وسط‌چین) -->
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px; margin-top:16px;">
+      <button id="add-appointment-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">➕ افزودن نوبت جدید</button>
+      <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
     </div>
 
     <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:12px;">
@@ -2253,11 +2251,7 @@ function openSchedulePageForDate(selectedDate) {
       </div>
     </div>
 
-    <button id="add-appointment-btn" style="width:100%;margin-bottom:8px;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.3);">
-      ➕ افزودن نوبت جدید
-    </button>
-
-    <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
+    
       </div>
   `, { center: true });
 
