@@ -1842,15 +1842,19 @@ function openSchedulePage() {
     </div>
   `, { center: true });
 
- 
-
-  overlay.querySelector('#btn-pick-schedule-date').onclick = async () => {
+   overlay.querySelector('#btn-pick-schedule-date').onclick = async () => {
     const result = await showShamsiDatePicker(getTodayShamsi(), 'انتخاب تاریخ');
     if (result) {
+      if (!schedules[result]) {
+        schedules[result] = { startTime: '', endTime: '', appointments: [] };
+        saveSchedules(schedules);
+      }
       closeModal(overlay);
+      openSchedulePage(); // رفرش صفحه برای نمایش تاریخ جدید
     }
   };
 
+  
   // دکمه‌های پرش به تاریخ
   overlay.querySelectorAll('[data-jump-to-date]').forEach(btn => {
     btn.onclick = () => {
