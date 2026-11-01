@@ -2121,6 +2121,7 @@ function openSchedulePageForDate(selectedDate) {
   const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
 
   const overlay = showModal(`
+    <div style="max-width:600px; margin:0 auto; width:100%;">
     <h3 class="modal-title">📅 زمان‌بندی ${selectedDate}</h3>
     
     <!-- شمارنده نوبت‌های امروز -->
@@ -2251,6 +2252,7 @@ function openSchedulePageForDate(selectedDate) {
     </button>
 
     <button class="btn-cancel" id="sched-close" style="width:100%;">بستن</button>
+      </div>
   `, { center: true });
 
   const dateBtn = overlay.querySelector('#btn-change-schedule-date');
