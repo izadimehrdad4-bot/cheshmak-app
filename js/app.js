@@ -1152,6 +1152,14 @@ function initDashboard() {
   if (typeof checkLicense === 'function') {
     if (!checkLicense()) return;
   }
+    // تغییر داینامیک متن سرچ بر اساس عنوان مشتری
+    const dynamicSearchInput = document.getElementById('search-input');
+  if (dynamicSearchInput) {
+    const title = (state.business && state.business.customerTitle) 
+      ? state.business.customerTitle.replace(' گرامی', '') 
+      : 'مشتری';
+    dynamicSearchInput.placeholder = `جستجوی نام ${title}...`;
+  }
   updateBusinessDisplay();
   const actionIcon = document.getElementById('action-icon-customer');
   if (actionIcon) {
