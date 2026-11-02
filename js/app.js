@@ -1889,18 +1889,16 @@ ${Object.keys(schedules).sort().map(date => {
       }
     };
   });
-    overlay.querySelector('#sched-close').onclick = () => {
+      overlay.querySelector('#sched-close').onclick = () => {
     closeModal(overlay);
     setTimeout(() => {
-        if (window._scheduleSelectedDate) {
-            openSchedulePageForDate(window._scheduleSelectedDate);
-        } else {
-            openSchedulePage();
-        }
+      if (window._scheduleSelectedDate) {
+        openSchedulePageForDate(window._scheduleSelectedDate);
+      } else {
+        openSchedulePage();
+      }
     }, 150);
-};
   };
-}
 
 function openAddAppointmentForm(targetDate = null) {
   const today = getTodayShamsi();
