@@ -1889,15 +1889,10 @@ ${Object.keys(schedules).sort().map(date => {
       }
     };
   });
-         overlay.querySelector('#sched-close').onclick = () => {
+           overlay.querySelector('#sched-close').onclick = () => {
     closeModal(overlay);
-    setTimeout(() => {
-      if (window._scheduleSelectedDate) {
-        openSchedulePageForDate(window._scheduleSelectedDate);
-      } else {
-        openSchedulePage();
-      }
-    }, 150);
+    showScreen('dashboard-screen');
+    initDashboard();
   };
   };
 
@@ -2394,7 +2389,10 @@ function openSchedulePageForDate(selectedDate) {
     closeModal(overlay);
     openSchedulePageForDate(selectedDate);
   };
-  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
+  overlay.querySelector('#sched-close').onclick = () => {
+    closeModal(overlay);
+    setTimeout(() => openSchedulePage(), 150);
+  };
 }
 
 // ==============================
