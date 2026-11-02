@@ -1891,7 +1891,14 @@ ${Object.keys(schedules).sort().map(date => {
   });
     overlay.querySelector('#sched-close').onclick = () => {
     closeModal(overlay);
-    setTimeout(() => openSchedulePage(), 150);
+    setTimeout(() => {
+        if (window._scheduleSelectedDate) {
+            openSchedulePageForDate(window._scheduleSelectedDate);
+        } else {
+            openSchedulePage();
+        }
+    }, 150);
+};
   };
 }
 
