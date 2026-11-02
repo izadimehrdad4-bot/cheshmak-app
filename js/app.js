@@ -2299,7 +2299,7 @@ function openSchedulePageForDate(selectedDate) {
       
       if (!appt) return;
 
-      appt.completed = true;
+      appt.completed = false;
       appt.status = newStatus;
       
       if (newStatus === 'green') {
@@ -2313,7 +2313,7 @@ function openSchedulePageForDate(selectedDate) {
       schedules[selectedDate] = schedule;
       saveSchedules(schedules);
       
-              toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
+                      toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
         closeModal(overlay);
         openSchedulePageForDate(selectedDate);
     };
