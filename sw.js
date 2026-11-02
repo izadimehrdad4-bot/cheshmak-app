@@ -4,6 +4,7 @@
    ============================== */
 
 const CACHE_NAME = 'cheshmak-v63';
+const IS_DEV_MODE = true;
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -60,36 +61,30 @@ self.addEventListener('fetch', (event) => {
   // درخواست‌های کروم extension رو نادیده بگیر
   if (!event.request.url.startsWith('http')) return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // از کش جواب بده، در پس‌زمینه آپدیت کن
-        fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, networkResponse.clone());
-            });
-          }
-        }).catch(() => {});
-        return cachedResponse;
-      }
+  // 🧪 حالت تست: اگه true باشه، مستقیم از شبکه لود می‌کنه و کش رو دور می‌زنه
+  if (typeof IS_DEV_MODE !== 'undefined' && IS_DEV_MODE) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
-      // اگه توی کش نبود، از شبکه بگیر
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200) {
-          return networkResponse;
-        }
+  event.respondWith(
+    fetch(event.request).then((networkResponse) => {
+      // اگه از شبکه جواب گرفتی، همون رو بده و توی کش هم ذخیره کن
+      if (networkResponse && networkResponse.status === 200) {
         const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => {
+        caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
-        return networkResponse;
-      }).catch(() => {
-        // اگه شبکه هم نبود، صفحه‌ی اصلی رو نشون بده
+      }
+      return networkResponse;
+    }).catch(() => {
+      // اگه شبکه قطع بود، از کش بده
+      return caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
       });
-    })
+       })
   );
 });
