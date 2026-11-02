@@ -2093,7 +2093,7 @@ function openAddAppointmentForm(targetDate = null) {
 
     toast('✅ نوبت با موفقیت ثبت شد', 'success');
     closeModal(overlay);
-    openSchedulePage();
+   openAddAppointmentForm(date);
   };
 }
 
