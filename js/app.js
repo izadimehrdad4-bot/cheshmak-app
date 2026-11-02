@@ -1839,7 +1839,8 @@ ${Object.keys(schedules).sort().map(date => {
                 <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="flex:1; padding:6px 10px; font-size:11px; border-radius:6px; border-color:transparent; text-align:right;">
                   ${date} <span style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:10px;font-size:10px;">${apptCount}</span>
                 </button>
-                <button type="button" class="btn-cancel" data-delete-date="${date}" style="padding:4px 8px; font-size:11px; border-color:#EF4444; color:#EF4444; border-radius:6px;" title="حذف این تاریخ">🗑️</button>
+                              <button type="button" class="btn-cancel" data-jump-to-date="${date}" style="padding:4px 8px; font-size:12px; border-color:#3B82F6; color:#3B82F6; border-radius:6px;" title="مشاهده نوبت‌ها">👁️</button>
+              <button type="button" class="btn-cancel" data-delete-date="${date}" style="padding:4px 8px; font-size:11px; border-color:#EF4444; color:#EF4444; border-radius:6px;" title="حذف این تاریخ">🗑️</button>
               </div>
             `;
           }).join('')}
