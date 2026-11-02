@@ -2257,11 +2257,18 @@ function openSchedulePageForDate(selectedDate) {
               </div>
             </div>
 
-            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
-                            <div style="display:flex;justify-content:center;align-items:center;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
-                <div style="width:44px;height:44px;border-radius:50%;background:${a.status === 'green' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};border:2px solid ${a.status === 'green' ? '#10B981' : '#EF4444'};display:flex;justify-content:center;align-items:center;font-size:20px;">
-                  ${a.status === 'green' ? '✅' : '❌'}
-                </div>
+                          <div style="display:flex;justify-content:center;align-items:center;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);margin-top:8px;">
+                ${a.status === 'pending' || !a.status ? `
+                  <div style="display:flex; width:100%; gap:8px;">
+                    <button type="button" data-status="green" data-appt-index="${originalIndex}" style="flex:1;padding:8px;font-size:12px;border-radius:8px;border:1px solid #10B981;background:rgba(16,185,129,0.15);color:#10B981;cursor:pointer;font-family:inherit;">✅ اومد</button>
+                    <button type="button" data-status="red" data-appt-index="${originalIndex}" style="flex:1;padding:8px;font-size:12px;border-radius:8px;border:1px solid #EF4444;background:rgba(239,68,68,0.15);color:#EF4444;cursor:pointer;font-family:inherit;">❌ نیامد</button>
+                  </div>
+                ` : `
+                  <div style="width:44px;height:44px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:20px;background:${a.status === 'green' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};border:2px solid ${a.status === 'green' ? '#10B981' : '#EF4444'};">
+                    ${a.status === 'green' ? '✅' : '❌'}
+                  </div>
+                `}
+              </div>
               </div>
           </div>
         `}).join('')}
@@ -2313,7 +2320,8 @@ function openSchedulePageForDate(selectedDate) {
       schedules[selectedDate] = schedule;
       saveSchedules(schedules);
       
-                      toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
+                             toast(newStatus === 'green' ? 'ثبت شد: شخص آمد ✅' : 'ثبت شد: شخص نیامد ❌', 'success');
+        // 👇 این خط رو اضافه کن تا صفحه رفرش بشه و آیکون جدید نمایش داده بشه
         closeModal(overlay);
         openSchedulePageForDate(selectedDate);
     };
