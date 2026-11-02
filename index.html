@@ -219,14 +219,13 @@
                 <div class="search-bar" style="display:flex;gap:8px;align-items:center">
           <div style="flex:1;position:relative;display:flex;align-items:center">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-input" placeholder="جستجوی نام مشتری..." style="width:100%">
-          </div>
+           <input type="text" id="search-input" placeholder="جستجوی نام ${state.business.customerTitle ? state.business.customerTitle.replace(' گرامی', '') : 'مشتری'}..." style="width:100%">            </div>
         </div>
              
         <!-- لیست مشتری‌ها -->
         <div id="customers-list" class="customers-list"></div>
         <button id="btn-schedule" style="width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-        📅 زمان‌بندی امروز
+                📅 مدیریت نوبت‌ها
       </button>
       </main>
        

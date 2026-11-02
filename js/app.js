@@ -1897,7 +1897,7 @@ function openAddAppointmentForm(targetDate = null) {
     </div>
         <div class="form-group">
       <label>📝 شرح کار (اختیاری)</label>
-      <input type="text" id="appt-desc" placeholder="مثلاً: کوتاهی مو، اصلاح ریش" style="width:100%;">
+      <input type="text" id="appt-desc" placeholder=" مثلاً : توضیح مختصر خدمت " style="width:100%;">
     </div>
     <div class="form-group">
       <label>📅 تاریخ</label>
