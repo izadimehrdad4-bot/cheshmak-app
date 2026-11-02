@@ -2164,23 +2164,33 @@ function openSchedulePageForDate(selectedDate) {
         <span>پایان: ${schedule.endTime || '17:00'}</span>
       </div>
 
-      <div id="sched-edit-mode" style="display:none; flex-direction:column; gap:8px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div id="sched-edit-mode" style="display:none; flex-direction:column; gap:8px; direction:rtl;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <!-- شروع کار -->
           <div>
-            <label style="font-size:10px;color:var(--text-muted);">شروع (ساعت:دقیقه)</label>
-            <div style="display:flex; gap:4px;">
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-bottom:4px;">
+              <span>ساعت</span><span>دقیقه</span>
+            </div>
+            <div style="display:flex; gap:4px; align-items:center;">
               <input type="number" id="edit-sched-start-h" min="0" max="23" value="${(schedule.startTime || '08:00').split(':')[0]}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="08">
-              <span style="align-self:center;">:</span>
+              <span style="font-weight:700;">:</span>
               <input type="number" id="edit-sched-start-m" min="0" max="59" value="${(schedule.startTime || '08:00').split(':')[1] || '00'}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="00">
             </div>
           </div>
+          <!-- پایان کار -->
           <div>
-            <label style="font-size:10px;color:var(--text-muted);">پایان (ساعت:دقیقه)</label>
-            <div style="display:flex; gap:4px;">
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-bottom:4px;">
+              <span>ساعت</span><span>دقیقه</span>
+            </div>
+            <div style="display:flex; gap:4px; align-items:center;">
               <input type="number" id="edit-sched-end-h" min="0" max="23" value="${(schedule.endTime || '17:00').split(':')[0]}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="17">
-              <span style="align-self:center;">:</span>
+              <span style="font-weight:700;">:</span>
               <input type="number" id="edit-sched-end-m" min="0" max="59" value="${(schedule.endTime || '17:00').split(':')[1] || '00'}" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-color); text-align:center;" placeholder="00">
             </div>
+          </div>
+        </div>
+        <button type="button" id="save-sched-hours" style="width:100%; padding:10px; background:linear-gradient(135deg,#10B981,#059669); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; margin-top:8px;">💾 ذخیره ساعت کاری</button>
+      </div>
           </div>
         </div>
         <button type="button" id="save-sched-hours" style="width:100%; padding:10px; background:linear-gradient(135deg,#10B981,#059669); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;">💾 ذخیره ساعت کاری</button>
