@@ -215,17 +215,23 @@
         </div>
 
 
-        <!-- جستجو -->
-                <div class="search-bar" style="display:flex;gap:8px;align-items:center">
-          <div style="flex:1;position:relative;display:flex;align-items:center">
-            <span class="search-icon">🔍</span>
-<input type="text" id="search-input" placeholder="جستجوی نام..." style="flex:1;">             
-        <!-- لیست مشتری‌ها -->
-        <div id="customers-list" class="customers-list"></div>
-        <button id="btn-schedule" style="width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-                📅 مدیریت نوبت‌ها
-      </button>
-      </main>
+              <!-- جستجو -->
+      <div class="search-bar" style="width: 100%; margin-bottom: 15px;">
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <span class="search-icon" style="position: absolute; right: 12px; pointer-events: none; z-index: 2;">🔍</span>
+          <input type="text" id="search-input" placeholder="جستجوی نام..." style="width: 100%; padding: 12px 40px 12px 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-color); font-family: inherit; font-size: 14px;">
+        </div>
+      </div>
+
+      <!-- لیست مشتری ها -->
+      <div id="customers-list" class="customers-list" style="width: 100%; margin-bottom: 20px;"></div>
+      
+      <!-- دکمه مدیریت نوبت ها (وسط چین) -->
+      <div style="width: 100%; display: flex; justify-content: center; margin-top: 10px;">
+        <button id="btn-schedule" style="width: 80%; max-width: 300px; padding: 14px; background: linear-gradient(135deg,#8B5CF6,#7C3AED); color: #fff; border: none; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(139,92,246,0.3);">
+          📅 مدیریت نوبت‌ها
+        </button>
+      </div>
        
     </div>
   </div>
