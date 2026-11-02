@@ -1889,7 +1889,10 @@ ${Object.keys(schedules).sort().map(date => {
       }
     };
   });
-  overlay.querySelector('#sched-close').onclick = () => closeModal(overlay);
+    overlay.querySelector('#sched-close').onclick = () => {
+    closeModal(overlay);
+    setTimeout(() => openSchedulePage(), 150);
+  };
 }
 
 function openAddAppointmentForm(targetDate = null) {
@@ -2093,7 +2096,7 @@ function openAddAppointmentForm(targetDate = null) {
 
     toast('✅ نوبت با موفقیت ثبت شد', 'success');
     closeModal(overlay);
-   openAddAppointmentForm(date);
+           openSchedulePageForDate(date);
   };
 }
 
