@@ -1534,6 +1534,26 @@ function confirmDeleteCustomer(id) {
   overlay.querySelector('#del-confirm').onclick = () => {
     state.customers = state.customers.filter(x => x.id !== id);
     DB.set('customers', state.customers);
+          // 🧹 پاک‌سازی داده‌های وابسته به این مشتری
+      DB.remove('trainingPlans_' + id);
+      if (state.birthdayMessages) delete state.birthdayMessages[id];
+      DB.set('birthdayMessages', state.birthdayMessages);
+
+      // 🧹 حذف از سوابق ارسال‌نشده (Pending)
+      let pending = DB.get('pendingInvoices', []);
+      pending = pending.filter(p => p.customerId !== id && p.itemId !== id);
+      DB.set('pendingInvoices', pending);
+
+      // 🧹 حذف از تاریخچه حضور و غیاب (تمام روزها)
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('cheshmak_attendance_')) {
+          const attData = DB.get(k.replace('cheshmak_', ''));
+          if (attData && attData[id] !== undefined) {
+            delete attData[id];
+            DB.set(k.replace('cheshmak_', ''), attData);
+          }
+        }
+      });
     closeModal(overlay);
     renderCustomers();
     toast('مشتری حذف شد', 'success');
