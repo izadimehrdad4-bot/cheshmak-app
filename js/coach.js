@@ -1859,7 +1859,16 @@ function openAttendanceHistory() {
     };
   });
 }
-
+// بررسی فریز بودن شاگرد در یک تاریخ خاص
+function isFrozenOnDate(c, dateShamsi) {
+  if (!c.freezes || c.freezes.length === 0) return false;
+  const targetNum = shamsiToNumber(dateShamsi);
+  return c.freezes.some(f => {
+    const startNum = shamsiToNumber(f.startDate);
+    const endNum = shamsiToNumber(f.endDate);
+    return targetNum >= startNum && targetNum <= endNum;
+  });
+}
 // ==============================
 // 📊 خلاصه‌ی یه روز خاص
 // ==============================
@@ -1873,7 +1882,7 @@ function showDaySummary(date, data) {
     const st = data[c.id];
     if (st === 'present') presentList.push(c);
     else if (st === 'absent') absentList.push(c);
-    else if (isCurrentlyFrozen(c)) frozenList.push(c);
+          else if (isFrozenOnDate(c, date)) frozenList.push(c);
     else notRecordedList.push(c);
   });
 
