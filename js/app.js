@@ -3631,6 +3631,11 @@ function exportBackupFile() {
     birthdayMessages: state.birthdayMessages,
     ads: getAds(),
     pendingInvoices: getPendingInvoices(),
+        licenseStart: DB.get('licenseStart'),
+    licenseEnd: DB.get('licenseEnd'),
+    deviceId: DB.get('deviceId'),
+    usedActivationCodes: DB.get('usedActivationCodes'),
+    lastKnownDate: DB.get('lastKnownDate'),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -3985,9 +3990,21 @@ function openFinalResetWarning() {
   `, { center: true });
   overlay.querySelector('#fw-cancel').onclick = () => closeModal(overlay);
   overlay.querySelector('#fw-confirm').onclick = () => {
+      // 🔒 حفظ اطلاعات لایسنس قبل از ریست
+  const savedDeviceId = DB.get('deviceId');
+  const savedLicenseStart = DB.get('licenseStart');
+  const savedLicenseEnd = DB.get('licenseEnd');
+  const savedUsedCodes = DB.get('usedActivationCodes');
+  const savedLastKnownDate = DB.get('lastKnownDate');
     DB.clearAll();
+      // 🔒 برگرداندن اطلاعات لایسنس
+  if (savedDeviceId) DB.set('deviceId', savedDeviceId);
+  if (savedLicenseStart) DB.set('licenseStart', savedLicenseStart);
+  if (savedLicenseEnd) DB.set('licenseEnd', savedLicenseEnd);
+  if (savedUsedCodes) DB.set('usedActivationCodes', savedUsedCodes);
+  if (savedLastKnownDate) DB.set('lastKnownDate', savedLastKnownDate);
     closeModal(overlay);
-    toast('تمام اطلاعات پاک شد', 'success');
+toast('تمام اطلاعات پاک شد (لایسنس حفظ شد)', 'success');
     setTimeout(() => location.reload(), 800);
   };
 }
@@ -4080,22 +4097,36 @@ function openRestorePreview(data) {
   `, { center: true });
   overlay.querySelector('#rp-cancel').onclick = () => closeModal(overlay);
   overlay.querySelector('#rp-confirm').onclick = () => {
-    const savedDeviceId = DB.get('deviceId');
-    const savedLicenseStart = DB.get('licenseStart');
-    const savedLicenseEnd = DB.get('licenseEnd');
+  // 🔒 حفظ اطلاعات لایسنس فعلی قبل از ریستور
+  const savedDeviceId = DB.get('deviceId');
+  const savedLicenseStart = DB.get('licenseStart');
+  const savedLicenseEnd = DB.get('licenseEnd');
+  const savedUsedCodes = DB.get('usedActivationCodes');
+  const savedLastKnownDate = DB.get('lastKnownDate');
 
-    if (savedDeviceId) DB.set('deviceId', savedDeviceId);
-    if (savedLicenseStart) DB.set('licenseStart', savedLicenseStart);
-    if (savedLicenseEnd) DB.set('licenseEnd', savedLicenseEnd);
-    DB.set('business', data.business);
-    DB.set('customers', data.customers || []);
-    DB.set('birthdayMessages', data.birthdayMessages || {});
-    if (data.ads) DB.set('ads', data.ads);
-    if (data.pendingInvoices) DB.set('pendingInvoices', data.pendingInvoices);
-    toast('اطلاعات بازیابی شد ✅', 'success');
-    closeModal(overlay);
-    setTimeout(() => location.reload(), 800);
-  };
+  DB.set('business', data.business);
+  DB.set('customers', data.customers || []);
+  DB.set('birthdayMessages', data.birthdayMessages || {});
+  if (data.ads) DB.set('ads', data.ads);
+  if (data.pendingInvoices) DB.set('pendingInvoices', data.pendingInvoices);
+
+  // 🔒 برگرداندن اطلاعات لایسنس
+  const finalDeviceId = data.deviceId || savedDeviceId;
+  const finalLicenseStart = data.licenseStart || savedLicenseStart;
+  const finalLicenseEnd = data.licenseEnd || savedLicenseEnd;
+  const finalUsedCodes = data.usedActivationCodes || savedUsedCodes;
+  const finalLastKnownDate = data.lastKnownDate || savedLastKnownDate;
+
+  if (finalDeviceId) DB.set('deviceId', finalDeviceId);
+  if (finalLicenseStart) DB.set('licenseStart', finalLicenseStart);
+  if (finalLicenseEnd) DB.set('licenseEnd', finalLicenseEnd);
+  if (finalUsedCodes) DB.set('usedActivationCodes', finalUsedCodes);
+  if (finalLastKnownDate) DB.set('lastKnownDate', finalLastKnownDate);
+
+  toast('اطلاعات بازیابی شد ✅', 'success');
+  closeModal(overlay);
+  setTimeout(() => location.reload(), 800);
+}; 
 }
 
 // ==============================
