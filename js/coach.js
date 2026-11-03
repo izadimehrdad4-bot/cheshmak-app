@@ -993,8 +993,8 @@ function getCustomerSessionStatus(c) {
   let daysUntilExpiry = null;
   let isExpired = false;
 
-  if (c.lastPaymentDate && c.validityPeriod) {
-    expiryDate = calculateExpiryDate(c.lastPaymentDate, c.validityPeriod);
+    if (c.lastPaymentDate && c.validityPeriod) {
+    expiryDate = getExpiryWithFreezes(c); // 👈 این خط تغییر کرد
     if (expiryDate) {
       const expiryNum = shamsiToNumber(expiryDate);
       daysUntilExpiry = daysBetweenShamsi(today, expiryDate);
