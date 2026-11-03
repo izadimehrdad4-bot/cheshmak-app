@@ -2794,10 +2794,18 @@ function addDaysToShamsi(shamsiDate, days) {
 function addYearsToShamsi(shamsiDate, years) {
   const parts = shamsiDate.split('/');
   if (parts.length !== 3) return shamsiDate;
-  const y = parseInt(parts[0]) + years;
-  const m = parts[1];
-  const d = parts[2];
-  return `${y}/${m}/${d}`;
+  let y = parseInt(parts[0]) + years;
+  let m = parseInt(parts[1]);
+  let d = parseInt(parts[2]);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return shamsiDate;
+  
+  // اصلاح روزهای اضافی برای سال غیرکبیسه (مثلاً 30 اسفند در سال غیرکبیسه به 29 اسفند تبدیل می‌شود)
+  const maxDay = shamsiMonthDays(y, m);
+  if (d > maxDay) {
+    d = maxDay;
+  }
+  
+  return `${y}/${m.toString().padStart(2, '0')}/${d.toString().padStart(2, '0')}`;
 }
 
 // چک کن لایسنس معتبره یا نه
