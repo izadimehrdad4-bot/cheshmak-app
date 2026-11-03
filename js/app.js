@@ -5407,8 +5407,7 @@ function addPendingInvoice(customerId) {
   }
 
   let pending = DB.get('pendingInvoices', []);
-  pending = pending.filter(p => p.customerId !== customerId);
-
+  pending = pending.filter(p => p.customerId !== customerId || (p.type && p.type !== 'invoice'));
   const lastService = c.history[c.history.length - 1];
 
   pending.push({
