@@ -3636,7 +3636,18 @@ function exportBackupFile() {
     deviceId: DB.get('deviceId'),
     usedActivationCodes: DB.get('usedActivationCodes'),
     lastKnownDate: DB.get('lastKnownDate'),
+        schedules: DB.get('schedules'),
+    birthdaySponsors: getBirthdaySponsors(),
+    trainingSponsors: getTrainingSponsors(),
+    issuedInvoices: DB.get('issuedInvoices'),
+    attendance: Object.keys(localStorage)
+      .filter(k => k.startsWith('cheshmak_attendance_'))
+      .reduce((acc, k) => { acc[k.replace('cheshmak_', '')] = DB.get(k.replace('cheshmak_', '')); return acc; }, {}),
+    trainingPlans: Object.keys(localStorage)
+      .filter(k => k.startsWith('cheshmak_trainingPlans_'))
+      .reduce((acc, k) => { acc[k.replace('cheshmak_', '')] = DB.get(k.replace('cheshmak_', '')); return acc; }, {}),
   };
+
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -4109,7 +4120,18 @@ function openRestorePreview(data) {
   DB.set('birthdayMessages', data.birthdayMessages || {});
   if (data.ads) DB.set('ads', data.ads);
   if (data.pendingInvoices) DB.set('pendingInvoices', data.pendingInvoices);
+  // ✅ بازیابی داده‌های جدید (نوبت‌ها، اسپانسرها، حضور و غیاب، برنامه‌های تمرینی)
+  if (data.schedules) DB.set('schedules', data.schedules);
+  if (data.birthdaySponsors) DB.set('birthdaySponsors', data.birthdaySponsors);
+  if (data.trainingSponsors) DB.set('trainingSponsors', data.trainingSponsors);
+  if (data.issuedInvoices) DB.set('issuedInvoices', data.issuedInvoices);
 
+  if (data.attendance) {
+    Object.keys(data.attendance).forEach(k => DB.set(k, data.attendance[k]));
+  }
+  if (data.trainingPlans) {
+    Object.keys(data.trainingPlans).forEach(k => DB.set(k, data.trainingPlans[k]));
+  }
   // 🔒 برگرداندن اطلاعات لایسنس
   const finalDeviceId = data.deviceId || savedDeviceId;
   const finalLicenseStart = data.licenseStart || savedLicenseStart;
