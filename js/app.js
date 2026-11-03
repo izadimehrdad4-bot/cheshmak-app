@@ -2375,7 +2375,7 @@ function openSchedulePageForDate(selectedDate) {
     const endH = parseInt(overlay.querySelector('#edit-sched-end-h').value) || 0;
     const endM = parseInt(overlay.querySelector('#edit-sched-end-m').value) || 0;
     
-    if (startH >= endH && startM >= endM) {
+        if (startH > endH || (startH === endH && startM >= endM)) {
       toast('ساعت پایان باید بعد از ساعت شروع باشد', 'error');
       return;
     }
