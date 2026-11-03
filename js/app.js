@@ -3850,7 +3850,20 @@ async function generateFinancialPdf(fromDate = null, toDate = null, rangeLabel =
   toast('در حال آماده‌سازی فایل...', 'info');
   const fontBase64 = await loadVazirFontForPdf();
   if (!fontBase64) { toast('خطا در بارگذاری فونت', 'error'); return; }
-  const allLogs = [];
+    const allLogs = [];
+    // 💰 اضافه کردن پرداخت‌های شهریه برای مربی‌ها
+  if (state.business && state.business.bizType === 'coach') {
+    state.customers.forEach(c => {
+      (c.payments || []).forEach(p => {
+        allLogs.push({
+          customerName: c.fullName,
+          serviceName: '💰 شهریه / پرداخت',
+          cost: p.amount || 0,
+          dateShamsi: p.date
+        });
+      });
+    });
+  }
   state.customers.forEach(c => {
     (c.history || []).forEach(h => allLogs.push({ ...h, customerName: c.fullName }));
   });
