@@ -1151,6 +1151,7 @@ function initLockScreen() {
 // ==============================
 // داشبورد
 // ==============================
+let dashboardVisibilityListener = null;
 function initDashboard() {
   if (typeof checkLicense === 'function') {
     if (!checkLicense()) return;
@@ -1238,23 +1239,23 @@ function initDashboard() {
   renderClock();
     // 🔥 قفل هوشمند: فقط وقتی اپ کامل بسته شد قفل کن
   let lockTimeout = null;
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      // کاربر از اپ خارج شد (یا به پس‌زمینه رفت)
-      // یه تایمر می‌ذاریم که اگه بیشتر از ۵ دقیقه بیرون موند، قفل کنه
-      lockTimeout = setTimeout(() => {
-        showScreen('lock-screen');
-        initLockScreen();
-      }, 5 * 60 * 1000); // ۵ دقیقه
-    } else {
-      // کاربر برگشت به اپ
-      // تایمر رو پاک کن (یعنی زودتر از ۵ دقیقه برگشته)
-      if (lockTimeout) {
-        clearTimeout(lockTimeout);
-        lockTimeout = null;
+    // 🔥 جلوگیری از اضافه شدن شنونده تکراری
+  if (!dashboardVisibilityListener) {
+    dashboardVisibilityListener = () => {
+      if (document.hidden) {
+        lockTimeout = setTimeout(() => {
+          showScreen('lock-screen');
+          initLockScreen();
+        }, 5 * 60 * 1000);
+      } else {
+        if (lockTimeout) {
+          clearTimeout(lockTimeout);
+          lockTimeout = null;
+        }
       }
-    }
-  });
+    };
+    document.addEventListener('visibilitychange', dashboardVisibilityListener);
+  }
 }
 
 // ==============================

@@ -3114,22 +3114,6 @@ function openAdvancedFilter() {
     renderCustomers();
     toast('فیلتر اعمال شد ✅', 'success');
 
-    // اگه همه خالی بود → حذف فیلتر
-    if (isNaN(hMin) && isNaN(hMax) && isNaN(wMin) && isNaN(wMax) && isNaN(aMin) && isNaN(aMax)) {
-      state.advancedFilter = null;
-    } else {
-      state.advancedFilter = {
-        heightMin: isNaN(hMin) ? '' : hMin,
-        heightMax: isNaN(hMax) ? '' : hMax,
-        weightMin: isNaN(wMin) ? '' : wMin,
-        weightMax: isNaN(wMax) ? '' : wMax,
-        ageMin: isNaN(aMin) ? '' : aMin,
-        ageMax: isNaN(aMax) ? '' : aMax,
-      };
-    }
-
-    closeModal(overlay);
-    renderCustomers();
-    toast('فیلتر اعمال شد ✅', 'success');
+    
   };
 }
