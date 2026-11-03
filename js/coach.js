@@ -439,6 +439,7 @@ function readCoachExtraFields(overlay, editing = null) {
     lastPaymentDate: lastPaymentDateEl ? lastPaymentDateEl.value.trim() : '',
         _paymentDateChanged: paymentDateChanged,
     _newPaymentDate: newPaymentDate,
+        usedSessions: paymentDateChanged ? 0 : (editing && editing.usedSessions ? editing.usedSessions : 0),
         _pendingPayments: pendingPayments,
     tuitionPaid: tuitionPaidEl ? tuitionPaidEl.checked : false,
     image: imageValue,

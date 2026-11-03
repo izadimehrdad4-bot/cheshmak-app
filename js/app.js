@@ -1436,6 +1436,7 @@ function saveCustomer(editing, data) {
     lastPaymentDate: coachData.lastPaymentDate || '',
     tuitionPaid: coachData.tuitionPaid || false,
     image: coachData.image || null,
+        usedSessions: coachData.usedSessions !== undefined ? coachData.usedSessions : 0,
   } : {};
 
   let newPayments = null;
