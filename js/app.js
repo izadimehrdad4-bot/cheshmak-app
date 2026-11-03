@@ -6369,9 +6369,14 @@ function renderBirthdaySponsorsList(container) {
   }
 
   const activeSponsors = sponsors.filter(s => s.status === 'active' && (s.shownCount || 0) < (s.totalShows || 0));
-  const reservedSponsors = sponsors
+    const reservedSponsors = sponsors
     .filter(s => s.status === 'reserved')
-    .sort((a, b) => (a.priority || 99) - (b.priority || 99));
+    .sort((a, b) => {
+      const slotA = normalizeSlot(a.slot);
+      const slotB = normalizeSlot(b.slot);
+      if (slotA !== slotB) return slotA === 'top' ? -1 : 1;
+      return (a.priority || 99) - (b.priority || 99);
+    });
 
   let html = '';
 
