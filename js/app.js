@@ -5794,10 +5794,16 @@ function renderAdsList(container) {
 
   const activeAds = ads.filter(ad => ad.status === 'active' && (ad.shownCount || 0) < (ad.totalShows || 0));
 
-  const reservedAds = ads
+    const reservedAds = ads
     .filter(ad => ad.status === 'reserved')
-    .sort((a, b) => (a.priority || 99) - (b.priority || 99));
-
+    .sort((a, b) => {
+      // اول بر اساس جایگاه (بالا قبل از پایین)
+      const slotA = normalizeSlot(a.slot);
+      const slotB = normalizeSlot(b.slot);
+      if (slotA !== slotB) return slotA === 'top' ? -1 : 1;
+      // سپس بر اساس اولویت
+      return (a.priority || 99) - (b.priority || 99);
+    });
   let html = '';
 
   if (activeAds.length > 0) {
