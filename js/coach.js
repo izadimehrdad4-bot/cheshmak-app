@@ -2909,13 +2909,13 @@ function showLicenseLockModal() {
       
            <h2 style="font-family:'IranNastaliq', serif;font-size:28px;margin-bottom:12px;color:#EF4444">
         دوره‌ی شما تمام شد
-      </h2>>
+      </h2>
       
       <div style="width:100px;height:2px;background:linear-gradient(90deg,transparent,#EF4444,transparent);margin:12px auto"></div>
       
               <div style="font-size:13px;color:#999;margin-bottom:6px">لایسنس شما در تاریخ <strong>${escapeHtml(end)}</strong> منقضی شده.<br>
         برای ادامه‌ی استفاده، با پشتیبانی تماس بگیرید:
-      </p>
+      </div>
       
       <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:14px;margin-bottom:16px">
         <div style="font-size:13px;margin-bottom:6px">📱 تلگرام پشتیبانی:</div>
