@@ -332,9 +332,13 @@ function getShamsiDaysAgo(daysAgo) {
     if (m < 1) { m = 12; y -= 1; }
     d += shamsiMonthDays(y, m);
   }
+  while (d > shamsiMonthDays(y, m)) {
+    d -= shamsiMonthDays(y, m);
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+  }
   return `${y}/${m.toString().padStart(2, '0')}/${d.toString().padStart(2, '0')}`;
 }
-
 // ==============================
 // ابزارهای کمکی
 // ==============================
