@@ -857,6 +857,7 @@ function openAttendancePage() {
         const customer = state.customers.find(x => x.id === c.id);
         if (customer) {
           customer.usedSessions = (customer.usedSessions || 0) + 1;
+                    customer.lastVisit = getTodayShamsi();
           DB.set('customers', state.customers);
         }
       }
