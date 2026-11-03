@@ -3827,13 +3827,40 @@ async function generateCustomersPdf() {
   doc.text(`کسب‌وکار: ${state.business.name}`, 105, 24, { align: 'center' });
   doc.setFontSize(9);
   doc.text(`تاریخ تهیه گزارش: ${getTodayShamsi()}`, 105, 30, { align: 'center' });
-  const tableData = state.customers.map((c, i) => {
-    const totalIncome = (c.history || []).reduce((sum, h) => sum + h.cost, 0);
-    return [faNum(i + 1), c.fullName, c.phone1, c.phone2 || '—', c.birthDate || '—', c.lastVisit || '—', faNum(totalIncome.toLocaleString())];
-  });
+  
+  const isCoachBiz = state.business && state.business.bizType === 'coach';
+  let tableData = [];
+  
+  if (isCoachBiz) {
+    tableData = state.customers.map((c, i) => {
+      const sessionStatus = getCustomerSessionStatus(c);
+      const remainingSessions = sessionStatus.remainingSessions !== undefined ? sessionStatus.remainingSessions : (c.totalSessions || 0);
+      const expiryDate = sessionStatus.expiryDate || '—';
+      const tuition = (c.tuition || 0).toLocaleString();
+      return [
+        faNum(i + 1), 
+        c.fullName, 
+        c.phone1, 
+        c.totalSessions || 0, 
+        remainingSessions, 
+        expiryDate, 
+        tuition
+      ];
+    });
+  } else {
+    tableData = state.customers.map((c, i) => {
+      const totalIncome = (c.history || []).reduce((sum, h) => sum + h.cost, 0);
+      return [faNum(i + 1), c.fullName, c.phone1, c.phone2 || '—', c.birthDate || '—', c.lastVisit || '—', faNum(totalIncome.toLocaleString())];
+    });
+  }
+
   doc.autoTable({
     startY: 36,
-    head: [['#', 'نام و نام خانوادگی', 'موبایل ۱', 'موبایل ۲', 'تاریخ تولد', 'آخرین مراجعه', 'کل درآمد (تومان)']],
+    head: [isCoachBiz 
+      ? ['#', 'نام و نام خانوادگی', 'موبایل', 'کل جلسات', 'جلسات مانده', 'تاریخ انقضا', 'شهریه (تومان)']
+      : ['#', 'نام و نام خانوادگی', 'موبایل ۱', 'موبایل ۲', 'تاریخ تولد', 'آخرین مراجعه', 'کل درآمد (تومان)']
+    ],
+
     body: tableData,
     styles: { font: 'Vazirmatn', fontSize: 9, halign: 'right', cellPadding: 2 },
     headStyles: { font: 'Vazirmatn', fillColor: [20, 184, 166], textColor: [255, 255, 255], halign: 'right', fontSize: 9 },
