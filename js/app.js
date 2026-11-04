@@ -2542,15 +2542,7 @@ function renderReportContent(overlay) {
     } else filteredLogs = [];
   }
   const salesIncome = filteredLogs.reduce((sum, h) => sum + h.cost, 0);
-  state.customers.forEach(c => {
-    if ((!c.payments || c.payments.length === 0) && c.lastPaymentDate && c.tuition) {
-      c.payments = [{
-        date: c.lastPaymentDate,
-        amount: c.tuition,
-        createdAt: new Date().toISOString(),
-      }];
-    }
-  });
+ 
 
   let coachIncome = 0;
   let coachPaymentCount = 0;
