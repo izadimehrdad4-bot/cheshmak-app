@@ -2834,6 +2834,11 @@ function isLicenseValid() {
 
  async function validateActivationCode(code) {
   try {
+        // بررسی امن بودن محیط (HTTPS یا localhost)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      console.error('Security Error: Invalid protocol for crypto.subtle');
+      return false;
+    }
     const parts = code.trim().split('-');
     if (parts.length !== 3 || parts[0] !== 'CHK') return false;
     
