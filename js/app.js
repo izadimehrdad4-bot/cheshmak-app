@@ -3323,10 +3323,15 @@ function openSettings() {
   }
   const copyDeviceIdBtn = overlay.querySelector('#copy-device-id-settings');
   if (copyDeviceIdBtn && typeof getOrCreateDeviceId === 'function') {
-    copyDeviceIdBtn.onclick = () => {
-      navigator.clipboard.writeText(getOrCreateDeviceId());
+     copyDeviceIdBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(getOrCreateDeviceId());
       toast('📋 شناسه کپی شد', 'success');
-    };
+    } catch (err) {
+      console.error(err);
+      toast('❌ کپی نشد! مرورگر شما از این قابلیت پشتیبانی نمی‌کند.', 'error');
+    }
+  };
   }
   // 🔥 نمایش کد معرف
   const referralDisplay = overlay.querySelector('#referral-code-display');
@@ -3337,12 +3342,17 @@ function openSettings() {
   }
   const copyReferralBtn = overlay.querySelector('#copy-referral-code');
   if (copyReferralBtn) {
-    copyReferralBtn.onclick = () => {
-      const deviceId = getOrCreateDeviceId();
-      const refCode = deviceId.replace('DEV-', '').replace('-', '');
-      navigator.clipboard.writeText(refCode);
-      toast('📋 کد معرف کپی شد', 'success');
-    };
+    copyReferralBtn.onclick = async () => {
+  try {
+    const deviceId = getOrCreateDeviceId();
+    const refCode = deviceId.replace('DEV-', '').replace('-', '');
+    await navigator.clipboard.writeText(refCode);
+    toast('📋 کد معرف کپی شد', 'success');
+  } catch (err) {
+    console.error(err);
+    toast('❌ کپی نشد! مرورگر شما از این قابلیت پشتیبانی نمی‌کند.', 'error');
+  }
+};
   }
     // 🔥 دکمه ارسال لینک اختصاصی
   const shareReferralBtn = overlay.querySelector('#share-referral-link');
