@@ -2643,12 +2643,39 @@ function renderReportContent(overlay) {
 
   const totalCustomers = state.customers.length;
 
-  let todayCount = 0;
+    let todayCount = 0;
   if (state.business && state.business.bizType === 'coach') {
-    const attendance = DB.get('attendance_' + getTodayShamsi().replace(/\//g, '-'), {});
-    todayCount = state.customers.filter(c => attendance[c.id] === 'present').length;
+    // برای مربی: محاسبه تعداد حاضرین در بازه انتخاب شده
+    if (reportRange === 'today') {
+      const attendance = DB.get('attendance_' + getTodayShamsi().replace(/\//g, '-'), {});
+      todayCount = state.customers.filter(c => attendance[c.id] === 'present').length;
+    } else {
+      // برای بازه‌های دیگر: هر کسی که در این بازه حداقل یک بار حاضر بوده
+      todayCount = state.customers.filter(c => {
+        if (!c.lastVisit) return false;
+        const n = shamsiToNumber(c.lastVisit);
+        const fromNum = reportRange === 'week' ? shamsiToNumber(getShamsiDaysAgo(6)) :
+                        reportRange === 'month' ? shamsiToNumber(getShamsiDaysAgo(29)) :
+                        reportRange === 'custom' && reportCustomFrom ? shamsiToNumber(reportCustomFrom) : 0;
+        const toNum = reportRange === 'custom' && reportCustomTo ? shamsiToNumber(reportCustomTo) : shamsiToNumber(getTodayShamsi());
+        return n >= fromNum && n <= toNum;
+      }).length;
+    }
   } else {
-    todayCount = state.customers.filter(c => c.lastVisit === getTodayShamsi()).length;
+    // برای کسب‌وکار عادی
+    if (reportRange === 'today') {
+      todayCount = state.customers.filter(c => c.lastVisit === getTodayShamsi()).length;
+    } else {
+      todayCount = state.customers.filter(c => {
+        if (!c.lastVisit) return false;
+        const n = shamsiToNumber(c.lastVisit);
+        const fromNum = reportRange === 'week' ? shamsiToNumber(getShamsiDaysAgo(6)) :
+                        reportRange === 'month' ? shamsiToNumber(getShamsiDaysAgo(29)) :
+                        reportRange === 'custom' && reportCustomFrom ? shamsiToNumber(reportCustomFrom) : 0;
+        const toNum = reportRange === 'custom' && reportCustomTo ? shamsiToNumber(reportCustomTo) : shamsiToNumber(getTodayShamsi());
+        return n >= fromNum && n <= toNum;
+      }).length;
+    }
   }
 
   const retentionDays = (state.business && state.business.retentionDays) || 60;
@@ -2692,7 +2719,7 @@ function renderReportContent(overlay) {
         </div>
         <div style="text-align:center;background:rgba(16,185,129,0.1);border-radius:10px;padding:10px">
           <div style="font-size:22px;font-weight:800;color:#10B981">${todayCount}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">امروز</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${reportRange === 'today' ? 'امروز' : 'در بازه'}</div>
         </div>
         <div style="text-align:center;background:rgba(59,130,246,0.1);border-radius:10px;padding:10px">
           <div style="font-size:22px;font-weight:800;color:#3B82F6">${activeCount}</div>
