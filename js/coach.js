@@ -2990,15 +2990,20 @@ const result = await activateLicense(code);
 </div>          </div>
 
           <h3 style="font-size:20px;color:#14B8A6;margin-bottom:8px;font-weight:800">✅ لایسنس فعال شد</h3>
-<p style="font-size:13px;color:#999;margin-bottom:6px">لایسنس شما ${result.amount} ${result.isYears ? 'سال' : 'روز'} تمدید شد</p>          <p style="font-size:12px;color:#666">تا تاریخ <strong>${result.newEnd}</strong></p>
-        </div>
-      `, { center: true, noCloseOnOverlay: true });
+                <button class="btn-primary" id="success-close-btn" style="width:100%;background:linear-gradient(135deg,#10B981,#059669);color:#fff;margin-top:10px">باشه، متوجه شدم</button>
+  </div>
+  `, { center: true, noCloseOnOverlay: true });
 
-      setTimeout(() => {
-        closeModal(successOverlay);
-        toast(`🎉 لایسنس تا ${result.newEnd} فعال شد`, 'success');
-        setTimeout(() => location.reload(), 800);
-      }, 10000);
+  const closeSuccess = () => {
+    closeModal(successOverlay);
+    toast(`🎉 لایسنس تا ${result.newEnd} فعال شد`, 'success');
+    setTimeout(() => location.reload(), 500);
+  };
+
+  const btnSuccess = successOverlay.querySelector('#success-close-btn');
+  if (btnSuccess) btnSuccess.onclick = closeSuccess;
+  
+  setTimeout(closeSuccess, 5000);
     } else {
       toast(result.error, 'error');
     }
