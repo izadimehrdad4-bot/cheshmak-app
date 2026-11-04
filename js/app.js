@@ -868,6 +868,7 @@ function initSetupScreen() {
   const logoInput = document.getElementById('logo-input');
   const logoPreview = document.getElementById('logo-preview');
   const logoIcon = document.getElementById('logo-icon');
+  
   logoInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -879,6 +880,7 @@ function initSetupScreen() {
     };
     reader.readAsDataURL(file);
   });
+
   const birthInput = document.getElementById('setup-birth');
   birthInput.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -886,6 +888,7 @@ function initSetupScreen() {
     const result = await showShamsiDatePicker(birthInput.value, 'تاریخ تولد شما');
     if (result) birthInput.value = result;
   });
+
   document.getElementById('btn-register').addEventListener('click', async () => {
     const job = document.getElementById('setup-job').value.trim();
     const name = document.getElementById('setup-name').value.trim();
@@ -893,13 +896,24 @@ function initSetupScreen() {
     const phone = document.getElementById('setup-phone').value.trim();
     const birth = document.getElementById('setup-birth').value.trim();
     const pass = document.getElementById('setup-pass').value.trim();
-    const hashedPass = await hashPassword(pass);
     const security = document.getElementById('setup-security').value.trim();
-    const hashedSecurity = await hashPassword(normalizeName(security));
+
+    // اعتبارسنجی
     if (!job || !name || !manager || !phone || !pass) {
       toast('لطفاً همه‌ی فیلدهای ضروری را پر کنید', 'error');
       return;
     }
+    if (!/^09\d{9}$/.test(phone)) {
+      toast('شماره تلفن نامعتبر است! باید با ۰۹ شروع شود و ۱۱ رقم باشد.', 'error');
+      return;
+    }
+    if (!/^\d{4,}$/.test(pass)) {
+      toast('رمز عبور باید فقط شامل اعداد و حداقل ۴ رقم باشد.', 'error');
+      return;
+    }
+
+    const hashedPass = await hashPassword(pass);
+    const hashedSecurity = await hashPassword(normalizeName(security));
 
     const isCoach = isCoachJob(job);
     let coachType = '';
@@ -920,10 +934,12 @@ function initSetupScreen() {
       customerTitle: isCoach ? 'شاگرد' : 'مهمان گرامی',
     };
     DB.set('business', state.business);
+    
     toast(
       isCoach ? 'کسب‌وکار ورزشی راه‌اندازی شد ✅' : 'کسب‌وکار با موفقیت راه‌اندازی شد ✅',
       'success'
     );
+    
     setTimeout(() => {
       showWelcomeDialog();
       setTimeout(() => {
@@ -932,9 +948,12 @@ function initSetupScreen() {
       }, 300);
     }, 300);
   });
+
   const btnRestoreSetup = document.getElementById('btn-restore-setup');
   if (btnRestoreSetup) btnRestoreSetup.addEventListener('click', () => openRestoreDialog(false));
 }
+  
+
 
 
 // ==============================
