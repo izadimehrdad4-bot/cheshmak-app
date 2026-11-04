@@ -1175,12 +1175,12 @@ function initDashboard() {
   if (typeof checkLicense === 'function') {
     if (!checkLicense()) return;
   }
-    // تغییر داینامیک متن سرچ بر اساس عنوان مشتری
-    const dynamicSearchInput = document.getElementById('search-input');
-    if (dynamicSearchInput) {
-    // استفاده از تابع اصلی برای گرفتن عنوان درست (مربی یا عادی)
-    const titleFn = (state.business && state.business.bizType === 'coach') ? getCoachCustomerTitle : getCustomerTitle;
-    const title = titleFn().replace(' گرامی', '');
+     // گرفتن عنوان درست (مربی یا عادی) برای استفاده در کل تابع
+  const titleFn = (state.business && state.business.bizType === 'coach') ? getCoachCustomerTitle : getCustomerTitle;
+  const title = titleFn().replace(' گرامی', '');
+
+  const dynamicSearchInput = document.getElementById('search-input');
+  if (dynamicSearchInput) {
     dynamicSearchInput.placeholder = `جستجوی نام ${title}...`;
   }
   updateBusinessDisplay();
