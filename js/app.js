@@ -1177,10 +1177,10 @@ function initDashboard() {
   }
     // تغییر داینامیک متن سرچ بر اساس عنوان مشتری
     const dynamicSearchInput = document.getElementById('search-input');
-  if (dynamicSearchInput) {
-    const title = (state.business && state.business.customerTitle) 
-      ? state.business.customerTitle.replace(' گرامی', '') 
-      : 'مشتری';
+    if (dynamicSearchInput) {
+    // استفاده از تابع اصلی برای گرفتن عنوان درست (مربی یا عادی)
+    const titleFn = (state.business && state.business.bizType === 'coach') ? getCoachCustomerTitle : getCustomerTitle;
+    const title = titleFn().replace(' گرامی', '');
     dynamicSearchInput.placeholder = `جستجوی نام ${title}...`;
   }
   updateBusinessDisplay();
@@ -1188,15 +1188,11 @@ function initDashboard() {
   if (actionIcon) {
     actionIcon.innerHTML = getRoseAvatarSvg(36);
   }
-  const labelCustomer = document.getElementById('label-add-customer');
+    const labelCustomer = document.getElementById('label-add-customer');
   if (labelCustomer) {
-    const t = getCustomerTitle();
-    const titleFn = (state.business && state.business.bizType === 'coach') ? getCoachCustomerTitle : getCustomerTitle;
-    const t2 = titleFn();
-    const shortTitle = t.replace(' گرامی', '');
-    const shortTitle2 = t2.replace(' گرامی', '');
-    labelCustomer.textContent = 'ثبت ' + shortTitle2;
+    labelCustomer.textContent = 'ثبت ' + title;
   }
+    
   document.querySelectorAll('.action-btn').forEach(btn => {
     btn.onclick = () => {
       const action = btn.dataset.action;
