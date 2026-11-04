@@ -3833,7 +3833,7 @@ let _vazirFontFailed = false;
 async function loadVazirFontForPdf() {
   if (_vazirFontBase64) return _vazirFontBase64;
   if (_vazirFontFailed) return null;
-  const fontUrl = 'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/ttf/Vazirmatn-Regular.ttf';
+  const fontUrl = './assets/Vazirmatn-Regular.ttf';
   try {
     const response = await fetch(fontUrl);
     if (!response.ok) throw new Error('HTTP ' + response.status);
